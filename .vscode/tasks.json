@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Django",
+      "type": "shell",
+      "command": "make runserver",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Run HomeService",
+      "dependsOn": ["Start Django"],
+      "problemMatcher": []
+    }
+  ]
+}
