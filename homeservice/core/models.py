@@ -6,15 +6,21 @@ class User(AbstractUser):
     USER_TYPES = [
         ("customer", "Customer"),
         ("service_provider", "Service Provider"),
-        ("admin", "Admin"),
     ]
     email = models.EmailField(unique=True)
     user_type = models.CharField(max_length=20, choices=USER_TYPES)
 
 
 class Service(models.Model):
+    CATEGORY_CHOICES = [
+        ("cleaning", "Cleaning"),
+        ("plumbing", "Plumbing"),
+        ("repair", "Repair"),
+        ("maintenance", "Maintenance"),
+    ]
+
     name = models.CharField(max_length=255)
-    category = models.ForeignKey("Category", on_delete=models.CASCADE)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     description = models.TextField()
     image = models.ImageField(upload_to="service_images/")
     pdf_file = models.FileField(upload_to="service_pdfs/")
@@ -25,13 +31,7 @@ class Booking(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     booking_date = models.DateField()
     status = models.CharField(max_length=50)
-    payment_id = models.CharField(
-        max_length=100
-    )  # Assuming a simple payment ID for now
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=100)
+    payment_id = models.CharField(max_length=100)  # Placeholder for payment ID
 
 
 class Review(models.Model):
@@ -58,12 +58,13 @@ class Schedule(models.Model):
 
 
 class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ("booking_confirmation", "Booking Confirmation"),
+        ("reminder", "Reminder"),
+        ("service_report", "Service Report"),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.TextField()
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-
-class Report(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    report_details = models.TextField()

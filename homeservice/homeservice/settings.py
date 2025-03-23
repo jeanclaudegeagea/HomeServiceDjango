@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +27,8 @@ SECRET_KEY = "django-insecure-9-@ai2y6dn)2u^i)3lq6=rgsk25__9puknbt$pdgkv5ry_g#oo
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+AUTH_USER_MODEL = "core.User"
 
 
 # Application definition
@@ -125,3 +128,6 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+MEDIA_URL = "/media/"  # URL for serving media files
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Path to store media files
