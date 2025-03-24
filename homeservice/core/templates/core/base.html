@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Django App{% endblock %}</title>
+</head>
+<body>
+    {% block content %}
+    <!-- Content will be inserted here by other templates -->
+    {% endblock %}
+    
+    <!-- JavaScript to check token in localStorage -->
+    <script>
+        window.onload = function() {
+            const token = localStorage.getItem('token');  // Replace 'token' with the actual token key
+            if (token) {
+                // If a token is found, redirect to the home page
+                window.location.href = '/home';  // Redirect to the home page
+            } else {
+                // If no token is found, ensure the user is redirected to login
+                if (!window.location.href.includes('login')) {
+                    window.location.href = '/login';  // Redirect to login page
+                }
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Home Services</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- DaisyUI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+    <!-- Lucide Icons (similar to what you were using) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="mb-8 text-center">
+                <h1 class="text-3xl font-bold text-gray-900">Home Services</h1>
+                <p class="text-gray-500 mt-2">
+                    Your one-stop platform for all home services
+                </p>
+            </div>
+            <div class="w-full max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
+                <div>
+                    <h2 class="text-2xl font-semibold text-gray-900">Login</h2>
+                    <p class="text-gray-500">Sign in to your account to access your dashboard</p>
+                    
+                    <form method="post" class="space-y-4 mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="form-control">
+                            <label class="label text-gray-700" for="email">Email</label>
+                            <input 
+                                id="email" 
+                                name="email" 
+                                type="email" 
+                                placeholder="name@example.com" 
+                                class="input input-bordered w-full border-gray-300  bg-white text-gray-900" 
+                                required
+                            />
+                        </div>
+                        
+                        <div class="form-control">
+                            <div class="flex justify-between">
+                                <label class="label text-gray-700" for="password">Password</label>
+                            </div>
+                            <div class="relative">
+                                <input 
+                                    id="password" 
+                                    name="password" 
+                                    type="password" 
+                                    placeholder="••••••••" 
+                                    class="input input-bordered w-full pr-10 border-gray-300  bg-white text-gray-900" 
+                                    required
+                                />
+                                <button 
+                                    type="button" 
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                                    onclick="togglePassword()"
+                                >
+                                    <i data-lucide="eye" id="eye-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button type="submit" class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition">
+                                Sign in
+                            </button>
+                        </div>
+                        
+                        <div class="text-center text-sm text-gray-600 mt-4">
+                            Don't have an account? 
+                            <a href="/signup" class="text-black font-medium  hover:text-blue-500">Sign up</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            
+            lucide.createIcons();
+        }
+        
+        // Form submission handling
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const submitText = document.getElementById('submit-text');
+            const loading = document.getElementById('loading');
+            
+            submitText.classList.add('hidden');
+            loading.classList.remove('hidden');
+            
+            // Simulate API call (remove this in production)
+            setTimeout(() => {
+                // Replace with actual form submission
+                window.location.href = '/dashboard';
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
