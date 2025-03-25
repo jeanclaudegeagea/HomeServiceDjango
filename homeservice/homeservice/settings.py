@@ -82,7 +82,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "HomeService",  # Database name
         "USER": "postgres",  # Database user
-        "PASSWORD": "1234",  # Database password
+        "PASSWORD": "root",  # Database password
         "HOST": "localhost",  # Database host
         "PORT": "5432",  # Database port (default is 5432)
     }
