@@ -14,7 +14,7 @@
       rel="stylesheet"
       type="text/css"
     />
-    <!-- Lucide Icons (similar to what you were using) -->
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body class="bg-gray-50">
@@ -36,33 +36,34 @@
             <form method="post" class="space-y-4 mt-4">
               {% csrf_token %}
 
+              <!-- Display form-wide errors -->
+              {% if form.non_field_errors %}
+              <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
+                {% for error in form.non_field_errors %}
+                  <p>{{ error }}</p>
+                {% endfor %}
+              </div>
+              {% endif %}
+
               <div class="form-control">
-                <label class="label text-gray-700" for="email">Email</label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                  required
-                />
+                <label class="label text-gray-700" for="id_email">Email</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <ul class="text-red-500 text-sm font-medium italic">
+                  {% for error in form.email.errors %}
+                  <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
               </div>
 
               <div class="form-control">
                 <div class="flex justify-between">
-                  <label class="label text-gray-700" for="password"
-                    >Password</label
-                  >
+                  <label class="label text-gray-700" for="id_password">Password</label>
+                  <a href="/forgot-password" class="label-text-alt text-gray-500 hover:text-black">Forgot password?</a>
                 </div>
                 <div class="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    class="input input-bordered w-full pr-10 border-gray-300 bg-white text-gray-900"
-                    required
-                  />
+                  {{ form.password }}
                   <button
                     type="button"
                     class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
@@ -71,6 +72,13 @@
                     <i data-lucide="eye" id="eye-icon"></i>
                   </button>
                 </div>
+                {% if form.password.errors %}
+                <ul class="text-red-500 text-sm font-medium italic">
+                  {% for error in form.password.errors %}
+                  <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
+                {% endif %}
               </div>
 
               <div class="mt-6">
@@ -102,7 +110,7 @@
 
       // Toggle password visibility
       function togglePassword() {
-        const passwordInput = document.getElementById("password");
+        const passwordInput = document.getElementById("id_password");
         const eyeIcon = document.getElementById("eye-icon");
 
         if (passwordInput.type === "password") {
@@ -115,22 +123,6 @@
 
         lucide.createIcons();
       }
-
-      // Form submission handling
-      document.querySelector("form").addEventListener("submit", function (e) {
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const submitText = document.getElementById("submit-text");
-        const loading = document.getElementById("loading");
-
-        submitText.classList.add("hidden");
-        loading.classList.remove("hidden");
-
-        // Simulate API call (remove this in production)
-        setTimeout(() => {
-          // Replace with actual form submission
-          window.location.href = "/dashboard";
-        }, 1000);
-      });
     </script>
   </body>
 </html>

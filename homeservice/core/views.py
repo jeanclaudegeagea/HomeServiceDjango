@@ -1,46 +1,66 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import login as auth_login  # Rename to avoid conflict
+from django.contrib.auth import authenticate
 from django.contrib import messages
-from .forms import UserForm
+from .forms import UserRegistrationForm, UserLoginForm
 
-# Create your views here.
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Log successful signup
+            print(f"New user registered: {user.email} (Username: {user.username})")
+            print(f"New user registered: {user.email} (Username: {user.username})")
+            
+            # Auto-login after signup
+            auth_login(request, user)  # Use auth_login with both request and user
+            print(f"User {user.email} logged in successfully")
+            print(f"User {user.email} logged in successfully")
+            
+            return redirect('dashboard')  # Redirect to dashboard or home page
+    else:
+        form = UserRegistrationForm()
+    
+    return render(request, 'core/signup.html', {'form': form})
+
+def login(request):
+    if request.method == 'POST':
+        form = UserLoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            password = form.cleaned_data.get('password')
+            
+            # Authenticate user
+            user = authenticate(request, username=email, password=password)
+            
+            if user is not None:
+                auth_login(request, user)  # Use auth_login with both request and user
+                # Log successful login
+                print(f"User logged in: {email}")
+                
+                return redirect('dashboard')  # Redirect to dashboard or home page
+            else:
+                # This should not happen due to form validation, but added as a safeguard
+                print(f"Login failed for: {email}")
+                messages.error(request, "Invalid login credentials")
+    else:
+        form = UserLoginForm()
+    
+    return render(request, 'core/login.html', {'form': form})
+
+def dashboard_view(request):
+    # Placeholder dashboard view
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    return render(request, 'dashboard.html')
+
 
 
 def base(request):
     return render(request, "core/base.html")
-
-
-def login(request):
-    return render(request, "core/login.html")
-
-
-def signup(request):
-    if request.method == "POST":
-        form = UserForm(request.POST)
-        if form.is_valid():
-            # Save the user, but don't commit yet
-            user = form.save(commit=False)
-            # Set the password to make sure it's hashed
-            user.set_password(form.cleaned_data["password"])
-            # Save the user to the database
-            user.save()
-
-            # Optionally, show a success message
-            messages.success(
-                request, "You have successfully registered! Please log in."
-            )
-
-            # Redirect to login page (or anywhere you want)
-            return redirect("login")
-        else:
-            # If the form is not valid, show errors
-            messages.error(
-                request, "There was an error in the form. Please check your inputs."
-            )
-    else:
-        # If it's a GET request, just display the form
-        form = UserForm()
-
-    return render(request, "core/signup.html", {"form": form})
 
 
 def home(request):
