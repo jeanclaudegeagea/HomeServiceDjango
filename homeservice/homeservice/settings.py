@@ -82,7 +82,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "HomeService",  # Database name
         "USER": "postgres",  # Database user
-        "PASSWORD": "root",  # Database password
+        "PASSWORD": "1234",  # Database password
         "HOST": "localhost",  # Database host
         "PORT": "5432",  # Database port (default is 5432)
     }
@@ -131,3 +131,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = "/media/"  # URL for serving media files
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")  # Path to store media files
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",  # Default
+]

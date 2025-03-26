@@ -10,15 +10,18 @@
     <!-- Content will be inserted here by other templates -->
     {% endblock %}
     
-    <!-- JavaScript to check token in localStorage -->
+    <!-- JavaScript to check if the user is authenticated based on session -->
     <script>
         window.onload = function() {
-            const token = localStorage.getItem('token');  // Replace 'token' with the actual token key
-            if (token) {
-                // If a token is found, redirect to the home page
+            // Check if the user is authenticated by looking at the Django context
+            const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+
+            
+            if (isAuthenticated === 'true') {
+                // If the user is authenticated, redirect to the home page
                 window.location.href = '/home';  // Redirect to the home page
             } else {
-                // If no token is found, ensure the user is redirected to login
+                // If the user is not authenticated, ensure the user is redirected to login
                 if (!window.location.href.includes('login')) {
                     window.location.href = '/login';  // Redirect to login page
                 }

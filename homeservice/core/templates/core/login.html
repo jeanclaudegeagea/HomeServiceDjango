@@ -14,11 +14,23 @@
       rel="stylesheet"
       type="text/css"
     />
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons (similar to what you were using) -->
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body class="bg-gray-50">
-    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+    <div
+      id="loading-auth"
+      class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
+      ></div>
+    </div>
+
+    <div
+      id="content"
+      class="hidden min-h-screen flex flex-col items-center justify-center p-4"
+    >
       <div class="w-full max-w-md">
         <div class="mb-8 text-center">
           <h1 class="text-3xl font-bold text-gray-900">Home Services</h1>
@@ -36,21 +48,21 @@
             <form method="post" class="space-y-4 mt-4">
               {% csrf_token %}
 
-              <!-- Display form-wide errors -->
-              {% if form.non_field_errors %}
-              <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-                {% for error in form.non_field_errors %}
-                  <p>{{ error }}</p>
-                {% endfor %}
-              </div>
-              {% endif %}
-
               <div class="form-control">
-                <label class="label text-gray-700" for="id_email">Email</label>
-                {{ form.email }}
-                {% if form.email.errors %}
+                <label class="label text-gray-700" for="username"
+                  >Username</label
+                >
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="username"
+                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                  required
+                />
+                {% if form.username.errors %}
                 <ul class="text-red-500 text-sm font-medium italic">
-                  {% for error in form.email.errors %}
+                  {% for error in form.username.errors %}
                   <li>{{ error }}</li>
                   {% endfor %}
                 </ul>
@@ -58,12 +70,18 @@
               </div>
 
               <div class="form-control">
-                <div class="flex justify-between">
-                  <label class="label text-gray-700" for="id_password">Password</label>
-                  <a href="/forgot-password" class="label-text-alt text-gray-500 hover:text-black">Forgot password?</a>
-                </div>
+                <label class="label text-gray-700" for="password"
+                  >Password</label
+                >
                 <div class="relative">
-                  {{ form.password }}
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    class="input input-bordered w-full pr-10 border-gray-300 bg-white text-gray-900"
+                    required
+                  />
                   <button
                     type="button"
                     class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
@@ -81,12 +99,41 @@
                 {% endif %}
               </div>
 
+              {% if messages %} {% for message in messages %}
+              <ul class="text-red-500 text-sm font-medium italic">
+                <li>{{ message }}</li>
+              </ul>
+              {% endfor %} {% endif %}
+
               <div class="mt-6">
                 <button
                   type="submit"
-                  class="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition"
+                  id="submit-btn"
+                  class="w-full flex bg-black text-white py-3 rounded-lg hover:bg-gray-900 transition justify-center"
                 >
-                  Sign in
+                  <span id="submit-text">Sign in</span>
+                  <span id="loading" class="hidden ml-2">
+                    <svg
+                      class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  </span>
                 </button>
               </div>
 
@@ -105,12 +152,31 @@
     </div>
 
     <script>
+      window.onload = function () {
+        // Check if the user is authenticated by looking at the Django context
+        const isAuthenticated =
+          "{{ request.user.is_authenticated|yesno:'true,false' }}";
+        const loadingElement = document.getElementById("loading-auth");
+        const contentElement = document.getElementById("content");
+
+        if (isAuthenticated === "true") {
+          // If the user is authenticated, redirect to the home page
+          if (!window.location.href.includes("home")) {
+            window.location.href = "/home"; // Redirect to login page
+          }
+        } else {
+          // If the user is not authenticated, ensure the user is redirected to login
+          loadingElement.style.display = "none";
+          contentElement.style.display = "flex"; // Show content
+        }
+      };
+
       // Initialize Lucide icons
       lucide.createIcons();
 
       // Toggle password visibility
       function togglePassword() {
-        const passwordInput = document.getElementById("id_password");
+        const passwordInput = document.getElementById("password");
         const eyeIcon = document.getElementById("eye-icon");
 
         if (passwordInput.type === "password") {
@@ -123,6 +189,18 @@
 
         lucide.createIcons();
       }
+
+      // Form submission handling
+      document.querySelector("form").addEventListener("submit", function (e) {
+        const submitButton = document.getElementById("submit-btn");
+        const submitText = document.getElementById("submit-text");
+        const loading = document.getElementById("loading");
+
+        submitButton.disabled = true;
+
+        submitText.classList.add("hidden");
+        loading.classList.remove("hidden");
+      });
     </script>
   </body>
 </html>
