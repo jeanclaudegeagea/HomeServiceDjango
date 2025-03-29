@@ -1,4 +1,4 @@
 .PHONY: runserver
 
 runserver:
-	venv\Scripts\Activate && cd homeservice && python manage.py runserver
+	source venv/Scripts/activate && cd homeservice && python manage.py runserver
