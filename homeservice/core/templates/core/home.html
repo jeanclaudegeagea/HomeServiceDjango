@@ -1,11 +1,58 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Service App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daisyui@1.0.0/dist/full.js"></script>
+    <!-- DaisyUI -->
   </head>
-  <body>
-    <h1>Welcome to the Home Service App!</h1>
-    <a href="{% url 'services' %}">View Services</a> |
-    <a href="{% url 'providers' %}">View Providers</a> |
-    <a href="{% url 'book_service' %}">Book a Service</a>
+  <body class="bg-gray-100">
+    <!-- Loading Spinner -->
+    <div
+      id="loading"
+      class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div
+        class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
+      ></div>
+    </div>
+
+    <!-- Main Content (Initially hidden during loading) -->
+    <div id="content" class="hidden">
+      <h1 class="text-center mt-20 text-3xl font-bold">
+        Welcome to the Home Service App!
+      </h1>
+      <div class="text-center mt-4">
+        <a href="{% url 'services' %}" class="text-blue-600">View Services</a> |
+        <a href="{% url 'providers' %}" class="text-blue-600">View Providers</a>
+        |
+        <a href="{% url 'book_service' %}" class="text-blue-600"
+          >Book a Service</a
+        >
+      </div>
+    </div>
+
+    <script>
+      window.onload = function () {
+        // Check if the user is authenticated by looking at the Django context
+        const isAuthenticated =
+          "{{ request.user.is_authenticated|yesno:'true,false' }}";
+        const loadingElement = document.getElementById("loading");
+        const contentElement = document.getElementById("content");
+
+        if (isAuthenticated === "true") {
+          // If the user is authenticated, redirect to the home page
+          loadingElement.style.display = "none";
+          contentElement.style.display = "block"; // Show content
+        } else {
+          // If the user is not authenticated, ensure the user is redirected to login
+          if (!window.location.href.includes("login")) {
+            window.location.href = "/login"; // Redirect to login page
+          }
+        }
+      };
+    </script>
   </body>
 </html>

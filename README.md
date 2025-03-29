@@ -36,7 +36,7 @@ venv\Scripts\activate  # On Windows
 ### 4️⃣ Install Dependencies
 
 ```bash
-pip install django
+pip install -r requirements.txt
 ```
 
 ### 5️⃣ Move into the homeservice folder
