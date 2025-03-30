@@ -1,82 +1,113 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login as auth_login, authenticate
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import UserRegistrationForm, UserLoginForm
+from .forms import UserRegistrationForm, CustomerRegistrationForm, ServiceProviderRegistrationForm, DocumentUploadForm
+from .models import User, Customer, ServiceProvider, Specialization
 
-
-def signup(request):
-    if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
-        if form.is_valid():
-            # Save the user, but don't commit yet
-            user = form.save(commit=False)
-            # Set the password to make sure it's hashed
-            user.set_password(form.cleaned_data["password"])
-            # Save the user to the database
+def register(request):
+    if request.method == 'POST':
+        user_form = UserRegistrationForm(request.POST, request.FILES)
+        role = request.POST.get('role')
+        
+        if user_form.is_valid():
+            user = user_form.save(commit=False)
+            
+            # Use full_phone if available, otherwise use phone
+            phone = user_form.cleaned_data.get('full_phone') or user_form.cleaned_data.get('phone')
+            user.phone = phone
+            
+            user.role = role
             user.save()
-
-            # Optionally, show a success message
-            messages.success(
-                request, "You have successfully registered! Please log in."
-            )
-
-            # Redirect to login page (or anywhere you want)
-            return redirect("login")
-        else:
-            # If the form is not valid, show errors
-            messages.error(
-                request, "There was an error in the form. Please check your inputs."
-            )
-    else:
-        # If it's a GET request, just display the form
-        form = UserRegistrationForm()
-
-    return render(request, "core/signup.html", {"form": form})
-
-
-def login(request):
-    if request.method == "POST":
-        form = UserLoginForm(request.POST)
-
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-
-            # Authenticate the user using email and password
-            user = authenticate(request, username=username, password=password)
-
-            if user is not None:
-                # If user is found, log them in
-                auth_login(request, user)
-                return redirect("home")  # Redirect to the home page after login
+            
+            if role == User.CUSTOMER:
+                customer_form = CustomerRegistrationForm(request.POST)
+                if customer_form.is_valid():
+                    customer = customer_form.save(commit=False)
+                    customer.user = user
+                    customer.save()
+                    messages.success(request, 'Customer account created successfully!')
+                    login(request, user)
+                    return redirect('customer_dashboard')
+                else:
+                    # If customer form is invalid, delete the user and show errors
+                    user.delete()
+                    messages.error(request, 'Error in customer details')
+            
+            elif role == User.SERVICE_PROVIDER:
+                service_provider_form = ServiceProviderRegistrationForm(request.POST)
+                if service_provider_form.is_valid():
+                    service_provider = service_provider_form.save(commit=False)
+                    service_provider.user = user
+                    service_provider.save()
+                    messages.success(request, 'Service provider account created! Please upload your documents.')
+                    login(request, user)
+                    return redirect('provider_upload_docs')
+                else:
+                    # If service provider form is invalid, delete the user and show errors
+                    user.delete()
+                    messages.error(request, 'Error in service provider details')
             else:
-                # If authentication fails
-                messages.error(request, "Invalid username or password")
-
-        # If the form is invalid, render the login page with errors
-        return render(request, "core/login.html", {"form": form})
-
+                messages.error(request, 'Invalid role selected')
+                return render(request, 'accounts/register.html', {'form': user_form})
+        
+        # If user form is invalid, show errors
+        return render(request, 'accounts/register.html', {'form': user_form})
+    
     else:
-        form = UserLoginForm()
+        # Initialize specializations for the template if needed
+        specializations = Specialization.objects.all()
+        form = UserRegistrationForm()
+        return render(request, 'accounts/register.html', {
+            'form': form,
+            'specializations': specializations,
+        })
 
-    return render(request, "core/login.html", {"form": form})
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            if user.role == User.CUSTOMER:
+                return redirect('customer_dashboard')
+            elif user.role == User.SERVICE_PROVIDER:
+                if user.serviceprovider.is_verified:
+                    return redirect('provider_dashboard')
+                else:
+                    return redirect('provider_upload_docs')
+        else:
+            messages.error(request, 'Invalid username or password')
+    
+    return render(request, 'accounts/login.html')
 
+@login_required
+def provider_upload_docs(request):
+    if request.method == 'POST':
+        form = DocumentUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.provider = request.user.serviceprovider
+            document.save()
+            messages.success(request, 'Document uploaded successfully!')
+            return redirect('provider_upload_docs')
+    else:
+        form = DocumentUploadForm()
+    
+    return render(request, 'accounts/provider_upload_docs.html', {'form': form})
 
-def base(request):
-    return render(request, "core/base.html")
+@login_required
+def customer_dashboard(request):
+    if request.user.role != User.CUSTOMER:
+        return redirect('login')
+    return render(request, 'accounts/customer_dashboard.html')
 
-
-def home(request):
-    return render(request, "core/home.html")
-
-
-def services(request):
-    return render(request, "core/services.html")
-
-
-def providers(request):
-    return render(request, "core/providers.html")
-
-
-def book_service(request):
-    return render(request, "core/book_service.html")
+@login_required
+def provider_dashboard(request):
+    if request.user.role != User.SERVICE_PROVIDER:
+        return redirect('login')
+    if not request.user.serviceprovider.is_verified:
+        return redirect('provider_upload_docs')
+    return render(request, 'accounts/provider_dashboard.html')
