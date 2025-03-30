@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block content %}
-<!-- Add intl-tel-input CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
 
 <div class="min-h-screen flex flex-col items-center justify-center md:p-4 bg-gray-50">
@@ -16,27 +15,28 @@
           Sign up to start using our home services platform
         </p>
 
-        <form method="post" class="space-y-1" id="signup-form">
-          {% csrf_token %}
+        {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-          <!-- Role Selection -->
+        <form method="post" class="space-y-4" id="signup-form">
+          {% csrf_token %}
+          
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700" for="id_role">
-              Account Type
-            </label>
-            <select 
-              id="id_role"
-              name="role"
-              class="select select-bordered w-full border-gray-300 bg-white text-gray-900"
-              required
-            >
-              <option disabled selected value="">Select your role</option>
-              <option value="{{ User.CUSTOMER }}">Customer</option>
-              <option value="{{ User.SERVICE_PROVIDER }}">Service Provider</option>
+            <label class="block text-sm font-medium text-gray-700" for="id_role">Account Type</label>
+            <select name="role" id="id_role" class="input input-bordered w-full" required>
+              <option value="" disabled selected>Select Account Type</option>
+              <option value="1">Customer</option>
+              <option value="2">Service Provider</option>
             </select>
           </div>
 
-          <!-- Name Fields -->
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700" for="id_first_name">
@@ -47,7 +47,7 @@
                 name="first_name"
                 type="text"
                 placeholder="John"
-                class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                class="input input-bordered w-full"
                 required
               />
             </div>
@@ -61,44 +61,41 @@
                 name="last_name"
                 type="text"
                 placeholder="Doe"
-                class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                class="input input-bordered w-full"
                 required
               />
             </div>
           </div>
 
-          <!-- Email Field -->
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700" for="id_email">
-              Email
-            </label>
-            <input
-              id="id_email"
-              name="email"
-              type="email"
-              placeholder="name@example.com"
-              class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-              required
-            />
-          </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700" for="id_email">
+                Email
+              </label>
+              <input
+                id="id_email"
+                name="email"
+                type="email"
+                placeholder="name@example.com"
+                class="input input-bordered w-full"
+                required
+              />
+            </div>
 
-          <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700" for="id_phone">
-              Phone Number
-            </label>
-            <input
-              id="id_phone"
-              name="phone"
-              type="tel"
-              class="input input-bordered border-gray-300 bg-white text-gray-900"
-              required
-            />
-            <input type="hidden" id="full_phone" name="full_phone" class="input input-bordered border-gray-300 bg-white text-gray-900">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700" for="id_phone">
+                Phone Number
+              </label>
+              <input
+                id="id_phone"
+                name="phone"
+                type="tel"
+                class="input input-bordered w-full"
+              />
+              <input type="hidden" id="full_phone" name="full_phone">
+            </div>
           </div>
-          </div>
-
-          <!-- Password Field -->
+          
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700" for="id_password1">
@@ -110,7 +107,7 @@
                   name="password1"
                   type="password"
                   placeholder="••••••••"
-                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                  class="input input-bordered w-full pr-10"
                   required
                 />
                 <button
@@ -126,7 +123,6 @@
               </div>
             </div>
 
-            <!-- Confirm Password Field -->
             <div class="space-y-2">
               <label class="block text-sm font-medium text-gray-700" for="id_password2">
                 Confirm Password
@@ -137,7 +133,7 @@
                   name="password2"
                   type="password"
                   placeholder="••••••••"
-                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                  class="input input-bordered w-full pr-10"
                   required
                 />
                 <button
@@ -162,25 +158,9 @@
             >
               <span id="submit-text">Create account</span>
               <span id="loading" class="hidden ml-2">
-                <svg
-                  class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  ></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
             </button>
@@ -188,10 +168,7 @@
 
           <div class="text-center text-sm text-gray-600 pt-2">
             Already have an account?
-            <a
-              href="{% url 'login' %}"
-              class="font-medium text-black hover:text-blue-500"
-            >
+            <a href="{% url 'login' %}" class="font-medium text-black hover:text-blue-500">
               Sign in
             </a>
           </div>
@@ -201,7 +178,6 @@
   </div>
 </div>
 
-<!-- Add intl-tel-input JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
 <script>
@@ -225,10 +201,17 @@
     document.getElementById('signup-form').addEventListener('submit', function(e) {
       const fullPhone = iti.getNumber();
       document.getElementById('full_phone').value = fullPhone;
+      
+      const submitText = document.getElementById('submit-text');
+      const loading = document.getElementById('loading');
+      const submitButton = document.getElementById('submit-btn');
+
+      submitText.classList.add('hidden');
+      loading.classList.remove('hidden');
+      submitButton.disabled = true;
     });
   });
 
-  // Toggle password visibility function
   function togglePassword(fieldId) {
     const inputField = document.getElementById(fieldId);
     const eyeIcon = document.getElementById(fieldId + '-eye-icon');
@@ -247,28 +230,5 @@
       `;
     }
   }
-
-  // Form submission handling
-  document.getElementById('signup-form').addEventListener('submit', function(e) {
-    const password = document.getElementById('id_password1').value;
-    const confirmPassword = document.getElementById('id_password2').value;
-    const submitButton = document.getElementById('submit-btn');
-
-    // Disable the button during submission
-    submitButton.disabled = true;
-
-    if (password !== confirmPassword) {
-      alert("Passwords don't match");
-      e.preventDefault();
-      submitButton.disabled = false; // Re-enable the button on validation error
-      return;
-    }
-
-    const submitText = document.getElementById('submit-text');
-    const loading = document.getElementById('loading');
-
-    submitText.classList.add('hidden');
-    loading.classList.remove('hidden');
-  });
 </script>
 {% endblock %}
