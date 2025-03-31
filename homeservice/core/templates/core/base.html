@@ -1,32 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}My Django App{% endblock %}</title>
-</head>
-<body>
+  </head>
+  <body>
     {% block content %}
     <!-- Content will be inserted here by other templates -->
     {% endblock %}
-    
+
     <!-- JavaScript to check if the user is authenticated based on session -->
     <script>
-        window.onload = function() {
-            // Check if the user is authenticated by looking at the Django context
-            const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+      window.onload = function () {
+        // Check if the user is authenticated by looking at the Django context
+        const isAuthenticated =
+          "{{ request.user.is_authenticated|yesno:'true,false' }}";
 
-            
-            if (isAuthenticated === 'true') {
-                // If the user is authenticated, redirect to the home page
-                window.location.href = '/home';  // Redirect to the home page
-            } else {
-                // If the user is not authenticated, ensure the user is redirected to login
-                if (!window.location.href.includes('login')) {
-                    window.location.href = '/login';  // Redirect to login page
-                }
-            }
-        };
+        if (isAuthenticated === "true") {
+          // If the user is authenticated, redirect to the home page
+          window.location.href = "/home"; // Redirect to the home page
+        } else {
+          // If the user is not authenticated, ensure the user is redirected to login
+          if (!window.location.href.includes("login")) {
+            window.location.href = "/login"; // Redirect to login page
+          }
+        }
+      };
     </script>
-</body>
+  </body>
 </html>
