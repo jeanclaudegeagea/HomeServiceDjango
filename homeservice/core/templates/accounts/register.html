@@ -1,12 +1,20 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block content %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+/>
 
-{% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css">
+<style>
+  .iti {
+    width: 100%;
+  }
+</style>
 
-<div class="min-h-screen flex flex-col items-center justify-center md:p-4 bg-gray-50">
-  <div class="md:w-1/2 w-full"> 
-    <div class="card w-full bg-white shadow-sm"> 
+<div
+  class="min-h-screen flex flex-col items-center justify-center md:p-4 bg-gray-50"
+>
+  <div class="md:w-1/2 w-full">
+    <div class="card w-full bg-white shadow-sm">
       <div class="card-body md:p-6">
         <h2 class="text-2xl text-center font-semibold text-gray-800 mb-1">
           Create an account
@@ -18,7 +26,9 @@
         {% if messages %}
         <div class="mb-4">
           {% for message in messages %}
-          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+          <div
+            class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}"
+          >
             {{ message }}
           </div>
           {% endfor %}
@@ -27,10 +37,17 @@
 
         <form method="post" class="space-y-4" id="signup-form">
           {% csrf_token %}
-          
+
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700" for="id_role">Account Type</label>
-            <select name="role" id="id_role" class="input input-bordered w-full" required>
+            <label class="block text-sm font-medium text-gray-700" for="id_role"
+              >Account Type</label
+            >
+            <select
+              name="role"
+              id="id_role"
+              class="input input-bordered w-full"
+              required
+            >
               <option value="" disabled selected>Select Account Type</option>
               <option value="1">Customer</option>
               <option value="2">Service Provider</option>
@@ -39,7 +56,10 @@
 
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700" for="id_first_name">
+              <label
+                class="block text-sm font-medium text-gray-700"
+                for="id_first_name"
+              >
                 First Name
               </label>
               <input
@@ -53,7 +73,10 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700" for="id_last_name">
+              <label
+                class="block text-sm font-medium text-gray-700"
+                for="id_last_name"
+              >
                 Last Name
               </label>
               <input
@@ -69,7 +92,10 @@
 
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700" for="id_email">
+              <label
+                class="block text-sm font-medium text-gray-700"
+                for="id_email"
+              >
                 Email
               </label>
               <input
@@ -83,7 +109,10 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700" for="id_phone">
+              <label
+                class="block text-sm font-medium text-gray-700"
+                for="id_phone"
+              >
                 Phone Number
               </label>
               <input
@@ -92,13 +121,16 @@
                 type="tel"
                 class="input input-bordered w-full"
               />
-              <input type="hidden" id="full_phone" name="full_phone">
+              <input type="hidden" id="full_phone" name="full_phone" />
             </div>
           </div>
-          
+
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700" for="id_password1">
+              <label
+                class="block text-sm font-medium text-gray-700"
+                for="id_password1"
+              >
                 Password
               </label>
               <div class="relative">
@@ -115,8 +147,21 @@
                   class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   onclick="togglePassword('id_password1')"
                 >
-                  <svg id="id_password1-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <svg
+                    id="id_password1-eye-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
+                    ></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
                 </button>
@@ -124,7 +169,10 @@
             </div>
 
             <div class="space-y-2">
-              <label class="block text-sm font-medium text-gray-700" for="id_password2">
+              <label
+                class="block text-sm font-medium text-gray-700"
+                for="id_password2"
+              >
                 Confirm Password
               </label>
               <div class="relative">
@@ -141,8 +189,21 @@
                   class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   onclick="togglePassword('id_password2')"
                 >
-                  <svg id="id_password2-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <svg
+                    id="id_password2-eye-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
+                    ></path>
                     <circle cx="12" cy="12" r="3"></circle>
                   </svg>
                 </button>
@@ -158,9 +219,25 @@
             >
               <span id="submit-text">Create account</span>
               <span id="loading" class="hidden ml-2">
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
               </span>
             </button>
@@ -168,7 +245,10 @@
 
           <div class="text-center text-sm text-gray-600 pt-2">
             Already have an account?
-            <a href="{% url 'login' %}" class="font-medium text-black hover:text-blue-500">
+            <a
+              href="{% url 'login' %}"
+              class="font-medium text-black hover:text-blue-500"
+            >
               Sign in
             </a>
           </div>
@@ -181,49 +261,63 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // Initialize phone input
-    const phoneInput = document.getElementById('id_phone');
+    const phoneInput = document.getElementById("id_phone");
     const iti = window.intlTelInput(phoneInput, {
-      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-      preferredCountries: ['us', 'gb', 'fr', 'de', 'it', 'es', 'ae', 'sa', 'in', 'jp'],
+      utilsScript:
+        "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+      preferredCountries: [
+        "us",
+        "gb",
+        "fr",
+        "de",
+        "it",
+        "es",
+        "ae",
+        "sa",
+        "in",
+        "jp",
+      ],
       separateDialCode: true,
       initialCountry: "auto",
-      geoIpLookup: function(callback) {
-        fetch('https://ipapi.co/json/')
-          .then(res => res.json())
-          .then(data => callback(data.country_code))
-          .catch(() => callback('us'));
+      geoIpLookup: function (callback) {
+        fetch("https://ipapi.co/json/")
+          .then((res) => res.json())
+          .then((data) => callback(data.country_code))
+          .catch(() => callback("us"));
       },
     });
 
     // Store full phone number in hidden field before form submission
-    document.getElementById('signup-form').addEventListener('submit', function(e) {
-      const fullPhone = iti.getNumber();
-      document.getElementById('full_phone').value = fullPhone;
-      
-      const submitText = document.getElementById('submit-text');
-      const loading = document.getElementById('loading');
-      const submitButton = document.getElementById('submit-btn');
+    document
+      .getElementById("signup-form")
+      .addEventListener("submit", function (e) {
+        const fullPhone = iti.getNumber();
+        document.getElementById("full_phone").value = fullPhone;
 
-      submitText.classList.add('hidden');
-      loading.classList.remove('hidden');
-      submitButton.disabled = true;
-    });
+        const submitText = document.getElementById("submit-text");
+        const loading = document.getElementById("loading");
+        const submitButton = document.getElementById("submit-btn");
+
+        submitText.classList.add("hidden");
+        loading.classList.remove("hidden");
+        submitButton.disabled = true;
+      });
   });
 
   function togglePassword(fieldId) {
     const inputField = document.getElementById(fieldId);
-    const eyeIcon = document.getElementById(fieldId + '-eye-icon');
-    
-    if (inputField.type === 'password') {
-      inputField.type = 'text';
+    const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+
+    if (inputField.type === "password") {
+      inputField.type = "text";
       eyeIcon.innerHTML = `
         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
       `;
     } else {
-      inputField.type = 'password';
+      inputField.type = "password";
       eyeIcon.innerHTML = `
         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
         <circle cx="12" cy="12" r="3"></circle>
