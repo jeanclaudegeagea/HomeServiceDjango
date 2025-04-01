@@ -69,18 +69,17 @@
                   id="user-menu-button"
                 >
                   <span class="sr-only">Open user menu</span>
-                  {% if request.user.profile_picture %}
+                  {% if request.user.profile_image %}
                   <img
                     class="h-8 w-8 rounded-full"
-                    src="{{ request.user.profile_picture.url }}"
+                    src="{{ request.user.profile_image.url }}"
                     alt=""
                   />
                   {% else %}
                   <div
-                    class="h-8 w-8 rounded-full bg-gray-500 flex items-center justify-center text-white"
+                    class="p-2 rounded-full bg-gray-500 flex items-center justify-center text-white"
                   >
-                    {{ request.user.first_name|first|upper }}{{
-                    request.user.last_name|first|upper }}
+                    {{ request.user.first_name|first|upper }}{{request.user.last_name|first|upper }}
                   </div>
                   {% endif %}
                 </button>

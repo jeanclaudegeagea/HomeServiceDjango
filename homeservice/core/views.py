@@ -5,6 +5,7 @@ from django.contrib import messages
 from .forms import UserRegistrationForm, UserLoginForm
 from django.utils import timezone
 from .models import User, Customer, ServiceProvider, Specialization, Booking
+from .forms import ProfileImageForm  # We'll create this form
 
 
 def register(request):
@@ -98,6 +99,15 @@ def logout_view(request):
 def profile(request):
     active_tab = request.GET.get("tab", "upcoming")
 
+    # Handle image upload
+    if request.method == "POST" and "profile_image" in request.FILES:
+        form = ProfileImageForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("profile")  # Redirect to avoid duplicate form submissions
+    else:
+        form = ProfileImageForm(instance=request.user)
+
     # Initialize empty querysets
     upcoming_bookings = []
     past_bookings = []
@@ -128,16 +138,12 @@ def profile(request):
             provider=provider, status="completed", date__lt=timezone.now().date()
         ).order_by("-date", "-time")[:5]
 
-    # notifications = Notification.objects.filter(
-    #     user=request.user
-    # ).order_by('-created_at')[:5]
-
     context = {
         "active_tab": active_tab,
         "upcoming_bookings": upcoming_bookings,
         "past_bookings": past_bookings,
-        # 'notifications': notifications,
         "is_provider": request.user.role == User.SERVICE_PROVIDER,
+        "form": form,  # Add the form to context
     }
 
     return render(request, "core/profile.html", context)

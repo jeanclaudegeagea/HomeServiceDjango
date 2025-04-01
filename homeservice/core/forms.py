@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import User
+from django.core.exceptions import ValidationError
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -38,3 +39,18 @@ class UserRegistrationForm(UserCreationForm):
 class UserLoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput)
+
+
+class ProfileImageForm(forms.ModelForm):
+    class Meta:
+        model = User  # or Profile
+        fields = ["profile_image"]
+
+    def clean_profile_image(self):
+        image = self.cleaned_data.get("profile_image", False)
+        if image:
+            if image.size > 4 * 1024 * 1024:  # 4MB limit
+                raise ValidationError("Image file too large ( > 4MB )")
+            return image
+        else:
+            raise ValidationError("Couldn't read uploaded image")

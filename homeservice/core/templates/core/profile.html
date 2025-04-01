@@ -7,12 +7,17 @@
         <div class="md:col-span-3">
             <div class="bg-white shadow rounded-lg">
                 <div class="p-6 flex flex-row items-center gap-4">
-                    <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden">
+                    <div class="cursor-pointer h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden ">
                         {% if request.user.profile_image %}
                             <img src="{{ request.user.profile_image.url }}" alt="Profile" class="h-full w-full object-cover">
                         {% else %}
                             {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
                         {% endif %}
+                        <form method="post" enctype="multipart/form-data" class="absolute inset-0 opacity-0">
+                            {% csrf_token %}
+                            <input type="file" name="profile_image" accept="image/*" class="w-full h-full cursor-pointer" 
+                                   onchange="this.form.submit()">
+                        </form>
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold">{{ request.user.get_full_name }}</h2>
