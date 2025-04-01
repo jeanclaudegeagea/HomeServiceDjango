@@ -49,7 +49,6 @@ class Customer(models.Model):
 class ServiceProvider(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     years_of_experience = models.PositiveIntegerField(default=0)
-    is_verified = models.BooleanField(default=False)
     documents = models.ManyToManyField(ServiceProviderDocument, blank=True)
     specialization = models.ManyToManyField(Specialization)
 

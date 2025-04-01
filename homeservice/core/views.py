@@ -7,6 +7,7 @@ from django.utils import timezone
 from .models import User, Customer, ServiceProvider, Specialization, Booking
 from .forms import ProfileImageForm  # We'll create this form
 from django.views.decorators.cache import never_cache
+from django.http import JsonResponse
 
 
 @never_cache
@@ -184,3 +185,17 @@ def home_view(request):
         # 'featured_providers': Provider.objects.filter(is_featured=True)[:3],
     }
     return render(request, "core/home.html", context)
+
+
+@never_cache
+def service_settings(request):
+    # Render the partial content
+    html_content = render(request, "serviceProvider/settings.html")
+    return JsonResponse({"html": html_content.content.decode("utf-8")})
+
+
+@never_cache
+def customer_settings(request):
+    # Render the partial content
+    html_content = render(request, "customer/settings.html")
+    return JsonResponse({"html": html_content.content.decode("utf-8")})
