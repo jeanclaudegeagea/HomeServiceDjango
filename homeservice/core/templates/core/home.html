@@ -1,27 +1,34 @@
-{% extends 'core/base.html' %}
-{% load static %}
-
-{% block content %}
+{% extends 'core/base.html' %} {% load static %} {% block content %}
 <div class="flex min-h-screen flex-col">
   <!-- Hero Section -->
-  <section class="relative bg-gradient-to-r from-blue-100 to-blue-50 py-20 md:py-28">
+  <section
+    class="relative bg-gradient-to-r from-blue-100 to-blue-50 py-20 md:py-28"
+  >
     <div class="container px-4 md:px-6 mx-auto">
       <div class="grid gap-6 lg:grid-cols-2 lg:gap-12">
         <div class="flex flex-col justify-center space-y-4">
           <div class="space-y-2">
-            <h1 class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+            <h1
+              class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
+            >
               Home Maintenance Made Simple
             </h1>
             <p class="max-w-[600px] text-gray-600 md:text-xl">
-              Book trusted professionals for all your home maintenance needs. From plumbing to cleaning, we've got
-              you covered.
+              Book trusted professionals for all your home maintenance needs.
+              From plumbing to cleaning, we've got you covered.
             </p>
           </div>
           <div class="flex flex-col gap-2 min-[400px]:flex-row">
-            <a href="" class="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <a
+              href=""
+              class="inline-flex items-center justify-center rounded-md bg-blue-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
               Find a Service Provider
-            </a> 
-            <a href="" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            </a>
+            <a
+              href=""
+              class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
               How It Works
             </a>
           </div>
@@ -42,40 +49,79 @@
   <!-- Service Categories -->
   <section class="py-12 md:py-16">
     <div class="container px-4 md:px-6 mx-auto">
-      <div class="flex flex-col items-center justify-center space-y-4 text-center">
+      <div
+        class="flex flex-col items-center justify-center space-y-4 text-center"
+      >
         <div class="space-y-2">
-          <h2 class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Our Services</h2>
+          <h2
+            class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
+          >
+            Our Services
+          </h2>
           <p class="max-w-[600px] text-gray-600 md:text-xl">
             Browse through our wide range of home maintenance services
           </p>
         </div>
       </div>
-      
+
       <!-- Service Categories Grid -->
       <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {% for category in service_categories %}
-        <div class="group relative overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:shadow-lg">
+        <div
+          class="group relative overflow-hidden rounded-lg bg-white shadow-md transition-all duration-300 hover:shadow-lg"
+        >
           <div class="h-48 overflow-hidden">
-            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="h-full w-full object-cover transition-all duration-300 group-hover:scale-105">
+            <img
+              src="{{ category.image.url }}"
+              alt="{{ category.name }}"
+              class="h-full w-full object-cover transition-all duration-300 group-hover:scale-105"
+            />
           </div>
           <div class="p-4">
-            <h3 class="text-lg font-semibold text-gray-900">{{ category.name }}</h3>
+            <h3 class="text-lg font-semibold text-gray-900">
+              {{ category.name }}
+            </h3>
             <p class="mt-2 text-sm text-gray-600">{{ category.description }}</p>
-            <a href="{% url 'service-category' category.slug %}" class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800">
+            <a
+              href="{% url 'service-category' category.slug %}"
+              class="mt-4 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+            >
               View services
-              <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="ml-1 h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
               </svg>
             </a>
           </div>
         </div>
         {% endfor %}
       </div>
-      
+
       <div class="mt-8 flex justify-center">
-        <a href="" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          View All Services <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+        <a
+          href=""
+          class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          View All Services
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="ml-1 h-4 w-4"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
           </svg>
         </a>
       </div>
@@ -85,15 +131,21 @@
   <!-- Featured Providers -->
   <section class="bg-gray-100 py-12 md:py-16">
     <div class="container px-4 md:px-6 mx-auto">
-      <div class="flex flex-col items-center justify-center space-y-4 text-center">
+      <div
+        class="flex flex-col items-center justify-center space-y-4 text-center"
+      >
         <div class="space-y-2">
-          <h2 class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Top-Rated Providers</h2>
+          <h2
+            class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
+          >
+            Top-Rated Providers
+          </h2>
           <p class="max-w-[600px] text-gray-600 md:text-xl">
             Discover our highest-rated service professionals
           </p>
         </div>
       </div>
-      
+
       <!-- Featured Providers Grid -->
       <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {% for provider in featured_providers %}
@@ -101,33 +153,64 @@
           <div class="p-4">
             <div class="flex items-center">
               <div class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-full">
-                <img class="h-full w-full object-cover" src="{{ provider.user.profile_image.url }}" alt="{{ provider.user.get_full_name }}">
+                <img
+                  class="h-full w-full object-cover"
+                  src="{{ provider.user.profile_image.url }}"
+                  alt="{{ provider.user.get_full_name }}"
+                />
               </div>
               <div class="ml-4">
-                <h3 class="text-lg font-medium text-gray-900">{{ provider.user.get_full_name }}</h3>
+                <h3 class="text-lg font-medium text-gray-900">
+                  {{ provider.user.get_full_name }}
+                </h3>
                 <div class="flex items-center">
                   <span class="text-yellow-400">★★★★★</span>
-                  <span class="ml-2 text-sm text-gray-600">({{ provider.average_rating|default:"5.0" }})</span>
+                  <span class="ml-2 text-sm text-gray-600"
+                    >({{ provider.average_rating|default:"5.0" }})</span
+                  >
                 </div>
-                <p class="text-sm text-gray-500">{{ provider.service_types }}</p>
+                <p class="text-sm text-gray-500">
+                  {{ provider.service_types }}
+                </p>
               </div>
             </div>
             <div class="mt-4">
-              <p class="text-sm text-gray-600">{{ provider.bio|truncatechars:100 }}</p>
+              <p class="text-sm text-gray-600">
+                {{ provider.bio|truncatechars:100 }}
+              </p>
             </div>
             <div class="mt-4 flex justify-between">
-              <span class="text-sm font-medium text-gray-900">From ${{ provider.hourly_rate }}/hr</span>
-              <a href="{% url 'provider-detail' provider.id %}" class="text-sm font-medium text-blue-600 hover:text-blue-800">View Profile</a>
+              <span class="text-sm font-medium text-gray-900"
+                >From ${{ provider.hourly_rate }}/hr</span
+              >
+              <a
+                href="{% url 'provider-detail' provider.id %}"
+                class="text-sm font-medium text-blue-600 hover:text-blue-800"
+                >View Profile</a
+              >
             </div>
           </div>
         </div>
         {% endfor %}
       </div>
-      
+
       <div class="mt-8 flex justify-center">
-        <a href="" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-          Browse All Providers <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+        <a
+          href=""
+          class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Browse All Providers
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="ml-1 h-4 w-4"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
           </svg>
         </a>
       </div>
@@ -137,38 +220,56 @@
   <!-- How It Works -->
   <section class="py-12 md:py-16">
     <div class="container px-4 md:px-6 mx-auto">
-      <div class="flex flex-col items-center justify-center space-y-4 text-center">
+      <div
+        class="flex flex-col items-center justify-center space-y-4 text-center"
+      >
         <div class="space-y-2">
-          <h2 class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">How HomeFix Works</h2>
+          <h2
+            class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
+          >
+            How HomeFix Works
+          </h2>
           <p class="max-w-[600px] text-gray-600 md:text-xl">
             Book a service in just a few simple steps
           </p>
         </div>
       </div>
-      
+
       <!-- How It Works Steps -->
       <div class="mt-10">
         <div class="grid gap-8 md:grid-cols-3">
           <div class="flex flex-col items-center text-center">
-            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <div
+              class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600"
+            >
               <span class="text-xl font-bold">1</span>
             </div>
             <h3 class="text-lg font-medium text-gray-900">Choose a Service</h3>
-            <p class="mt-2 text-gray-600">Browse our categories and select the service you need.</p>
+            <p class="mt-2 text-gray-600">
+              Browse our categories and select the service you need.
+            </p>
           </div>
           <div class="flex flex-col items-center text-center">
-            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <div
+              class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600"
+            >
               <span class="text-xl font-bold">2</span>
             </div>
             <h3 class="text-lg font-medium text-gray-900">Select a Provider</h3>
-            <p class="mt-2 text-gray-600">Compare profiles, ratings, and prices to find your perfect match.</p>
+            <p class="mt-2 text-gray-600">
+              Compare profiles, ratings, and prices to find your perfect match.
+            </p>
           </div>
           <div class="flex flex-col items-center text-center">
-            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+            <div
+              class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600"
+            >
               <span class="text-xl font-bold">3</span>
             </div>
             <h3 class="text-lg font-medium text-gray-900">Book & Relax</h3>
-            <p class="mt-2 text-gray-600">Schedule an appointment and let the professional handle the rest.</p>
+            <p class="mt-2 text-gray-600">
+              Schedule an appointment and let the professional handle the rest.
+            </p>
           </div>
         </div>
       </div>
@@ -178,18 +279,31 @@
   <!-- CTA Section -->
   <section class="bg-blue-600 py-12 md:py-16">
     <div class="container px-4 md:px-6 mx-auto">
-      <div class="flex flex-col items-center justify-center space-y-4 text-center text-white">
+      <div
+        class="flex flex-col items-center justify-center space-y-4 text-center text-white"
+      >
         <div class="space-y-2">
-          <h2 class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">Ready to Get Started?</h2>
+          <h2
+            class="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
+          >
+            Ready to Get Started?
+          </h2>
           <p class="max-w-[600px] md:text-xl">
-            Join thousands of satisfied homeowners who trust HomeFix for their maintenance needs
+            Join thousands of satisfied homeowners who trust HomeFix for their
+            maintenance needs
           </p>
         </div>
         <div class="flex flex-col gap-2 min-[400px]:flex-row">
-          <a href="{% url 'register' %}" class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-blue-600 shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600">
+          <a
+            href="{% url 'register' %}"
+            class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-blue-600 shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+          >
             Sign Up Now
           </a>
-          <a href="" class="inline-flex items-center justify-center rounded-md border border-white px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-white hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600">
+          <a
+            href=""
+            class="inline-flex items-center justify-center rounded-md border border-white px-6 py-3 text-sm font-medium text-white shadow-sm hover:bg-white hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600"
+          >
             Find a Provider
           </a>
         </div>

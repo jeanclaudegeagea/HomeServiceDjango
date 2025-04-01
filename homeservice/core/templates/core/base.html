@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Home Service App{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
   </head>
   <body>
     <!-- Navbar - shown on all pages except login/register -->
@@ -16,87 +23,145 @@
         <div class="flex justify-between h-16">
           <!-- Left side - App Name/Home -->
           <div class="flex items-center">
-            <a href="{% url 'home' %}" class="text-xl font-semibold text-gray-900">
-              {% if request.user.is_authenticated %}
-                Home Service App
-              {% else %}
-                Home Service App
-              {% endif %}
+            <a
+              href="{% url 'home' %}"
+              class="text-xl font-semibold text-gray-900"
+            >
+              {% if request.user.is_authenticated %} Home Service App {% else %}
+              Home Service App {% endif %}
             </a>
           </div>
 
           <!-- Right side - Navigation Links -->
           <div class="flex items-center space-x-4">
             {% if request.user.is_authenticated %}
-              <!-- Authenticated User Links -->
-              <a href="{% url 'home' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Home</a>
-              <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
-              <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Services</a>
-              
-              <!-- Notification Bell -->
-              <button class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
-                <span class="sr-only">Notifications</span>
-                <i class="fas fa-bell"></i>
-              </button>
-              
-              <!-- Profile Dropdown -->
-              <div class="relative ml-3">
-                <div>
-                  <button type="button" class="flex rounded-full bg-gray-800 text-sm focus:outline-none" id="user-menu-button">
-                    <span class="sr-only">Open user menu</span>
-                    {% if request.user.profile_picture %}
-                      <img class="h-8 w-8 rounded-full" src="{{ request.user.profile_picture.url }}" alt="">
-                    {% else %}
-                      <div class="h-8 w-8 rounded-full bg-gray-500 flex items-center justify-center text-white">
-                        {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
-                      </div>
-                    {% endif %}
-                  </button>
-                </div>
-                <!-- Dropdown menu -->
-                <div class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" id="user-menu">
-                  <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Your Profile</a>
-                  <form action="{% url 'logout' %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
-                      Sign out
-                    </button>
-                  </form>
-                </div>
+            <!-- Authenticated User Links -->
+            <a
+              href="{% url 'home' %}"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Home</a
+            >
+            <a
+              href="#"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Service Providers</a
+            >
+            <a
+              href="#"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Services</a
+            >
+
+            <!-- Notification Bell -->
+            <button
+              class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none"
+            >
+              <span class="sr-only">Notifications</span>
+              <i class="fas fa-bell"></i>
+            </button>
+
+            <!-- Profile Dropdown -->
+            <div class="relative ml-3">
+              <div>
+                <button
+                  type="button"
+                  class="flex rounded-full bg-gray-800 text-sm focus:outline-none"
+                  id="user-menu-button"
+                >
+                  <span class="sr-only">Open user menu</span>
+                  {% if request.user.profile_picture %}
+                  <img
+                    class="h-8 w-8 rounded-full"
+                    src="{{ request.user.profile_picture.url }}"
+                    alt=""
+                  />
+                  {% else %}
+                  <div
+                    class="h-8 w-8 rounded-full bg-gray-500 flex items-center justify-center text-white"
+                  >
+                    {{ request.user.first_name|first|upper }}{{
+                    request.user.last_name|first|upper }}
+                  </div>
+                  {% endif %}
+                </button>
               </div>
-              
+              <!-- Dropdown menu -->
+              <div
+                class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                role="menu"
+                id="user-menu"
+              >
+                <a
+                  href="{% url 'profile' %}"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  role="menuitem"
+                  >Your Profile</a
+                >
+                <form action="{% url 'logout' %}" method="post">
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    role="menuitem"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </div>
+            </div>
+
             {% else %}
-              <!-- Unauthenticated User Links -->
-              <a href="{% url 'home' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Home</a>
-              <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
-              <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Services</a>
-              <a href="{% url 'register' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Sign Up</a>
-              <a href="{% url 'login' %}" class="px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800">Sign In</a>
+            <!-- Unauthenticated User Links -->
+            <a
+              href="{% url 'home' %}"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Home</a
+            >
+            <a
+              href="#"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Service Providers</a
+            >
+            <a
+              href="#"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Services</a
+            >
+            <a
+              href="{% url 'register' %}"
+              class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >Sign Up</a
+            >
+            <a
+              href="{% url 'login' %}"
+              class="px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-md hover:bg-gray-800"
+              >Sign In</a
+            >
             {% endif %}
           </div>
         </div>
       </div>
     </nav>
-    {% endif %}
-
-    {% block content %}
+    {% endif %} {% block content %}
     <!-- Content will be inserted here by other templates -->
     {% endblock %}
 
     <script>
       // Profile dropdown toggle
-      document.getElementById('user-menu-button').addEventListener('click', function() {
-        const menu = document.getElementById('user-menu');
-        menu.classList.toggle('hidden');
-      });
+      document
+        .getElementById("user-menu-button")
+        .addEventListener("click", function () {
+          const menu = document.getElementById("user-menu");
+          menu.classList.toggle("hidden");
+        });
 
       // Close dropdown when clicking outside
-      document.addEventListener('click', function(event) {
-        const menu = document.getElementById('user-menu');
-        const button = document.getElementById('user-menu-button');
-        
+      document.addEventListener("click", function (event) {
+        const menu = document.getElementById("user-menu");
+        const button = document.getElementById("user-menu-button");
+
         if (!button.contains(event.target) && !menu.contains(event.target)) {
-          menu.classList.add('hidden');
+          menu.classList.add("hidden");
         }
       });
     </script>
