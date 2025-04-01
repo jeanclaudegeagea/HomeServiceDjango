@@ -6,8 +6,10 @@ from .forms import UserRegistrationForm, UserLoginForm
 from django.utils import timezone
 from .models import User, Customer, ServiceProvider, Specialization, Booking
 from .forms import ProfileImageForm  # We'll create this form
+from django.views.decorators.cache import never_cache
 
 
+@never_cache
 def register(request):
     if request.method == "POST":
         form = UserRegistrationForm(request.POST, request.FILES)
@@ -63,6 +65,7 @@ def register(request):
     return render(request, "accounts/register.html", {"form": form})
 
 
+@never_cache
 def login_view(request):
     if request.method == "POST":
         form = UserLoginForm(request.POST)
@@ -157,10 +160,12 @@ def provider_dashboard(request):
     return render(request, "accounts/provider_dashboard.html")
 
 
+@never_cache
 def base(request):
     return render(request, "core/base.html")
 
 
+@never_cache
 def home_view(request):
     context = {
         # 'service_categories': ServiceCategory.objects.all()[:6],
