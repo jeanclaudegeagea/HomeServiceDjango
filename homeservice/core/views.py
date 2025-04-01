@@ -5,7 +5,7 @@ from django.contrib import messages
 from .forms import UserRegistrationForm, UserLoginForm
 from django.utils import timezone
 from .models import User, Customer, ServiceProvider, Specialization, Booking
-from .forms import ProfileImageForm  # We'll create this form
+from .forms import ProfileImageForm, ChangePersonalInfoForm  # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 
@@ -115,6 +115,42 @@ def profile(request):
         if form.is_valid():
             form.save()
             return redirect("profile")  # Redirect to avoid duplicate form submissions
+    elif request.method == "POST" and "email" in request.POST:
+        form = ChangePersonalInfoForm(
+            request.POST, request.FILES, instance=request.user
+        )
+
+        if form.is_valid():
+            user = request.user
+            phone = form.cleaned_data.get("full_phone") or form.cleaned_data.get(
+                "phone"
+            )
+            user.email = form.cleaned_data["email"]
+            user.first_name = form.cleaned_data["first_name"]
+            user.last_name = form.cleaned_data["last_name"]
+            user.phone = phone
+            username = f"{user.first_name.lower()}{user.last_name.lower()}"
+            username_base = username
+            counter = 1
+
+            while User.objects.filter(username=username).exists():
+                username = f"{username_base}{counter}"
+                counter += 1
+
+            user.username = username
+
+            user.save()
+
+            messages.success(request, "Personal information updated successfully!")
+            return redirect("profile")
+
+        else:
+            print(form.errors)
+            messages.error(
+                request, "There was an error updating your personal information."
+            )
+
+        return redirect("profile")  # Redirect to avoid duplicate form submissions
     else:
         form = ProfileImageForm()
 

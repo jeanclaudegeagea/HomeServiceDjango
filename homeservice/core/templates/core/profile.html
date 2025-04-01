@@ -10,9 +10,9 @@ class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center 
 ></div>
 </div>
 
-<div class="container px-4 py-8 md:px-6 md:py-12 mx-auto hidden"
+<div class="container px-3 py-6 md:px-5 md:py-10 hidden"
 id="content">
-    <div class="grid gap-8 md:grid-cols-12">
+    <div class="grid gap-8 md:grid-cols-12 w-full">
         <!-- Sidebar -->
         <div class="md:col-span-3">
             <div class="bg-white shadow rounded-lg">
@@ -91,14 +91,11 @@ id="content">
             </div>
         </div>
 
-        <section id="settings">
-
-    </section>
-
-
-     
+        <section id="settings" class="md:col-span-9"></section> 
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
 <script>
     window.onload = function () {
@@ -123,17 +120,96 @@ id="content">
             fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
                 .then(response => response.json())
                 .then(data => {
+
                     // Get the container where the HTML will be injected
                     const container = document.getElementById("settings");
-
-                    console.log(typeof data)
                     // Inject the external HTML content into the container
                     container.innerHTML = data.html;
+
+                    if(Number(isCustomer) == 2){
+
+                    document.querySelectorAll('.menu-items li a').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            // Hide all sections
+                            document.querySelectorAll('#personal-info, #documents, #specializations, #account').forEach(section => {
+                                section.classList.add('hidden');
+                            });
+                            // Show the selected section
+                            const targetId = this.getAttribute('href').substring(1);
+                            document.getElementById(targetId).classList.remove('hidden');
+                            
+                            // Update active state in menu
+                            document.querySelectorAll('.menu-items a').forEach(item => {
+                                item.classList.remove('bg-white');
+                                item.classList.add('text-[#878088]')
+                            });
+                            this.classList.add('bg-white');
+                            this.classList.remove('text-[#878088]')
+                        });
+                    });
+                    }
+                    const phoneInput = document.getElementById("id_phone");
+                    const iti = window.intlTelInput(phoneInput, {
+                    utilsScript:
+                        "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+                    preferredCountries: [
+                        "us",
+                        "gb",
+                        "fr",
+                        "de",
+                        "it",
+                        "es",
+                        "ae",
+                        "sa",
+                        "in",
+                        "jp",
+                    ],
+                    separateDialCode: true,
+                    initialCountry: "auto",
+                    geoIpLookup: function (callback) {
+                        fetch("https://ipapi.co/json/")
+                        .then((res) => res.json())
+                        .then((data) => callback(data.country_code))
+                        .catch(() => callback("us"));
+                    },
+                    })
+                    document
+                    .getElementById("change-personal-info")
+                    .addEventListener("submit", function (e) {
+                        const fullPhone = iti.getNumber();
+                        document.getElementById("full_phone").value = fullPhone;
+
+                        const submitText = document.getElementById("submit-PI-text");
+                        const loading = document.getElementById("PI-loading");
+                        const submitButton = document.getElementById("submit-PI-btn");
+
+                        submitText.classList.add("hidden");
+                        loading.classList.remove("hidden");
+                        submitButton.disabled = true;
+                    });
                 })
                 .catch(error => {
                     console.error("Error loading the external HTML file: ", error);
-                });
-        
+                });   
     }
+    // function togglePassword(fieldId) {
+    //     const inputField = document.getElementById(fieldId);
+    //     const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+
+    //     if (inputField.type === "password") {
+    //       inputField.type = "text";
+    //       eyeIcon.innerHTML = `
+    //     <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
+    //     <line x1="1" y1="1" x2="23" y2="23"></line>
+    //   `;
+    //     } else {
+    //       inputField.type = "password";
+    //       eyeIcon.innerHTML = `
+    //     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+    //     <circle cx="12" cy="12" r="3"></circle>
+    //   `;
+    //     }
+    //   }
 </script>
 {% endblock %}
