@@ -7,7 +7,7 @@
         <div class="md:col-span-3">
             <div class="bg-white shadow rounded-lg">
                 <div class="p-6 flex flex-row items-center gap-4">
-                    <div class="cursor-pointer h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden ">
+                    <div class="cursor-pointer h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden relative">
                         {% if request.user.profile_image %}
                             <img src="{{ request.user.profile_image.url }}" alt="Profile" class="h-full w-full object-cover">
                         {% else %}
