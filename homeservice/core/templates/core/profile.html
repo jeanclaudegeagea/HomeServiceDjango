@@ -1,7 +1,17 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div class="container px-4 py-8 md:px-6 md:py-12 mx-auto">
+<div
+id="loading-auth"
+class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+>
+<div
+  class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
+></div>
+</div>
+
+<div class="container px-4 py-8 md:px-6 md:py-12 mx-auto hidden"
+id="content">
     <div class="grid gap-8 md:grid-cols-12">
         <!-- Sidebar -->
         <div class="md:col-span-3">
@@ -91,6 +101,23 @@
 </div>
 
 <script>
+    window.onload = function () {
+        const isAuthenticated =
+          "{{ request.user.is_authenticated|yesno:'true,false' }}";
+        const loadingElement = document.getElementById("loading-auth");
+        const contentElement = document.getElementById("content");
+
+        if (isAuthenticated === "true") {
+            loadingElement.style.display = "none";
+            contentElement.style.display = "flex";
+        } else {
+          if (!window.location.href.includes("home")) {
+            window.location.href = "/home";
+          }
+        }
+      };
+
+
     const toggleSettings = ()=> {
         const isCustomer = "{{request.user.role}}"
             fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
@@ -106,9 +133,6 @@
                 .catch(error => {
                     console.error("Error loading the external HTML file: ", error);
                 });
-        
-
-
         
     }
 </script>
