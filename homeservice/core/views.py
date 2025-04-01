@@ -104,6 +104,7 @@ def signup_from_home(request):
     return redirect("register")
 
 
+@never_cache
 def profile(request):
     active_tab = request.GET.get("tab", "upcoming")
 
@@ -114,43 +115,49 @@ def profile(request):
             form.save()
             return redirect("profile")  # Redirect to avoid duplicate form submissions
     else:
-        form = ProfileImageForm(instance=request.user)
+        form = ProfileImageForm()
 
     # Initialize empty querysets
     upcoming_bookings = []
     past_bookings = []
 
-    if request.user.role == User.CUSTOMER:
-        # Customer view
-        customer = Customer.objects.get(user=request.user)
-        upcoming_bookings = Booking.objects.filter(
-            customer=customer,
-            status__in=["pending", "confirmed"],
-            date__gte=timezone.now().date(),
-        ).order_by("date", "time")[:5]
+    if hasattr(request.user, "role"):
+        if request.user.role == User.CUSTOMER:
+            # Customer view
+            customer = Customer.objects.get(user=request.user)
+            upcoming_bookings = Booking.objects.filter(
+                customer=customer,
+                status__in=["pending", "confirmed"],
+                date__gte=timezone.now().date(),
+            ).order_by("date", "time")[:5]
 
-        past_bookings = Booking.objects.filter(
-            customer=customer, status="completed", date__lt=timezone.now().date()
-        ).order_by("-date", "-time")[:5]
+            past_bookings = Booking.objects.filter(
+                customer=customer, status="completed", date__lt=timezone.now().date()
+            ).order_by("-date", "-time")[:5]
 
-    elif request.user.role == User.SERVICE_PROVIDER:
-        # Service Provider view
-        provider = ServiceProvider.objects.get(user=request.user)
-        upcoming_bookings = Booking.objects.filter(
-            provider=provider,
-            status__in=["pending", "confirmed"],
-            date__gte=timezone.now().date(),
-        ).order_by("date", "time")[:5]
+        elif request.user.role == User.SERVICE_PROVIDER:
+            # Service Provider view
+            provider = ServiceProvider.objects.get(user=request.user)
+            upcoming_bookings = Booking.objects.filter(
+                provider=provider,
+                status__in=["pending", "confirmed"],
+                date__gte=timezone.now().date(),
+            ).order_by("date", "time")[:5]
 
-        past_bookings = Booking.objects.filter(
-            provider=provider, status="completed", date__lt=timezone.now().date()
-        ).order_by("-date", "-time")[:5]
+            past_bookings = Booking.objects.filter(
+                provider=provider, status="completed", date__lt=timezone.now().date()
+            ).order_by("-date", "-time")[:5]
+
+    isProvider = False
+
+    if hasattr(request.user, "role"):
+        isProvider = request.user.role == User.SERVICE_PROVIDER
 
     context = {
         "active_tab": active_tab,
         "upcoming_bookings": upcoming_bookings,
         "past_bookings": past_bookings,
-        "is_provider": request.user.role == User.SERVICE_PROVIDER,
+        "is_provider": isProvider,
         "form": form,  # Add the form to context
     }
 

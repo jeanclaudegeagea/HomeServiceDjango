@@ -13,11 +13,14 @@
                         {% else %}
                             {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
                         {% endif %}
+                        {% if request.user.role %}
                         <form method="post" enctype="multipart/form-data" class="absolute inset-0 opacity-0">
                             {% csrf_token %}
                             <input type="file" name="profile_image" accept="image/*" class="w-full h-full cursor-pointer" 
                                    onchange="this.form.submit()">
                         </form>
+                        {% endif %}
+
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold">{{ request.user.get_full_name }}</h2>
