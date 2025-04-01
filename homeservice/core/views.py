@@ -99,6 +99,11 @@ def logout_view(request):
     return redirect("login")
 
 
+def signup_from_home(request):
+    logout(request)
+    return redirect("register")
+
+
 def profile(request):
     active_tab = request.GET.get("tab", "upcoming")
 
