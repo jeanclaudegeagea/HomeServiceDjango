@@ -5,7 +5,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <title>HomeFix - Register</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link
       rel="stylesheet"
@@ -67,7 +72,7 @@
                 <select
                   name="role"
                   id="id_role"
-                  class="input input-bordered w-full"
+                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
                   required
                 >
                   <option value="" disabled selected>
@@ -91,7 +96,7 @@
                     name="first_name"
                     type="text"
                     placeholder="John"
-                    class="input input-bordered w-full"
+                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
                     required
                   />
                 </div>
@@ -108,7 +113,7 @@
                     name="last_name"
                     type="text"
                     placeholder="Doe"
-                    class="input input-bordered w-full"
+                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
                     required
                   />
                 </div>
@@ -127,7 +132,7 @@
                     name="email"
                     type="email"
                     placeholder="name@example.com"
-                    class="input input-bordered w-full"
+                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
                     required
                   />
                 </div>
@@ -143,7 +148,7 @@
                     id="id_phone"
                     name="phone"
                     type="tel"
-                    class="input input-bordered w-full"
+                    class="input input-bordered w-full border-gray-300 bg-white text-black"
                   />
                   <input type="hidden" id="full_phone" name="full_phone" />
                 </div>
@@ -163,7 +168,7 @@
                       name="password1"
                       type="password"
                       placeholder="••••••••"
-                      class="input input-bordered w-full pr-10"
+                      class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
                       required
                     />
                     <button
@@ -205,7 +210,7 @@
                       name="password2"
                       type="password"
                       placeholder="••••••••"
-                      class="input input-bordered w-full pr-10"
+                      class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
                       required
                     />
                     <button
@@ -286,21 +291,18 @@
 
     <script>
       window.onload = function () {
-        // Check if the user is authenticated by looking at the Django context
         const isAuthenticated =
           "{{ request.user.is_authenticated|yesno:'true,false' }}";
         const loadingElement = document.getElementById("loading-auth");
         const contentElement = document.getElementById("content");
 
         if (isAuthenticated === "true") {
-          // If the user is authenticated, redirect to the home page
           if (!window.location.href.includes("home")) {
-            window.location.href = "/home"; // Redirect to login page
+            window.location.href = "/home"; 
           }
         } else {
-          // If the user is not authenticated, ensure the user is redirected to login
           loadingElement.style.display = "none";
-          contentElement.style.display = "flex"; // Show content
+          contentElement.style.display = "flex"; 
         }
       };
 
@@ -332,7 +334,6 @@
           },
         });
 
-        // Store full phone number in hidden field before form submission
         document
           .getElementById("signup-form")
           .addEventListener("submit", function (e) {

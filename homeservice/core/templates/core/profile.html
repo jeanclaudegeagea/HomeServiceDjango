@@ -1,0 +1,302 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container px-4 py-8 md:px-6 md:py-12 mx-auto">
+    <div class="grid gap-8 md:grid-cols-12">
+        <!-- Sidebar -->
+        <div class="md:col-span-3">
+            <div class="bg-white shadow rounded-lg">
+                <div class="p-6 flex flex-row items-center gap-4">
+                    <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden">
+                        {% if request.user.profile_image %}
+                            <img src="{{ request.user.profile_image.url }}" alt="Profile" class="h-full w-full object-cover">
+                        {% else %}
+                            {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold">{{ request.user.get_full_name }}</h2>
+                        <p class="text-gray-500 text-sm">{{ request.user.email }}</p>
+                        <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full 
+                            {% if request.user.role == request.user.CUSTOMER %}bg-blue-100 text-blue-800
+                            {% else %}bg-green-100 text-green-800{% endif %}">
+                            {% if request.user.role == request.user.CUSTOMER %}Customer
+                            {% else %}Service Provider{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="border-t border-gray-200">
+                    <nav class="flex flex-col">
+                        <a href="{% url 'profile' %}" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2 {% if request.path == '/profile/' %}bg-gray-50 font-medium{% endif %}">
+                            <i class="fas fa-home"></i>
+                            Dashboard
+                        </a>
+                        <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-calendar"></i>
+                            Bookings
+                        </a>
+                        <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-comment"></i>
+                            Messages
+                        </a>
+                        {% if is_provider %}
+                        <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-file-invoice"></i>
+                            Services
+                        </a>
+                        {% else %}
+                        <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-file-invoice"></i>
+                            Invoices
+                        </a>
+                        {% endif %}
+                        <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-bell"></i>
+                            Notifications
+                        </a>
+                        <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-cog"></i>
+                            Settings
+                        </a>
+                    </nav>
+                </div>
+                <div class="border-t border-gray-200 p-0">
+                    <form action="{% url 'logout' %}" method="post" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full px-6 py-4 text-left text-red-500 hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Sign Out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="md:col-span-9">
+            <div class="mb-8">
+                <h1 class="mb-2 text-3xl font-bold">Dashboard</h1>
+                <p class="text-gray-500">Manage your {% if is_provider %}services and appointments{% else %}bookings and account{% endif %}</p>
+            </div>
+
+            <div class="grid gap-6">
+                <!-- Bookings/Appointments -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-xl font-semibold">Your {% if is_provider %}Appointments{% else %}Bookings{% endif %}</h2>
+                        <p class="text-gray-500">View and manage your service {% if is_provider %}appointments{% else %}bookings{% endif %}</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex border-b">
+                            <a href="?tab=upcoming" class="px-4 py-2 font-medium {% if active_tab == 'upcoming' %}text-blue-600 border-b-2 border-blue-600{% else %}text-gray-500{% endif %}">
+                                Upcoming
+                            </a>
+                            <a href="?tab=past" class="px-4 py-2 font-medium {% if active_tab == 'past' %}text-blue-600 border-b-2 border-blue-600{% else %}text-gray-500{% endif %}">
+                                Past
+                            </a>
+                        </div>
+                        
+                        {% if active_tab == 'upcoming' %}
+                            {% if upcoming_bookings %}
+                                <div class="space-y-4 mt-4">
+                                    {% for booking in upcoming_bookings %}
+                                    <div class="flex items-center justify-between rounded-lg border p-4">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                {% if is_provider %}
+                                                    {% if booking.customer.user.profile_image %}
+                                                        <img src="{{ booking.customer.user.profile_image.url }}" class="h-full w-full object-cover">
+                                                    {% else %}
+                                                        {{ booking.customer.user.first_name|first|upper }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% if booking.provider.user.profile_image %}
+                                                        <img src="{{ booking.provider.user.profile_image.url }}" class="h-full w-full object-cover">
+                                                    {% else %}
+                                                        {{ booking.provider.user.first_name|first|upper }}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h3 class="font-medium">
+                                                    {% if is_provider %}
+                                                        {{ booking.customer.user.get_full_name }}
+                                                    {% else %}
+                                                        {{ booking.provider.user.get_full_name }}
+                                                    {% endif %}
+                                                </h3>
+                                                <p class="text-sm text-gray-500">{{ booking.service.name }}</p>
+                                                <div class="mt-1 flex items-center text-sm text-gray-500">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <span>{{ booking.date }}</span>
+                                                    <i class="fas fa-clock ml-2 mr-1"></i>
+                                                    <span>{{ booking.time }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 text-xs rounded-full 
+                                                {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                                {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                {{ booking.status|title }}
+                                            </span>
+                                            {% if is_provider %}
+                                                {% if booking.status == 'pending' %}
+                                                    <button class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
+                                                        Confirm
+                                                    </button>
+                                                {% endif %}
+                                            {% endif %}
+                                            <button class="px-3 py-1 text-sm bg-white border rounded-md hover:bg-gray-50">
+                                                Reschedule
+                                            </button>
+                                            <button class="px-3 py-1 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="flex flex-col items-center justify-center py-8 text-center">
+                                    <i class="fas fa-calendar text-gray-400 text-4xl mb-4"></i>
+                                    <h3 class="mb-1 text-lg font-medium">No Upcoming {% if is_provider %}Appointments{% else %}Bookings{% endif %}</h3>
+                                    <p class="mb-4 text-gray-500">You don't have any upcoming service {% if is_provider %}appointments{% else %}bookings{% endif %}.</p>
+                                    {% if not is_provider %}
+                                    <a href="#" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                        Book a Service
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            {% if past_bookings %}
+                                <div class="space-y-4 mt-4">
+                                    {% for booking in past_bookings %}
+                                    <div class="flex items-center justify-between rounded-lg border p-4">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                {% if is_provider %}
+                                                    {% if booking.customer.user.profile_image %}
+                                                        <img src="{{ booking.customer.user.profile_image.url }}" class="h-full w-full object-cover">
+                                                    {% else %}
+                                                        {{ booking.customer.user.first_name|first|upper }}
+                                                    {% endif %}
+                                                {% else %}
+                                                    {% if booking.provider.user.profile_image %}
+                                                        <img src="{{ booking.provider.user.profile_image.url }}" class="h-full w-full object-cover">
+                                                    {% else %}
+                                                        {{ booking.provider.user.first_name|first|upper }}
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h3 class="font-medium">
+                                                    {% if is_provider %}
+                                                        {{ booking.customer.user.get_full_name }}
+                                                    {% else %}
+                                                        {{ booking.provider.user.get_full_name }}
+                                                    {% endif %}
+                                                </h3>
+                                                <p class="text-sm text-gray-500">{{ booking.service.name }}</p>
+                                                <div class="mt-1 flex items-center text-sm text-gray-500">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <span>{{ booking.date }}</span>
+                                                    <i class="fas fa-clock ml-2 mr-1"></i>
+                                                    <span>{{ booking.time }}</span>
+                                                </div>
+                                                {% if booking.rating %}
+                                                <div class="mt-1 flex items-center">
+                                                    {% for i in "12345" %}
+                                                        <i class="fas fa-star {% if forloop.counter <= booking.rating %}text-yellow-400{% else %}text-gray-300{% endif %}"></i>
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                                                Completed
+                                            </span>
+                                            <button class="px-3 py-1 text-sm bg-white border rounded-md hover:bg-gray-50">
+                                                View Details
+                                            </button>
+                                            {% if not is_provider %}
+                                            <button class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                                Book Again
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="flex flex-col items-center justify-center py-8 text-center">
+                                    <i class="fas fa-file-alt text-gray-400 text-4xl mb-4"></i>
+                                    <h3 class="mb-1 text-lg font-medium">No Past {% if is_provider %}Appointments{% else %}Bookings{% endif %}</h3>
+                                    <p class="mb-4 text-gray-500">You don't have any past service {% if is_provider %}appointments{% else %}bookings{% endif %}.</p>
+                                    {% if not is_provider %}
+                                    <a href="#" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                        Book a Service
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="border-t border-gray-200 p-4 flex justify-between">
+                        <a href="#" class="px-4 py-2 bg-white border rounded-md hover:bg-gray-50">
+                            View All {% if is_provider %}Appointments{% else %}Bookings{% endif %}
+                        </a>
+                        {% if not is_provider %}
+                        <a href="#" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Book a New Service
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold">Notifications</h2>
+                            <p class="text-gray-500">Stay updated with your service {% if is_provider %}appointments{% else %}bookings{% endif %}</p>
+                        </div>
+                        <button class="px-3 py-1 text-sm bg-white border rounded-md hover:bg-gray-50">
+                            Mark All as Read
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        {% if notifications %}
+                            <div class="space-y-4">
+                                {% for notification in notifications %}
+                                <div class="rounded-lg border p-4 {% if not notification.read %}bg-blue-50{% endif %}">
+                                    <div class="mb-1 flex items-center justify-between">
+                                        <h3 class="font-medium">{{ notification.title }}</h3>
+                                        <span class="text-xs text-gray-500">{{ notification.created_at|timesince }} ago</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">{{ notification.message }}</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="flex flex-col items-center justify-center py-8 text-center">
+                                <i class="fas fa-bell text-gray-400 text-4xl mb-4"></i>
+                                <h3 class="mb-1 text-lg font-medium">No Notifications</h3>
+                                <p class="text-gray-500">You don't have any notifications at the moment.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="border-t border-gray-200 p-4">
+                        <button class="w-full px-4 py-2 bg-white border rounded-md hover:bg-gray-50">
+                            View All Notifications
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
