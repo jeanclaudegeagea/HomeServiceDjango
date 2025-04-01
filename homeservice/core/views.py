@@ -4,8 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm, UserLoginForm
 from django.utils import timezone
-from .models import User, Customer, ServiceProvider, Specialization, Booking
-from .forms import ProfileImageForm, ChangePersonalInfoForm  # We'll create this form
+from .models import User, Customer, ServiceProvider, Booking, ServiceProviderDocument
+from .forms import ProfileImageForm, ChangePersonalInfoForm , ServiceProviderDocumentForm # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 
@@ -104,6 +104,18 @@ def signup_from_home(request):
     logout(request)
     return redirect("register")
 
+@login_required
+def delete_document(request, doc_id):
+    if request.method == "POST":
+        try:
+            document = ServiceProviderDocument.objects.get(id=doc_id)
+            provider = ServiceProvider.objects.get(user=request.user)
+            if document in provider.documents.all():
+                document.delete()
+                messages.success(request, "Document deleted successfully!")
+        except ServiceProviderDocument.DoesNotExist:
+            messages.error(request, "Document not found!")
+    return redirect("profile")
 
 @never_cache
 def profile(request):
@@ -154,6 +166,25 @@ def profile(request):
     else:
         form = ProfileImageForm()
 
+    document_form = None
+    documents = None
+    if request.user.role == User.SERVICE_PROVIDER:
+        if request.method == "POST" and "document_type" in request.POST:
+            document_form = ServiceProviderDocumentForm(request.POST, request.FILES)
+            if document_form.is_valid():
+                document = document_form.save(commit=False)
+                provider = ServiceProvider.objects.get(user=request.user)
+                document.save()
+                provider.documents.add(document)
+                messages.success(request, "Document uploaded successfully!")
+                return redirect("profile")
+        else:
+            document_form = ServiceProviderDocumentForm()
+
+        provider = ServiceProvider.objects.get(user=request.user)
+        print(provider.documents.all())
+        documents = provider.documents.all()
+
     # Initialize empty querysets
     upcoming_bookings = []
     past_bookings = []
@@ -196,6 +227,8 @@ def profile(request):
         "past_bookings": past_bookings,
         "is_provider": isProvider,
         "form": form,  # Add the form to context
+        "documents": documents,
+        "document_form": document_form,
     }
 
     return render(request, "core/profile.html", context)

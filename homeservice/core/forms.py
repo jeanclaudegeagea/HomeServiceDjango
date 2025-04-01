@@ -1,8 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
 from django.core.exceptions import ValidationError
-
+from .models import User, ServiceProviderDocument  # Make sure ServiceProviderDocument is imported correctly
 
 class UserRegistrationForm(UserCreationForm):
     ROLE_CHOICES = [
@@ -66,7 +65,7 @@ class UserLoginForm(forms.Form):
 
 class ProfileImageForm(forms.ModelForm):
     class Meta:
-        model = User  # or Profile
+        model = User
         fields = ["profile_image"]
 
     def clean_profile_image(self):
@@ -77,3 +76,13 @@ class ProfileImageForm(forms.ModelForm):
             return image
         else:
             raise ValidationError("Couldn't read uploaded image")
+
+
+class ServiceProviderDocumentForm(forms.ModelForm):
+    class Meta:
+        model = ServiceProviderDocument
+        fields = ['document_type', 'file', 'issue_date', 'expiry_date']
+        widgets = {
+            'issue_date': forms.DateInput(attrs={'type': 'date'}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+        }
