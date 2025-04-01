@@ -49,7 +49,6 @@ class Customer(models.Model):
 class ServiceProvider(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     years_of_experience = models.PositiveIntegerField(default=0)
-    is_verified = models.BooleanField(default=False)
     documents = models.ManyToManyField(ServiceProviderDocument, blank=True)
     specialization = models.ManyToManyField(Specialization)
 
@@ -90,3 +89,90 @@ class Service(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ("booking", "Booking Update"),
+        ("system", "System Notification"),
+        ("promotion", "Promotional"),
+    ]
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=100)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    related_booking = models.ForeignKey(
+        Booking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} - {self.user.get_full_name()}"
+
+
+class Review(models.Model):
+    booking = models.OneToOneField(
+        Booking, on_delete=models.CASCADE, related_name="review"
+    )
+    customer = models.ForeignKey(
+        Customer, on_delete=models.SET_NULL, null=True, related_name="reviews_given"
+    )
+    provider = models.ForeignKey(
+        ServiceProvider, on_delete=models.CASCADE, related_name="reviews_received"
+    )
+    service = models.ForeignKey(
+        Service, on_delete=models.SET_NULL, null=True, related_name="reviews"
+    )
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_approved = models.BooleanField(default=False)  # For moderation
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Review for {self.provider.user.get_full_name()} by {self.customer.user.get_full_name()}"
+
+
+class Rating(models.Model):
+    RATING_CHOICES = [
+        (1, "Poor"),
+        (2, "Fair"),
+        (3, "Good"),
+        (4, "Very Good"),
+        (5, "Excellent"),
+    ]
+
+    booking = models.OneToOneField(
+        Booking, on_delete=models.CASCADE, related_name="booking_rating"
+    )
+    customer = models.ForeignKey(
+        Customer, on_delete=models.SET_NULL, null=True, related_name="ratings_given"
+    )
+    provider = models.ForeignKey(
+        ServiceProvider, on_delete=models.CASCADE, related_name="ratings_received"
+    )
+    service = models.ForeignKey(
+        Service, on_delete=models.SET_NULL, null=True, related_name="ratings"
+    )
+    rating_value = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("booking", "customer", "provider")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.rating_value} stars for {self.provider.user.get_full_name()}"

@@ -1,0 +1,251 @@
+{% block content %}
+    <div class="container p-2">
+        <div class="flex flex-col  gap-4">
+            <!-- Sidebar Navigation -->
+            <div class="bg-white w-full">
+                <h1 class="text-2xl font-bold mb-5">Account Settings</h1>
+                <ul class="flex items-center  px-2 py-4 menu-items  menu-lg bg-[#f1f1f0] rounded-md">
+                    <li><a href="#personal-info" class="text-md bg-white"><i class="fas fa-user mr-2"></i> Personal Information</a></li>
+                    <li><a href="#documents"><i class="fas fa-file mr-2 text-md text-[#878088]"></i> Documents</a></li>
+                    <li><a href="#specializations"><i class="fas fa-star mr-2 text-md text-[#878088]"></i> Specializations</a></li>
+                    <li><a href="#account"><i class="fas fa-cog mr-2 text-md text-[#878088]"></i> Account</a></li>
+                </ul>
+            </div>
+
+            <hr/>
+
+            <div class="space-y-6">
+                <form method="post" id="change-personal-info">
+                {% csrf_token %}
+                
+                {% if messages %}
+                <div class="mb-4">
+                {% for message in messages %}
+                <div
+                    class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}"
+                >
+                    {{ message }}
+                </div>
+                {% endfor %}
+                </div>
+                {% endif %}
+
+                <div id="personal-info" class="bg-white p-3 rounded-lg ">
+                    <h2 class="text-2xl font-bold mb-4">Personal Information</h2>
+                    <p class="mb-5 text-md text-[#878088]">Update your personal details here.</p>
+                    
+                    <div class="space-y-4">
+                      <div class="flex items-center gap-2">
+                        <div class="space-y-1 w-[48%]">
+                            <label class="block text-lg font-medium text-gray-700"
+                            for="id_first_name"
+                            >First Name</label>
+                            <input 
+                            type="text" 
+                            class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                            id="id_first_name"
+                            name="first_name"
+                            required
+                            value="{{request.user.first_name}}"
+                            />
+                        </div>
+
+                        <div class="space-y-1 w-[48%]">
+                            <label class="block text-lg font-medium text-gray-700"
+                            for="id_last_name"
+                            >Last Name</label>
+                            <input 
+                            type="text" 
+                            class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                            id="id_last_name"
+                            name="last_name"
+                            required
+                            value="{{request.user.last_name}}"
+                            />
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2">
+                        <div class="space-y-1 w-[48%]">
+                            <label class="block text-lg font-medium text-gray-700"
+                            for="id_phone"
+                            >Phone Number</label>
+                            <input
+                            id="id_phone"
+                            name="phone"
+                            type="tel"
+                            class="input input-bordered w-full border-gray-300 bg-white text-black"
+                            value="{{request.user.phone}}"
+                            />
+                            <input type="hidden" id="full_phone" name="full_phone" />
+                        </div>
+
+                        <div class="space-y-1 w-[48%]">
+                          <label class="block text-lg font-medium text-gray-700"
+                          for="id_email"
+                          >Email</label>
+                          <input
+                            id="id_email"
+                            name="email"
+                            type="email"
+                            class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                            value="{{request.user.email}}"
+                            required
+                        />
+                        </div>
+                      </div>
+
+                      <!-- <div class="space-y-1 w-[48%]">
+                        <label class="block text-lg font-medium text-gray-700"
+                        for="id_password"
+                        >Password</label>
+                        <div class="relative">
+                        <input
+                            id="id_password"
+                            name="password"
+                            type="password"
+                            class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                        />
+                        <button
+                        type="button"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        onclick="togglePassword('id_password')"
+                      >
+                        <svg
+                          id="id_password-eye-icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
+                          ></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                      </button>
+                        </div>
+                      </div> -->
+
+                    </div>
+                    
+                    <div class="mt-8">
+                        <button 
+                        type="submit"
+                        class="flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                        id="submit-PI-btn"">
+                        <span id="submit-PI-text">Save Changes</span>
+                        <span id="PI-loading" class="hidden ml-2">
+                            <svg
+                              class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                class="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                stroke-width="4"
+                              ></circle>
+                              <path
+                                class="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          </span>
+                    </button>
+                    </div>
+                </div>
+                </form>
+
+
+                <!-- <div id="documents" class="bg-white p-6 rounded-lg shadow hidden">
+                    <h2 class="text-xl font-bold mb-4">Documents</h2>
+                    <p class="mb-6">Manage your professional documents here.</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="font-semibold mb-2">Upload New Document</h3>
+                            <input type="file" class="file-input file-input-bordered w-full max-w-xs" />
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold mb-2">Your Documents</h3>
+                            <ul class="space-y-2">
+                                <li class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span>Resume.pdf</span>
+                                    <button class="btn btn-ghost btn-sm"><i class="fas fa-download"></i></button>
+                                </li>
+                                <li class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <span>Certificate.pdf</span>
+                                    <button class="btn btn-ghost btn-sm"><i class="fas fa-download"></i></button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div> -->
+
+
+
+                <!-- <div id="specializations" class="bg-white p-6 rounded-lg shadow hidden">
+                    <h2 class="text-xl font-bold mb-4">Specializations</h2>
+                    <p class="mb-6">Manage your professional specializations here.</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="font-semibold mb-2">Add Specialization</h3>
+                            <select class="select select-bordered w-full max-w-xs">
+                                <option disabled selected>Select a specialization</option>
+                                <option>Web Development</option>
+                                <option>Mobile Development</option>
+                                <option>UI/UX Design</option>
+                                <option>Data Science</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold mb-2">Your Specializations</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <div class="badge badge-primary gap-2">
+                                    Web Development
+                                    <button class="text-xs"><i class="fas fa-times"></i></button>
+                                </div>
+                                <div class="badge badge-primary gap-2">
+                                    Mobile Development
+                                    <button class="text-xs"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+
+<!-- 
+                <div id="account" class="bg-white p-6 rounded-lg shadow hidden">
+                    <h2 class="text-xl font-bold mb-4">Account Management</h2>
+                    <p class="mb-6">Manage your account settings here.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="border border-error rounded-lg p-4">
+                            <h3 class="font-semibold text-error mb-2">Danger Zone</h3>
+                            <p class="mb-4">Once you delete your account, there is no going back. Please be certain.</p>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="checkbox checkbox-error" />
+                                <span class="label-text">Delete Account</span>
+                            </label>
+                        </div>
+                    </div>
+                </div> -->
+
+            </div> 
+        </div>
+    </div>
+{% endblock %}
