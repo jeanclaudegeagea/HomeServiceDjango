@@ -69,81 +69,79 @@ def login_view(request):
         if form.is_valid():
             email = form.cleaned_data.get("email")
             password = form.cleaned_data.get("password")
+            user = User.objects.get(email=email)
 
-            try:
-                user = User.objects.get(email=email)
-                user = authenticate(request, username=user.username, password=password)
-                login(request, user)
-            except User.DoesNotExist:
-                user = None
+            # Attempt to authenticate user
+            user = authenticate(request, username=user.username, password=password)
 
             if user is not None:
                 login(request, user)
-                return redirect("home")  
+                return redirect("home")
             else:
+                # Authentication failed
                 messages.error(request, "Invalid email or password")
-
-        return render(request, "accounts/login.html", {"form": form})
+        else:
+            # Form is not valid
+            messages.error(request, "Invalid email or password")
 
     else:
         form = UserLoginForm()
 
     return render(request, "accounts/login.html", {"form": form})
 
+
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect("login")
+
 
 def profile(request):
-    active_tab = request.GET.get('tab', 'upcoming')
-    
+    active_tab = request.GET.get("tab", "upcoming")
+
     # Initialize empty querysets
     upcoming_bookings = []
     past_bookings = []
-    
+
     if request.user.role == User.CUSTOMER:
         # Customer view
         customer = Customer.objects.get(user=request.user)
         upcoming_bookings = Booking.objects.filter(
             customer=customer,
-            status__in=['pending', 'confirmed'],
-            date__gte=timezone.now().date()
-        ).order_by('date', 'time')[:5]
-        
+            status__in=["pending", "confirmed"],
+            date__gte=timezone.now().date(),
+        ).order_by("date", "time")[:5]
+
         past_bookings = Booking.objects.filter(
-            customer=customer,
-            status='completed',
-            date__lt=timezone.now().date()
-        ).order_by('-date', '-time')[:5]
-        
+            customer=customer, status="completed", date__lt=timezone.now().date()
+        ).order_by("-date", "-time")[:5]
+
     elif request.user.role == User.SERVICE_PROVIDER:
         # Service Provider view
         provider = ServiceProvider.objects.get(user=request.user)
         upcoming_bookings = Booking.objects.filter(
             provider=provider,
-            status__in=['pending', 'confirmed'],
-            date__gte=timezone.now().date()
-        ).order_by('date', 'time')[:5]
-        
+            status__in=["pending", "confirmed"],
+            date__gte=timezone.now().date(),
+        ).order_by("date", "time")[:5]
+
         past_bookings = Booking.objects.filter(
-            provider=provider,
-            status='completed',
-            date__lt=timezone.now().date()
-        ).order_by('-date', '-time')[:5]
-    
+            provider=provider, status="completed", date__lt=timezone.now().date()
+        ).order_by("-date", "-time")[:5]
+
     # notifications = Notification.objects.filter(
     #     user=request.user
     # ).order_by('-created_at')[:5]
-    
+
     context = {
-        'active_tab': active_tab,
-        'upcoming_bookings': upcoming_bookings,
-        'past_bookings': past_bookings,
+        "active_tab": active_tab,
+        "upcoming_bookings": upcoming_bookings,
+        "past_bookings": past_bookings,
         # 'notifications': notifications,
-        'is_provider': request.user.role == User.SERVICE_PROVIDER,
+        "is_provider": request.user.role == User.SERVICE_PROVIDER,
     }
-    
-    return render(request, 'core/profile.html', context)
+
+    return render(request, "core/profile.html", context)
+
 
 def customer_dashboard(request):
     return render(request, "accounts/customer_dashboard.html")
@@ -162,4 +160,4 @@ def home_view(request):
         # 'service_categories': ServiceCategory.objects.all()[:6],
         # 'featured_providers': Provider.objects.filter(is_featured=True)[:3],
     }
-    return render(request, 'core/home.html', context)
+    return render(request, "core/home.html", context)
