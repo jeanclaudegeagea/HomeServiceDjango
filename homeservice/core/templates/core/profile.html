@@ -1,33 +1,29 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div
-id="loading-auth"
-class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
->
-<div
-  class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
-></div>
+<div id="loading-auth" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"></div>
 </div>
 
-<div class="container px-3 py-6 md:px-5 md:py-10 hidden"
-id="content">
+<div class="container px-3 py-6 md:px-5 md:py-10 hidden" id="content">
     <div class="grid gap-8 md:grid-cols-12 w-full">
         <!-- Sidebar -->
         <div class="md:col-span-3">
             <div class="bg-white shadow rounded-lg">
                 <div class="p-6 flex flex-row items-center gap-4">
-                    <div class="cursor-pointer h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden relative">
+                    <div
+                        class="cursor-pointer h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden relative">
                         {% if request.user.profile_image %}
-                            <img src="{{ request.user.profile_image.url }}" alt="Profile" class="h-full w-full object-cover">
+                        <img src="{{ request.user.profile_image.url }}" alt="Profile"
+                            class="h-full w-full object-cover">
                         {% else %}
-                            {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                        {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
                         {% endif %}
                         {% if request.user.role %}
                         <form method="post" enctype="multipart/form-data" class="absolute inset-0 opacity-0">
                             {% csrf_token %}
-                            <input type="file" name="profile_image" accept="image/*" class="w-full h-full cursor-pointer" 
-                                   onchange="this.form.submit()">
+                            <input type="file" name="profile_image" accept="image/*"
+                                class="w-full h-full cursor-pointer" onchange="this.form.submit()">
                         </form>
                         {% endif %}
 
@@ -45,7 +41,8 @@ id="content">
                 </div>
                 <div class="border-t border-gray-200">
                     <nav class="flex flex-col">
-                        <a href="{% url 'profile' %}" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2 {% if request.path == '/profile/' %}bg-gray-50 font-medium{% endif %}">
+                        <a href="{% url 'profile' %}"
+                            class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2 {% if request.path == '/profile/' %}bg-gray-50 font-medium{% endif %}">
                             <i class="fas fa-home"></i>
                             Dashboard
                         </a>
@@ -72,8 +69,7 @@ id="content">
                             <i class="fas fa-bell"></i>
                             Notifications
                         </a>
-                        <a 
-                         class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                        <a class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
                             <i class="fas fa-cog"></i>
                             <button onclick="toggleSettings()">Settings</button>
                         </a>
@@ -82,7 +78,8 @@ id="content">
                 <div class="border-t border-gray-200 p-0">
                     <form action="{% url 'logout' %}" method="post" class="w-full">
                         {% csrf_token %}
-                        <button type="submit" class="w-full px-6 py-4 text-left text-red-500 hover:bg-gray-50 flex items-center gap-2">
+                        <button type="submit"
+                            class="w-full px-6 py-4 text-left text-red-500 hover:bg-gray-50 flex items-center gap-2">
                             <i class="fas fa-sign-out-alt"></i>
                             Sign Out
                         </button>
@@ -91,7 +88,7 @@ id="content">
             </div>
         </div>
 
-        <section id="settings" class="md:col-span-9"></section> 
+        <section id="settings" class="md:col-span-9"></section>
     </div>
 </div>
 
@@ -100,7 +97,7 @@ id="content">
 <script>
     window.onload = function () {
         const isAuthenticated =
-          "{{ request.user.is_authenticated|yesno:'true,false' }}";
+            "{{ request.user.is_authenticated|yesno:'true,false' }}";
         const loadingElement = document.getElementById("loading-auth");
         const contentElement = document.getElementById("content");
 
@@ -108,28 +105,28 @@ id="content">
             loadingElement.style.display = "none";
             contentElement.style.display = "flex";
         } else {
-          if (!window.location.href.includes("home")) {
-            window.location.href = "/home";
-          }
+            if (!window.location.href.includes("home")) {
+                window.location.href = "/home";
+            }
         }
-      };
+    };
 
 
-    const toggleSettings = ()=> {
+    const toggleSettings = () => {
         const isCustomer = "{{request.user.role}}"
-            fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
-                .then(response => response.json())
-                .then(data => {
+        fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
+            .then(response => response.json())
+            .then(data => {
 
-                    // Get the container where the HTML will be injected
-                    const container = document.getElementById("settings");
-                    // Inject the external HTML content into the container
-                    container.innerHTML = data.html;
+                // Get the container where the HTML will be injected
+                const container = document.getElementById("settings");
+                // Inject the external HTML content into the container
+                container.innerHTML = data.html;
 
-                    if(Number(isCustomer) == 2){
+                if (Number(isCustomer) == 2) {
 
                     document.querySelectorAll('.menu-items li a').forEach(link => {
-                        link.addEventListener('click', function(e) {
+                        link.addEventListener('click', function (e) {
                             e.preventDefault();
                             // Hide all sections
                             document.querySelectorAll('#personal-info, #documents, #specializations, #account').forEach(section => {
@@ -138,7 +135,7 @@ id="content">
                             // Show the selected section
                             const targetId = this.getAttribute('href').substring(1);
                             document.getElementById(targetId).classList.remove('hidden');
-                            
+
                             // Update active state in menu
                             document.querySelectorAll('.menu-items a').forEach(item => {
                                 item.classList.remove('bg-white');
@@ -148,9 +145,64 @@ id="content">
                             this.classList.remove('text-[#878088]')
                         });
                     });
+
+                    const documents = JSON.parse('{{ documents|safe|escapejs }}');
+                    // Elements for displaying the table or no documents message
+                    const table = document.getElementById('documents-table');
+                    const noDocumentsMessage = document.getElementById('no-documents-message');
+                    const tbody = document.getElementById('documents-tbody');
+
+
+                    if (documents && documents.length > 0) {
+                        // Show the documents table and populate the rows
+                        table.style.display = 'block';
+                        noDocumentsMessage.style.display = 'none';
+
+                        documents.forEach(doc => {
+                            const row = document.createElement('tr');
+
+                            console.log(typeof doc.id)
+
+                            // Construct the row content
+                            row.innerHTML = `
+                                    <td>${doc.document_type}</td>
+                                    <td>
+                                        <a href="http://127.0.0.1:8000/media/${doc.file}" target="_blank" class="text-blue-600 hover:underline" title="View document">
+                                            ${doc.file.length > 20 ? doc.file.slice(0, 20) + "..." : doc.file}
+                                        </a>
+                                    </td>
+                                    <td>${new Date(doc.issue_date).toLocaleDateString()}</td>
+                                    <td>
+                                        ${doc.expiry_date ?
+                                    `<span class="${doc.is_expired ? 'text-red-600' : ''}">${new Date(doc.expiry_date).toLocaleDateString()}${doc.is_expired ? ' (Expired)' : ''}</span>` :
+                                    'N/A'}
+                                    </td>
+                                    <td class="flex gap-2">
+                                        <a href="${doc.file}" download class="btn btn-ghost btn-sm tooltip" data-tip="Download">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <a href="${doc.file}" target="_blank" class="btn btn-ghost btn-sm tooltip" data-tip="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <form method="post"   action="{% url 'delete_document' %}"  onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="doc_id" value="${doc.id}">
+                                            <button type="submit" class="btn btn-ghost btn-sm text-error tooltip" data-tip="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                `;
+                            tbody.appendChild(row);
+                        });
+                    } else {
+                        // No documents available, show the "No documents" message
+                        table.style.display = 'none';
+                        noDocumentsMessage.style.display = 'block';
                     }
-                    const phoneInput = document.getElementById("id_phone");
-                    const iti = window.intlTelInput(phoneInput, {
+                }
+                const phoneInput = document.getElementById("id_phone");
+                const iti = window.intlTelInput(phoneInput, {
                     utilsScript:
                         "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
                     preferredCountries: [
@@ -169,12 +221,12 @@ id="content">
                     initialCountry: "auto",
                     geoIpLookup: function (callback) {
                         fetch("https://ipapi.co/json/")
-                        .then((res) => res.json())
-                        .then((data) => callback(data.country_code))
-                        .catch(() => callback("us"));
+                            .then((res) => res.json())
+                            .then((data) => callback(data.country_code))
+                            .catch(() => callback("us"));
                     },
-                    })
-                    document
+                })
+                document
                     .getElementById("change-personal-info")
                     .addEventListener("submit", function (e) {
                         const fullPhone = iti.getNumber();
@@ -188,11 +240,14 @@ id="content">
                         loading.classList.remove("hidden");
                         submitButton.disabled = true;
                     });
-                })
-                .catch(error => {
-                    console.error("Error loading the external HTML file: ", error);
-                });   
+            })
+            .catch(error => {
+                console.error("Error loading the external HTML file: ", error);
+            });
     }
+
+
+
     // function togglePassword(fieldId) {
     //     const inputField = document.getElementById(fieldId);
     //     const eyeIcon = document.getElementById(fieldId + "-eye-icon");

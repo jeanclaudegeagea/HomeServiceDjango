@@ -138,7 +138,6 @@
                                             <option value="license">Professional License</option>
                                             <option value="certification">Certification</option>
                                             <option value="insurance">Insurance Document</option>
-                                            <option value="other">Other</option>
                                         </select>
                                     </div>
                                     
@@ -196,95 +195,38 @@
                             </form>
                         </div>
                         
-                        <p>{{documents}}</p>
-                        {% if documents %}
-                        <div>
-                            <h3 class="font-semibold mb-2">Your Documents</h3>
-                            <div class="overflow-x-auto">
-                                <table class="table w-full">
-                                    <thead>
-                                        <tr>
-                                            <th>Type</th>
-                                            <th>File</th>
-                                            <th>Issued</th>
-                                            <th>Expires</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for doc in documents %}
-                                        <tr>
-                                            <td>{{ doc.get_document_type_display }}</td>
-                                            <td>
-                                                <a 
-                                                    href="{{ doc.file.url }}" 
-                                                    target="_blank" 
-                                                    class="text-blue-600 hover:underline"
-                                                    title="View document"
-                                                >
-                                                    {{ doc.file.name|slice:"20:" }}
-                                                    {% if doc.file.name|length > 20 %}...{% endif %}
-                                                </a>
-                                            </td>
-                                            <td>{{ doc.issue_date|date:"M d, Y" }}</td>
-                                            <td>
-                                                {% if doc.expiry_date %}
-                                                    {% if doc.is_expired %}
-                                                        <span class="text-red-600">{{ doc.expiry_date|date:"M d, Y" }} (Expired)</span>
-                                                    {% else %}
-                                                        {{ doc.expiry_date|date:"M d, Y" }}
-                                                    {% endif %}
-                                                {% else %}
-                                                    N/A
-                                                {% endif %}
-                                            </td>
-                                            <td class="flex gap-2">
-                                                <a 
-                                                    href="{{ doc.file.url }}" 
-                                                    download 
-                                                    class="btn btn-ghost btn-sm tooltip"
-                                                    data-tip="Download"
-                                                >
-                                                    <i class="fas fa-download"></i>
-                                                </a>
-                                                <a 
-                                                    href="{{ doc.file.url }}" 
-                                                    target="_blank" 
-                                                    class="btn btn-ghost btn-sm tooltip"
-                                                    data-tip="View"
-                                                >
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <form 
-                                                    method="post" 
-                                                    action="{% url 'delete_document' doc.id %}"
-                                                    onsubmit="return confirm('Are you sure you want to delete this document?');"
-                                                >
-                                                    {% csrf_token %}
-                                                    <button 
-                                                        type="submit" 
-                                                        class="btn btn-ghost btn-sm text-error tooltip"
-                                                        data-tip="Delete"
-                                                    >
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                        <div id="document-section">
+                            <!-- This is the static message for when no documents exist -->
+                            <div id="no-documents-message" class="text-center py-8" style="display: none;">
+                                <div class="text-gray-500 mb-4">
+                                    <i class="fas fa-folder-open text-4xl"></i>
+                                </div>
+                                <p class="text-lg text-gray-600">No documents uploaded yet.</p>
+                                <p class="text-sm text-gray-500">Upload your professional documents to get started.</p>
+                            </div>
+                        
+                            <!-- The documents table will only be visible when documents exist -->
+                            <div id="documents-table" style="display: none;">
+                                <h3 class="font-semibold mb-2">Your Documents</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="table w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>Type</th>
+                                                <th>File</th>
+                                                <th>Issued</th>
+                                                <th>Expires</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="documents-tbody">
+                                            <!-- Documents will be dynamically added here using JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                        {% else %}
-                        <div class="text-center py-8">
-                            <div class="text-gray-500 mb-4">
-                                <i class="fas fa-folder-open text-4xl"></i>
-                            </div>
-                            <p class="text-lg text-gray-600">No documents uploaded yet.</p>
-                            <p class="text-sm text-gray-500">Upload your professional documents to get started.</p>
-                        </div>
-                        {% endif %}
+                               
                     </div>
                 </div>
 
@@ -352,96 +294,99 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Tab switching
-        const tabs = document.querySelectorAll('.menu-items a');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Update active tab styling
-                tabs.forEach(t => {
-                    t.classList.remove('bg-white');
-                    t.classList.add('text-[#878088]');
-                    t.querySelector('i').classList.add('text-[#878088]');
-                    t.querySelector('i').classList.remove('text-black');
-                });
-                
-                this.classList.add('bg-white');
-                this.classList.remove('text-[#878088]');
-                this.querySelector('i').classList.remove('text-[#878088]');
-                this.querySelector('i').classList.add('text-black');
-                
-                // Show the selected section
-                const targetId = this.getAttribute('href').substring(1);
-                document.querySelectorAll('.content-section').forEach(section => {
-                    section.classList.add('hidden');
-                });
-                document.getElementById(targetId).classList.remove('hidden');
-            });
-        });
 
-        // Document upload form submission
-        const docForm = document.getElementById('document-upload-form');
-        if (docForm) {
-            docForm.addEventListener('submit', function(e) {
-                const submitBtn = document.getElementById('submit-doc-btn');
-                const submitText = document.getElementById('submit-doc-text');
-                const loadingIcon = document.getElementById('doc-loading');
-                
-                submitBtn.disabled = true;
-                submitText.textContent = 'Uploading...';
-                loadingIcon.classList.remove('hidden');
-            });
-        }
 
-        // Personal info form submission
-        const personalInfoForm = document.getElementById('change-personal-info');
-        if (personalInfoForm) {
-            personalInfoForm.addEventListener('submit', function(e) {
-                const submitBtn = document.getElementById('submit-PI-btn');
-                const submitText = document.getElementById('submit-PI-text');
-                const loadingIcon = document.getElementById('PI-loading');
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     // Tab switching
+    //     const tabs = document.querySelectorAll('.menu-items a');
+    //     tabs.forEach(tab => {
+    //         tab.addEventListener('click', function(e) {
+    //             e.preventDefault();
                 
-                submitBtn.disabled = true;
-                submitText.textContent = 'Saving...';
-                loadingIcon.classList.remove('hidden');
-            });
-        }
+    //             // Update active tab styling
+    //             tabs.forEach(t => {
+    //                 t.classList.remove('bg-white');
+    //                 t.classList.add('text-[#878088]');
+    //                 t.querySelector('i').classList.add('text-[#878088]');
+    //                 t.querySelector('i').classList.remove('text-black');
+    //             });
+                
+    //             this.classList.add('bg-white');
+    //             this.classList.remove('text-[#878088]');
+    //             this.querySelector('i').classList.remove('text-[#878088]');
+    //             this.querySelector('i').classList.add('text-black');
+                
+    //             // Show the selected section
+    //             const targetId = this.getAttribute('href').substring(1);
+    //             document.querySelectorAll('.content-section').forEach(section => {
+    //                 section.classList.add('hidden');
+    //             });
+    //             document.getElementById(targetId).classList.remove('hidden');
+    //         });
+    //     });
 
-        // Account deletion confirmation
-        const confirmDelete = document.getElementById('confirm-delete');
-        const deleteAccountBtn = document.getElementById('delete-account-btn');
-        if (confirmDelete && deleteAccountBtn) {
-            confirmDelete.addEventListener('change', function() {
-                deleteAccountBtn.disabled = !this.checked;
-            });
-        }
+    //     // Document upload form submission
+    //     const docForm = document.getElementById('document-upload-form');
+    //     if (docForm) {
+    //         docForm.addEventListener('submit', function(e) {
+    //             const submitBtn = document.getElementById('submit-doc-btn');
+    //             const submitText = document.getElementById('submit-doc-text');
+    //             const loadingIcon = document.getElementById('doc-loading');
+                
+    //             submitBtn.disabled = true;
+    //             submitText.textContent = 'Uploading...';
+    //             loadingIcon.classList.remove('hidden');
+    //         });
+    //     }
 
-        // Initialize tooltips
-        const tooltips = document.querySelectorAll('[data-tip]');
-        tooltips.forEach(tooltip => {
-            tooltip.addEventListener('mouseenter', function() {
-                const tipText = this.getAttribute('data-tip');
-                const tooltipElement = document.createElement('div');
-                tooltipElement.className = 'tooltip-text absolute z-10 bg-gray-900 text-white text-xs py-1 px-2 rounded';
-                tooltipElement.textContent = tipText;
+    //     // Personal info form submission
+    //     const personalInfoForm = document.getElementById('change-personal-info');
+    //     if (personalInfoForm) {
+    //         personalInfoForm.addEventListener('submit', function(e) {
+    //             const submitBtn = document.getElementById('submit-PI-btn');
+    //             const submitText = document.getElementById('submit-PI-text');
+    //             const loadingIcon = document.getElementById('PI-loading');
                 
-                const rect = this.getBoundingClientRect();
-                tooltipElement.style.top = `${rect.top - 30}px`;
-                tooltipElement.style.left = `${rect.left + rect.width/2}px`;
-                tooltipElement.style.transform = 'translateX(-50%)';
+    //             submitBtn.disabled = true;
+    //             submitText.textContent = 'Saving...';
+    //             loadingIcon.classList.remove('hidden');
+    //         });
+    //     }
+
+    //     // Account deletion confirmation
+    //     const confirmDelete = document.getElementById('confirm-delete');
+    //     const deleteAccountBtn = document.getElementById('delete-account-btn');
+    //     if (confirmDelete && deleteAccountBtn) {
+    //         confirmDelete.addEventListener('change', function() {
+    //             deleteAccountBtn.disabled = !this.checked;
+    //         });
+    //     }
+
+    //     // Initialize tooltips
+    //     const tooltips = document.querySelectorAll('[data-tip]');
+    //     tooltips.forEach(tooltip => {
+    //         tooltip.addEventListener('mouseenter', function() {
+    //             const tipText = this.getAttribute('data-tip');
+    //             const tooltipElement = document.createElement('div');
+    //             tooltipElement.className = 'tooltip-text absolute z-10 bg-gray-900 text-white text-xs py-1 px-2 rounded';
+    //             tooltipElement.textContent = tipText;
                 
-                document.body.appendChild(tooltipElement);
-                this.tooltipElement = tooltipElement;
-            });
+    //             const rect = this.getBoundingClientRect();
+    //             tooltipElement.style.top = `${rect.top - 30}px`;
+    //             tooltipElement.style.left = `${rect.left + rect.width/2}px`;
+    //             tooltipElement.style.transform = 'translateX(-50%)';
+                
+    //             document.body.appendChild(tooltipElement);
+    //             this.tooltipElement = tooltipElement;
+    //         });
             
-            tooltip.addEventListener('mouseleave', function() {
-                if (this.tooltipElement) {
-                    this.tooltipElement.remove();
-                }
-            });
-        });
-    });
+    //         tooltip.addEventListener('mouseleave', function() {
+    //             if (this.tooltipElement) {
+    //                 this.tooltipElement.remove();
+    //             }
+    //         });
+    //     });
+    // });
+
     </script>
 {% endblock %}
