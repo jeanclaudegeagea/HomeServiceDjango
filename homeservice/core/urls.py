@@ -15,7 +15,7 @@ urlpatterns = [
     path("provider/dashboard/", views.provider_dashboard, name="provider_dashboard"),
     path("load_service_settings/", views.service_settings, name="service_settings"),
     path("load_customer_settings/", views.customer_settings, name="customer_settings"),
-    path("delete-document/<int:doc_id>/", views.delete_document, name='delete_document'),
+    path("delete_document/", views.delete_document, name='delete_document'),
     # path('provider/upload-docs/', views.provider_upload_docs, name='provider_upload_docs'),
 ]
 

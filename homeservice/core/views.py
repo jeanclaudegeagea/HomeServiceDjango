@@ -8,6 +8,7 @@ from .models import User, Customer, ServiceProvider, Booking, ServiceProviderDoc
 from .forms import ProfileImageForm, ChangePersonalInfoForm , ServiceProviderDocumentForm # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
+import json
 
 
 @never_cache
@@ -105,9 +106,10 @@ def signup_from_home(request):
     return redirect("register")
 
 @login_required
-def delete_document(request, doc_id):
+def delete_document(request):
     if request.method == "POST":
         try:
+            doc_id = request.POST.get("doc_id")
             document = ServiceProviderDocument.objects.get(id=doc_id)
             provider = ServiceProvider.objects.get(user=request.user)
             if document in provider.documents.all():
@@ -168,22 +170,22 @@ def profile(request):
 
     document_form = None
     documents = None
-    if request.user.role == User.SERVICE_PROVIDER:
-        if request.method == "POST" and "document_type" in request.POST:
-            document_form = ServiceProviderDocumentForm(request.POST, request.FILES)
-            if document_form.is_valid():
-                document = document_form.save(commit=False)
-                provider = ServiceProvider.objects.get(user=request.user)
-                document.save()
-                provider.documents.add(document)
-                messages.success(request, "Document uploaded successfully!")
-                return redirect("profile")
-        else:
-            document_form = ServiceProviderDocumentForm()
+    if hasattr(request.user, "role"):
+        if request.user.role == User.SERVICE_PROVIDER:
+            if request.method == "POST" and "document_type" in request.POST:
+                document_form = ServiceProviderDocumentForm(request.POST, request.FILES)
+                if document_form.is_valid():
+                    document = document_form.save(commit=False)
+                    provider = ServiceProvider.objects.get(user=request.user)
+                    document.save()
+                    provider.documents.add(document)
+                    messages.success(request, "Document uploaded successfully!")
+                    return redirect("profile")
+            else:
+                document_form = ServiceProviderDocumentForm()
 
-        provider = ServiceProvider.objects.get(user=request.user)
-        print(provider.documents.all())
-        documents = provider.documents.all()
+            provider = ServiceProvider.objects.get(user=request.user)
+            documents = provider.documents.all()
 
     # Initialize empty querysets
     upcoming_bookings = []
@@ -221,13 +223,24 @@ def profile(request):
     if hasattr(request.user, "role"):
         isProvider = request.user.role == User.SERVICE_PROVIDER
 
+
+    documents_list = list(documents.values("id", "document_type", "file", "issue_date", "expiry_date"))
+
+    for document in documents_list:
+        if document['issue_date']:
+            document['issue_date'] = document['issue_date'].strftime('%Y-%m-%d')
+        if document['expiry_date']:
+            document['expiry_date'] = document['expiry_date'].strftime('%Y-%m-%d')
+
+    documents_json = json.dumps(documents_list)
+
     context = {
         "active_tab": active_tab,
         "upcoming_bookings": upcoming_bookings,
         "past_bookings": past_bookings,
         "is_provider": isProvider,
         "form": form,  # Add the form to context
-        "documents": documents,
+        "documents": documents_json,
         "document_form": document_form,
     }
 

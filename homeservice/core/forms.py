@@ -86,3 +86,5 @@ class ServiceProviderDocumentForm(forms.ModelForm):
             'issue_date': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),
         }
+    
+    expiry_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
