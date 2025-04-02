@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
+import os
 
 urlpatterns = [
     path("", views.home_view, name="base"),
@@ -16,6 +18,7 @@ urlpatterns = [
     path("load_service_settings/", views.service_settings, name="service_settings"),
     path("load_customer_settings/", views.customer_settings, name="customer_settings"),
     path("delete_document/", views.delete_document, name='delete_document'),
+    path("profile/provider_documents/<path:path>", serve, {'document_root': os.path.join(settings.MEDIA_ROOT, 'provider_documents')})
     # path('provider/upload-docs/', views.provider_upload_docs, name='provider_upload_docs'),
 ]
 
