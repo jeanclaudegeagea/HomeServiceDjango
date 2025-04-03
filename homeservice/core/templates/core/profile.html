@@ -219,8 +219,54 @@
                         noSpecializationMessage.style.display = "block"; // Show "No specializations available" message
                     }
 
-                    const removeSpecialization = () => {
-                        console.log("Test")
+                    const removeSpecialization = function () {
+                        // Remove Specialization
+                        if (!confirm("Are you sure you want to remove this specialization?")) {
+                            return;
+                        }
+
+                        const specId = this.getAttribute("data-spec-id");
+                        const badge = this.closest(".specialization");
+
+                        fetch("/remove_specialization/", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": "{{ csrf_token }}",
+                            },
+                            body: JSON.stringify({
+                                specialization_id: specId,
+                            }),
+                        })
+                            .then((response) => {
+                                if (!response.ok) {
+                                    throw new Error("Network response was not ok");
+                                }
+                                return response.json();
+                            })
+                            .then((data) => {
+                                if (data.success) {
+                                    // Remove the specialization from the UI
+                                    badge.remove();
+
+                                    // Show "no specializations" message if none left
+                                    const currentSpecs = document.getElementById("current-specializations");
+                                    if (currentSpecs.children.length === 0) {
+                                        const noSpecsMessage = document.createElement("p");
+                                        noSpecsMessage.className = "text-gray-500";
+                                        noSpecsMessage.textContent = "No specializations added yet.";
+                                        currentSpecs.appendChild(noSpecsMessage);
+                                    }
+
+                                    alert("Specialization removed successfully!");
+                                } else {
+                                    alert("Error removing specialization: " + data.error);
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error:", error);
+                                alert("An error occurred while removing specialization");
+                            });
                     }
 
                     const user_specializations = JSON.parse('{{ user_specializations|safe|escapejs }}');
@@ -237,7 +283,7 @@
                         user_specializations.forEach(spec => {
                             // Create specialization badge
                             const badge = document.createElement("div");
-                            badge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col";
+                            badge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col specialization";
 
                             // Add specialization name and description
                             badge.innerHTML = `
@@ -260,8 +306,6 @@
 
                     // Initial rendering
                     renderSpecializations();
-
-
 
                     const addSpecializationBtn = document.getElementById(
                         "add-specialization-btn"
@@ -315,7 +359,7 @@
                                         }
 
                                         const newBadge = document.createElement("div");
-                                        newBadge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col";
+                                        newBadge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col specialization";
                                         newBadge.innerHTML = `
                                             <div>
                                                 <strong>${data.specialization_name}</strong>
