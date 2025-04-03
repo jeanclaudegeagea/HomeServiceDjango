@@ -184,7 +184,12 @@ def add_specialization(request):
 
                 provider.specialization.add(specialization)
                 return JsonResponse(
-                    {"success": True, "specialization_name": specialization.name}
+                    {
+                        "success": True,
+                        "specialization_name": specialization.name,
+                        "specialization_description": specialization.description,
+                        "specialization_id": specialization.id,
+                    }
                 )
             except Specialization.DoesNotExist:
                 return JsonResponse(
@@ -360,10 +365,14 @@ def profile(request):
         years_of_experience = request.user.serviceprovider.years_of_experience
 
     specializations = Specialization.objects.all()
-
     specializations_list = list(specializations.values("id", "name", "description"))
-
     specializations_json = json.dumps(specializations_list)
+
+    user_specializations = Specialization.objects.filter(
+        serviceprovider__user=request.user
+    ).values("id", "name", "description")
+    user_specializations_list = list(user_specializations)
+    user_specializations_list_json = json.dumps(user_specializations_list)
 
     context = {
         "active_tab": active_tab,
@@ -375,6 +384,7 @@ def profile(request):
         "document_form": document_form,
         "years_of_experience": years_of_experience,
         "specializations": specializations_json,
+        "user_specializations": user_specializations_list_json,
     }
 
     return render(request, "core/profile.html", context)

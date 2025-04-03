@@ -219,6 +219,50 @@
                         noSpecializationMessage.style.display = "block"; // Show "No specializations available" message
                     }
 
+                    const removeSpecialization = () => {
+                        console.log("Test")
+                    }
+
+                    const user_specializations = JSON.parse('{{ user_specializations|safe|escapejs }}');
+                    const specializationsContainer = document.getElementById("current-specializations");
+
+                    const renderSpecializations = () => {
+                        specializationsContainer.innerHTML = ""; // Clear previous content
+
+                        if (user_specializations?.length === 0) {
+                            specializationsContainer.innerHTML = '<p class="text-gray-500">No specializations added yet.</p>';
+                            return;
+                        }
+
+                        user_specializations.forEach(spec => {
+                            // Create specialization badge
+                            const badge = document.createElement("div");
+                            badge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col";
+
+                            // Add specialization name and description
+                            badge.innerHTML = `
+                                        <div>
+                                            <strong>${spec.name}</strong>
+                                            <p class="text-xs text-gray-300">${spec.description}</p>
+                                            <button class="absolute right-2 top-2 text-xs remove-specialization" data-spec-id="${spec.id}">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    `;
+
+                            badge
+                                .querySelector(".remove-specialization")
+                                .addEventListener("click", removeSpecialization);
+                            // Append the badge to the container
+                            specializationsContainer.appendChild(badge);
+                        });
+                    }
+
+                    // Initial rendering
+                    renderSpecializations();
+
+
+
                     const addSpecializationBtn = document.getElementById(
                         "add-specialization-btn"
                     );
@@ -257,37 +301,40 @@
                                     return response.json();
                                 })
                                 .then((data) => {
+
                                     if (data.success) {
                                         // Add the new specialization to the UI
-                                        //             const currentSpecs = document.getElementById(
-                                        //                 "current-specializations"
-                                        //             );
+                                        const currentSpecs = document.getElementById(
+                                            "current-specializations"
+                                        );
 
                                         //             // Remove the "no specializations" message if it exists
-                                        //             const noSpecsMessage =
-                                        //                 currentSpecs.querySelector("p.text-gray-500");
-                                        //             if (noSpecsMessage) {
-                                        //                 noSpecsMessage.remove();
-                                        //             }
+                                        const noSpecsMessage = currentSpecs.querySelector("p.text-gray-500");
+                                        if (noSpecsMessage) {
+                                            noSpecsMessage.remove();
+                                        }
 
-                                        //             const newBadge = document.createElement("div");
-                                        //             newBadge.className = "badge badge-primary gap-2 p-3";
-                                        //             newBadge.innerHTML = `
-                                        //     ${data.specialization_name}
-                                        //     <button class="text-xs remove-specialization" data-spec-id="${specId}">
-                                        //         <i class="fas fa-times"></i>
-                                        //     </button>
-                                        // `;
-                                        //             currentSpecs.appendChild(newBadge);
+                                        const newBadge = document.createElement("div");
+                                        newBadge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col";
+                                        newBadge.innerHTML = `
+                                            <div>
+                                                <strong>${data.specialization_name}</strong>
+                                                <p class="text-xs text-gray-300">${data.specialization_description}</p>
+                                                <button class="absolute right-2 top-2 text-xs remove-specialization" data-spec-id="${data.specialization_id}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        `;
+                                        currentSpecs.appendChild(newBadge);
 
-                                        //             // Add event listener to the new remove button
-                                        //             newBadge
-                                        //                 .querySelector(".remove-specialization")
-                                        //                 .addEventListener("click", removeSpecialization);
+                                        // Add event listener to the new remove button
+                                        newBadge
+                                            .querySelector(".remove-specialization")
+                                            .addEventListener("click", removeSpecialization);
 
-                                        //             // Reset the select
-                                        //             select.value = "";
-                                        //             alert("Specialization added successfully!");
+                                        // Reset the select
+                                        select.value = "";
+                                        alert("Specialization added successfully!");
                                     } else {
                                         alert("Error: " + (data.error || "Failed to add specialization"));
                                     }
@@ -354,8 +401,6 @@
                 console.error("Error loading the external HTML file: ", error);
             });
     }
-
-
 
     // function togglePassword(fieldId) {
     //     const inputField = document.getElementById(fieldId);
