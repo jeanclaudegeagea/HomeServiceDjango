@@ -207,7 +207,7 @@
 
 
                     if (specializations?.length > 0) {
-                        specializationSelect.style.display = "block"; // Show the dropdown
+                        specializationSelect.style.display = "flex"; // Show the dropdown
                         specializations.forEach(spec => {
                             const option = document.createElement("option");
                             option.value = spec.id;
@@ -223,83 +223,85 @@
                         "add-specialization-btn"
                     );
 
-                    //     if (addSpecializationBtn) {
-                    //         addSpecializationBtn.addEventListener("click", function () {
-                    //             const select = document.getElementById("specialization-select");
-                    //             const specId = select.value;
+                    if (addSpecializationBtn) {
+                        addSpecializationBtn.addEventListener("click", function () {
+                            const select = document.getElementById("specialization-dropdown");
+                            const specId = select.value;
 
-                    //             if (!specId) {
-                    //                 alert("Please select a specialization");
-                    //                 return;
-                    //             }
+                            if (!Number(specId)) {
+                                alert("Please select a specialization");
+                                return;
+                            }
 
-                    //             // Add loading state
-                    //             const originalText = this.innerHTML;
-                    //             this.innerHTML = '<span class="loading loading-spinner"></span> Adding...';
-                    //             this.disabled = true;
 
-                    //             fetch("/add_specialization/", {
-                    //                 method: "POST",
-                    //                 headers: {
-                    //                     "Content-Type": "application/json",
-                    //                     "X-CSRFToken": "{{ csrf_token }}",
-                    //                 },
-                    //                 body: JSON.stringify({
-                    //                     specialization_id: specId,
-                    //                 }),
-                    //             })
-                    //                 .then((response) => {
-                    //                     if (!response.ok) {
-                    //                         throw new Error("Network response was not ok");
-                    //                     }
-                    //                     return response.json();
-                    //                 })
-                    //                 .then((data) => {
-                    //                     if (data.success) {
-                    //                         // Add the new specialization to the UI
-                    //                         const currentSpecs = document.getElementById(
-                    //                             "current-specializations"
-                    //                         );
+                            // Add loading state
+                            const originalText = this.innerHTML;
 
-                    //                         // Remove the "no specializations" message if it exists
-                    //                         const noSpecsMessage =
-                    //                             currentSpecs.querySelector("p.text-gray-500");
-                    //                         if (noSpecsMessage) {
-                    //                             noSpecsMessage.remove();
-                    //                         }
+                            this.innerHTML = '<span class="loading loading-spinner"></span> Adding...';
+                            this.disabled = true;
 
-                    //                         const newBadge = document.createElement("div");
-                    //                         newBadge.className = "badge badge-primary gap-2 p-3";
-                    //                         newBadge.innerHTML = `
-                    //     ${data.specialization_name}
-                    //     <button class="text-xs remove-specialization" data-spec-id="${specId}">
-                    //         <i class="fas fa-times"></i>
-                    //     </button>
-                    // `;
-                    //                         currentSpecs.appendChild(newBadge);
+                            fetch("/add_specialization/", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": "{{ csrf_token }}",
+                                },
+                                body: JSON.stringify({
+                                    specialization_id: specId,
+                                }),
+                            })
+                                .then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error("Network response was not ok");
+                                    }
+                                    return response.json();
+                                })
+                                .then((data) => {
+                                    if (data.success) {
+                                        // Add the new specialization to the UI
+                                        //             const currentSpecs = document.getElementById(
+                                        //                 "current-specializations"
+                                        //             );
 
-                    //                         // Add event listener to the new remove button
-                    //                         newBadge
-                    //                             .querySelector(".remove-specialization")
-                    //                             .addEventListener("click", removeSpecialization);
+                                        //             // Remove the "no specializations" message if it exists
+                                        //             const noSpecsMessage =
+                                        //                 currentSpecs.querySelector("p.text-gray-500");
+                                        //             if (noSpecsMessage) {
+                                        //                 noSpecsMessage.remove();
+                                        //             }
 
-                    //                         // Reset the select
-                    //                         select.value = "";
-                    //                         alert("Specialization added successfully!");
-                    //                     } else {
-                    //                         alert("Error: " + (data.error || "Failed to add specialization"));
-                    //                     }
-                    //                 })
-                    //                 .catch((error) => {
-                    //                     console.error("Error:", error);
-                    //                     alert("An error occurred: " + error.message);
-                    //                 })
-                    //                 .finally(() => {
-                    //                     this.disabled = false;
-                    //                     this.innerHTML = originalText;
-                    //                 });
-                    //         });
-                    //     }
+                                        //             const newBadge = document.createElement("div");
+                                        //             newBadge.className = "badge badge-primary gap-2 p-3";
+                                        //             newBadge.innerHTML = `
+                                        //     ${data.specialization_name}
+                                        //     <button class="text-xs remove-specialization" data-spec-id="${specId}">
+                                        //         <i class="fas fa-times"></i>
+                                        //     </button>
+                                        // `;
+                                        //             currentSpecs.appendChild(newBadge);
+
+                                        //             // Add event listener to the new remove button
+                                        //             newBadge
+                                        //                 .querySelector(".remove-specialization")
+                                        //                 .addEventListener("click", removeSpecialization);
+
+                                        //             // Reset the select
+                                        //             select.value = "";
+                                        //             alert("Specialization added successfully!");
+                                    } else {
+                                        alert("Error: " + (data.error || "Failed to add specialization"));
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error("Error:", error);
+                                    alert("An error occurred: " + error.message);
+                                })
+                                .finally(() => {
+                                    this.disabled = false;
+                                    this.innerHTML = originalText;
+                                });
+                        });
+                    }
 
                 }
                 else if (Number(isCustomer) === 1) {

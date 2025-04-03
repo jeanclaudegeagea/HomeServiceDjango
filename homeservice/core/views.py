@@ -4,8 +4,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm, UserLoginForm
 from django.utils import timezone
-from .models import User, Customer, ServiceProvider, Booking, ServiceProviderDocument, Specialization
-from .forms import ProfileImageForm, ChangePersonalInfoForm , ServiceProviderDocumentForm # We'll create this form
+from .models import (
+    User,
+    Customer,
+    ServiceProvider,
+    Booking,
+    ServiceProviderDocument,
+    Specialization,
+)
+from .forms import (
+    ProfileImageForm,
+    ChangePersonalInfoForm,
+    ServiceProviderDocumentForm,
+)  # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 import json
@@ -106,6 +117,7 @@ def signup_from_home(request):
     logout(request)
     return redirect("register")
 
+
 @login_required
 def delete_document(request):
     if request.method == "POST":
@@ -120,27 +132,33 @@ def delete_document(request):
             messages.error(request, "Document not found!")
     return redirect("profile")
 
+
 @csrf_exempt
 @login_required
 def update_experience(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            years = data.get('years_of_experience')
+            years = data.get("years_of_experience")
 
             if years is None or not str(years).isdigit():
-                return JsonResponse({'success': False, 'error': 'Invalid years of experience'})
-            
+                return JsonResponse(
+                    {"success": False, "error": "Invalid years of experience"}
+                )
+
             try:
                 provider = ServiceProvider.objects.get(user=request.user)
                 provider.years_of_experience = int(years)
                 provider.save()
-                return JsonResponse({'success': True})
+                return JsonResponse({"success": True})
             except ServiceProvider.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User is not a service provider'})
+                return JsonResponse(
+                    {"success": False, "error": "User is not a service provider"}
+                )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
 
 @csrf_exempt
 @login_required
@@ -148,30 +166,38 @@ def add_specialization(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            spec_id = data.get('specialization_id')
+            spec_id = data.get("specialization_id")
 
             if not spec_id:
-                return JsonResponse({'success': False, 'error': 'Specialization ID is required'})
-            
+                return JsonResponse(
+                    {"success": False, "error": "Specialization ID is required"}
+                )
+
             try:
                 specialization = Specialization.objects.get(id=spec_id)
                 provider = ServiceProvider.objects.get(user=request.user)
 
                 if provider.specialization.filter(id=spec_id).exists():
-                    return JsonResponse({'success': False, 'error': 'Specialization already added'})
-                
+                    return JsonResponse(
+                        {"success": False, "error": "Specialization already added"}
+                    )
+
                 provider.specialization.add(specialization)
-                return JsonResponse({
-                    'success': True, 
-                    'specialization_name': specialization.name
-                })
+                return JsonResponse(
+                    {"success": True, "specialization_name": specialization.name}
+                )
             except Specialization.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Specialization not found'})
+                return JsonResponse(
+                    {"success": False, "error": "Specialization not found"}
+                )
             except ServiceProvider.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User is not a service provider'})
+                return JsonResponse(
+                    {"success": False, "error": "User is not a service provider"}
+                )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
 
 @csrf_exempt
 @login_required
@@ -179,27 +205,39 @@ def remove_specialization(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            spec_id = data.get('specialization_id')
+            spec_id = data.get("specialization_id")
 
             if not spec_id:
-                return JsonResponse({'success': False, 'error': 'Specialization ID is required'})
-            
+                return JsonResponse(
+                    {"success": False, "error": "Specialization ID is required"}
+                )
+
             try:
                 specialization = Specialization.objects.get(id=spec_id)
                 provider = ServiceProvider.objects.get(user=request.user)
 
                 if not provider.specialization.filter(id=spec_id).exists():
-                    return JsonResponse({'success': False, 'error': 'Specialization not found in your profile'})
-                
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "error": "Specialization not found in your profile",
+                        }
+                    )
+
                 provider.specialization.remove(specialization)
-                return JsonResponse({'success': True})
+                return JsonResponse({"success": True})
             except Specialization.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Specialization not found'})
+                return JsonResponse(
+                    {"success": False, "error": "Specialization not found"}
+                )
             except ServiceProvider.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User is not a service provider'})
+                return JsonResponse(
+                    {"success": False, "error": "User is not a service provider"}
+                )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
 
 @never_cache
 def profile(request):
@@ -305,19 +343,20 @@ def profile(request):
     if hasattr(request.user, "role"):
         isProvider = request.user.role == User.SERVICE_PROVIDER
 
-
-    documents_list = list(documents.values("id", "document_type", "file", "issue_date", "expiry_date"))
+    documents_list = list(
+        documents.values("id", "document_type", "file", "issue_date", "expiry_date")
+    )
 
     for document in documents_list:
-        if document['issue_date']:
-            document['issue_date'] = document['issue_date'].strftime('%Y-%m-%d')
-        if document['expiry_date']:
-            document['expiry_date'] = document['expiry_date'].strftime('%Y-%m-%d')
+        if document["issue_date"]:
+            document["issue_date"] = document["issue_date"].strftime("%Y-%m-%d")
+        if document["expiry_date"]:
+            document["expiry_date"] = document["expiry_date"].strftime("%Y-%m-%d")
 
     documents_json = json.dumps(documents_list)
 
     years_of_experience = 0
-    if hasattr(request.user, 'serviceprovider'):
+    if hasattr(request.user, "serviceprovider"):
         years_of_experience = request.user.serviceprovider.years_of_experience
 
     specializations = Specialization.objects.all()
