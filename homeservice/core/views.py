@@ -250,6 +250,7 @@ def remove_specialization(request):
 
 
 @never_cache
+@login_required
 def profile(request):
     active_tab = request.GET.get("tab", "upcoming")
 
