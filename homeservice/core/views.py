@@ -322,6 +322,10 @@ def profile(request):
 
     specializations = Specialization.objects.all()
 
+    specializations_list = list(specializations.values("id", "name", "description"))
+
+    specializations_json = json.dumps(specializations_list)
+
     context = {
         "active_tab": active_tab,
         "upcoming_bookings": upcoming_bookings,
@@ -331,7 +335,7 @@ def profile(request):
         "documents": documents_json,
         "document_form": document_form,
         "years_of_experience": years_of_experience,
-        "specializations": specializations,
+        "specializations": specializations_json,
     }
 
     return render(request, "core/profile.html", context)

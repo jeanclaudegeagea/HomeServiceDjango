@@ -123,6 +123,7 @@
                 // Inject the external HTML content into the container
                 container.innerHTML = data.html;
 
+
                 if (Number(isCustomer) == 2) {
 
                     document.querySelectorAll('.menu-items li a').forEach(link => {
@@ -161,8 +162,6 @@
                         documents.forEach(doc => {
                             const row = document.createElement('tr');
 
-                            console.log(typeof doc.id)
-
                             // Construct the row content
                             row.innerHTML = `
                                     <td>${doc.document_type}</td>
@@ -200,7 +199,113 @@
                         table.style.display = 'none';
                         noDocumentsMessage.style.display = 'block';
                     }
+
+                    const specializations = JSON.parse('{{ specializations|safe|escapejs }}')
+                    const specializationSelect = document.getElementById("specialization-select");
+                    const specializationDropdown = document.getElementById("specialization-dropdown");
+                    const noSpecializationMessage = document.getElementById("no-specialization-message");
+
+
+                    if (specializations?.length > 0) {
+                        specializationSelect.style.display = "block"; // Show the dropdown
+                        specializations.forEach(spec => {
+                            const option = document.createElement("option");
+                            option.value = spec.id;
+                            option.textContent = spec.name;
+                            specializationDropdown.appendChild(option);
+                        });
+                    }
+                    else {
+                        noSpecializationMessage.style.display = "block"; // Show "No specializations available" message
+                    }
+
+                    const addSpecializationBtn = document.getElementById(
+                        "add-specialization-btn"
+                    );
+
+                    //     if (addSpecializationBtn) {
+                    //         addSpecializationBtn.addEventListener("click", function () {
+                    //             const select = document.getElementById("specialization-select");
+                    //             const specId = select.value;
+
+                    //             if (!specId) {
+                    //                 alert("Please select a specialization");
+                    //                 return;
+                    //             }
+
+                    //             // Add loading state
+                    //             const originalText = this.innerHTML;
+                    //             this.innerHTML = '<span class="loading loading-spinner"></span> Adding...';
+                    //             this.disabled = true;
+
+                    //             fetch("/add_specialization/", {
+                    //                 method: "POST",
+                    //                 headers: {
+                    //                     "Content-Type": "application/json",
+                    //                     "X-CSRFToken": "{{ csrf_token }}",
+                    //                 },
+                    //                 body: JSON.stringify({
+                    //                     specialization_id: specId,
+                    //                 }),
+                    //             })
+                    //                 .then((response) => {
+                    //                     if (!response.ok) {
+                    //                         throw new Error("Network response was not ok");
+                    //                     }
+                    //                     return response.json();
+                    //                 })
+                    //                 .then((data) => {
+                    //                     if (data.success) {
+                    //                         // Add the new specialization to the UI
+                    //                         const currentSpecs = document.getElementById(
+                    //                             "current-specializations"
+                    //                         );
+
+                    //                         // Remove the "no specializations" message if it exists
+                    //                         const noSpecsMessage =
+                    //                             currentSpecs.querySelector("p.text-gray-500");
+                    //                         if (noSpecsMessage) {
+                    //                             noSpecsMessage.remove();
+                    //                         }
+
+                    //                         const newBadge = document.createElement("div");
+                    //                         newBadge.className = "badge badge-primary gap-2 p-3";
+                    //                         newBadge.innerHTML = `
+                    //     ${data.specialization_name}
+                    //     <button class="text-xs remove-specialization" data-spec-id="${specId}">
+                    //         <i class="fas fa-times"></i>
+                    //     </button>
+                    // `;
+                    //                         currentSpecs.appendChild(newBadge);
+
+                    //                         // Add event listener to the new remove button
+                    //                         newBadge
+                    //                             .querySelector(".remove-specialization")
+                    //                             .addEventListener("click", removeSpecialization);
+
+                    //                         // Reset the select
+                    //                         select.value = "";
+                    //                         alert("Specialization added successfully!");
+                    //                     } else {
+                    //                         alert("Error: " + (data.error || "Failed to add specialization"));
+                    //                     }
+                    //                 })
+                    //                 .catch((error) => {
+                    //                     console.error("Error:", error);
+                    //                     alert("An error occurred: " + error.message);
+                    //                 })
+                    //                 .finally(() => {
+                    //                     this.disabled = false;
+                    //                     this.innerHTML = originalText;
+                    //                 });
+                    //         });
+                    //     }
+
                 }
+                else if (Number(isCustomer) === 1) {
+
+                }
+
                 const phoneInput = document.getElementById("id_phone");
                 const iti = window.intlTelInput(phoneInput, {
                     utilsScript:
@@ -226,6 +331,7 @@
                             .catch(() => callback("us"));
                     },
                 })
+
                 document
                     .getElementById("change-personal-info")
                     .addEventListener("submit", function (e) {
@@ -240,6 +346,7 @@
                         loading.classList.remove("hidden");
                         submitButton.disabled = true;
                     });
+
             })
             .catch(error => {
                 console.error("Error loading the external HTML file: ", error);
