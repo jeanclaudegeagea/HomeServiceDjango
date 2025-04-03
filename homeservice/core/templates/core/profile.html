@@ -200,6 +200,20 @@
                         noDocumentsMessage.style.display = 'block';
                     }
 
+                    // Document upload form submission
+                    const docForm = document.getElementById("document-upload-form");
+                    if (docForm) {
+                        docForm.addEventListener("submit", function (e) {
+                            const submitBtn = document.getElementById("submit-doc-btn");
+                            const submitText = document.getElementById("submit-doc-text");
+                            const loadingIcon = document.getElementById("doc-loading");
+
+                            submitBtn.disabled = true;
+                            submitText.textContent = "Uploading...";
+                            loadingIcon.classList.remove("hidden");
+                        });
+                    }
+
                     const specializations = JSON.parse('{{ specializations|safe|escapejs }}')
                     const specializationSelect = document.getElementById("specialization-select");
                     const specializationDropdown = document.getElementById("specialization-dropdown");
@@ -450,6 +464,24 @@
                                 });
                         });
                     }
+
+                    const password1Button = document.getElementById("password1_button")
+                    password1Button.addEventListener("click", () => {
+                        togglePassword("id_password1")
+                    })
+                    const password2Button = document.getElementById("password2_button")
+                    password2Button.addEventListener("click", () => {
+                        togglePassword("id_password2")
+                    })
+
+                    // Account deletion confirmation
+                    const confirmDelete = document.getElementById("confirm-delete");
+                    const deleteAccountBtn = document.getElementById("delete-account-btn");
+                    if (confirmDelete && deleteAccountBtn) {
+                        confirmDelete.addEventListener("change", function () {
+                            deleteAccountBtn.disabled = !this.checked;
+                        });
+                    }
                 }
                 else if (Number(isCustomer) === 1) {
 
@@ -491,9 +523,63 @@
                         const loading = document.getElementById("PI-loading");
                         const submitButton = document.getElementById("submit-PI-btn");
 
-                        submitText.classList.add("hidden");
-                        loading.classList.remove("hidden");
+                        submitText.textContent = "Saving...";
                         submitButton.disabled = true;
+                        loading.classList.remove("hidden");
+                    });
+
+                document
+                    .getElementById("change-password-btn")
+                    .addEventListener("click", function (e) {
+
+                        const changeText = document.getElementById("change-password-text");
+                        const loading = document.getElementById("change-password-loading");
+                        const changeButton = document.getElementById("change-password-btn");
+                        const password1 = document.getElementById("id_password1")
+                        const password2 = document.getElementById("id_password2")
+
+
+
+                        changeText.textContent = "Changing...";
+                        changeButton.disabled = true;
+                        loading.classList.remove("hidden");
+
+                        fetch("/change_password/", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": "{{ csrf_token }}",
+                            },
+                            body: JSON.stringify({
+                                password1: password1.value,
+                                password2: password2.value
+                            }),
+                        })
+                            .then((response) => {
+                                if (!response.ok) {
+                                    throw new Error("Network response was not ok");
+                                }
+                                return response.json();
+                            })
+                            .then((data) => {
+                                if (data.success) {
+                                    alert("Password changed successfully");
+                                } else {
+                                    alert("Error: " + (data.error || "Unknown error occurred"));
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error:", error);
+                                alert("An error occurred: " + error.message);
+                            })
+                            .finally(() => {
+                                changeButton.disabled = false;
+                                changeText.textContent = "Change Password";
+                                loading.classList.add("hidden");
+                                password1.value = ""
+                                password2.value = ""
+                            });
+
                     });
 
             })
@@ -502,23 +588,23 @@
             });
     }
 
-    // function togglePassword(fieldId) {
-    //     const inputField = document.getElementById(fieldId);
-    //     const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+    function togglePassword(fieldId) {
+        const inputField = document.getElementById(fieldId);
+        const eyeIcon = document.getElementById(fieldId + "-eye-icon");
 
-    //     if (inputField.type === "password") {
-    //       inputField.type = "text";
-    //       eyeIcon.innerHTML = `
-    //     <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
-    //     <line x1="1" y1="1" x2="23" y2="23"></line>
-    //   `;
-    //     } else {
-    //       inputField.type = "password";
-    //       eyeIcon.innerHTML = `
-    //     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-    //     <circle cx="12" cy="12" r="3"></circle>
-    //   `;
-    //     }
-    //   }
+        if (inputField.type === "password") {
+            inputField.type = "text";
+            eyeIcon.innerHTML = `
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      `;
+        } else {
+            inputField.type = "password";
+            eyeIcon.innerHTML = `
+        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      `;
+        }
+    }
 </script>
 {% endblock %}

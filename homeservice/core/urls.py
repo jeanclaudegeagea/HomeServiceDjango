@@ -30,6 +30,7 @@ urlpatterns = [
         serve,
         {"document_root": os.path.join(settings.MEDIA_ROOT, "provider_documents")},
     ),
+    path("change_password/", views.changePassword, name="change_password"),
     # path('provider/upload-docs/', views.provider_upload_docs, name='provider_upload_docs'),
 ]
 

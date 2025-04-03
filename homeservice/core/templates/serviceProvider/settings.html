@@ -260,7 +260,64 @@
         Manage your account settings here.
       </p>
 
-      <div class="space-y-6">
+      <div class="flex items-center gap-2">
+        <div class="space-y-1 w-[48%]">
+          <label class="block text-sm font-medium text-gray-700" for="id_password1">
+            Password
+          </label>
+          <div class="relative">
+            <input id="id_password1" name="password1" type="password" placeholder="••••••••"
+              class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10" required />
+            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              id="password1_button">
+              <svg id="id_password1-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1 w-[48%]">
+          <label class="block text-sm font-medium text-gray-700" for="id_password2">
+            Confirm Password
+          </label>
+          <div class="relative">
+            <input id="id_password2" name="password2" type="password" placeholder="••••••••"
+              class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10" required />
+            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              id="password2_button">
+              <svg id="id_password2-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8">
+        <button
+          class="flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          id="change-password-btn">
+          <span id="change-password-text">Change Password</span>
+          <span id="change-password-loading" class="hidden ml-2">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- <div class="space-y-6">
         <div class="border border-error rounded-lg p-4">
           <h3 class="font-semibold text-error mb-2">Danger Zone</h3>
           <p class="mb-4">
@@ -275,113 +332,9 @@
             Delete My Account
           </button>
         </div>
-      </div>
+      </div> -->
     </section>
 
   </main>
 </div>
-
-<script>
-  // document.addEventListener("DOMContentLoaded", function () {
-  //   // Tab switching
-  //   const tabs = document.querySelectorAll(".menu-items a");
-  //   tabs.forEach((tab) => {
-  //     tab.addEventListener("click", function (e) {
-  //       e.preventDefault();
-
-  //       // Update active tab styling
-  //       tabs.forEach((t) => {
-  //         t.classList.remove("bg-white", "text-black");
-  //         t.classList.add("text-[#878088]");
-  //         t.querySelector("i").classList.add("text-[#878088]");
-  //         t.querySelector("i").classList.remove("text-black");
-  //       });
-
-  //       this.classList.add("bg-white", "text-black");
-  //       this.querySelector("i").classList.remove("text-[#878088]");
-  //       this.querySelector("i").classList.add("text-black");
-
-  //       // Show the selected section
-  //       const targetId = this.getAttribute("href").substring(1);
-  //       document.querySelectorAll(".content-section").forEach((section) => {
-  //         section.classList.add("hidden");
-  //       });
-  //       document.getElementById(targetId).classList.remove("hidden");
-  //     });
-  //   });
-
-  //   // Initialize with personal info visible by default
-  //   document.querySelector('.menu-items a[href="#personal-info"]').click();
-
-  //   // Document upload form submission
-  //   const docForm = document.getElementById("document-upload-form");
-  //   if (docForm) {
-  //     docForm.addEventListener("submit", function (e) {
-  //       const submitBtn = document.getElementById("submit-doc-btn");
-  //       const submitText = document.getElementById("submit-doc-text");
-  //       const loadingIcon = document.getElementById("doc-loading");
-
-  //       submitBtn.disabled = true;
-  //       submitText.textContent = "Uploading...";
-  //       loadingIcon.classList.remove("hidden");
-  //     });
-  //   }
-
-  //   // Personal info form submission
-  //   const personalInfoForm = document.getElementById("change-personal-info");
-  //   if (personalInfoForm) {
-  //     personalInfoForm.addEventListener("submit", function (e) {
-  //       const submitBtn = document.getElementById("submit-PI-btn");
-  //       const submitText = document.getElementById("submit-PI-text");
-  //       const loadingIcon = document.getElementById("PI-loading");
-
-  //       submitBtn.disabled = true;
-  //       submitText.textContent = "Saving...";
-  //       loadingIcon.classList.remove("hidden");
-  //     });
-  //   }
-
-  //   // Account deletion confirmation
-  //   const confirmDelete = document.getElementById("confirm-delete");
-  //   const deleteAccountBtn = document.getElementById("delete-account-btn");
-  //   if (confirmDelete && deleteAccountBtn) {
-  //     confirmDelete.addEventListener("change", function () {
-  //       deleteAccountBtn.disabled = !this.checked;
-  //     });
-  //   }
-
-  //   // Initialize documents display if needed
-  //   const documents = JSON.parse('{{ documents|escapejs }}');
-  //   const noDocumentsMessage = document.getElementById("no-documents-message");
-  //   const documentsTable = document.getElementById("documents-table");
-  //   const documentsTbody = document.getElementById("documents-tbody");
-
-  //   if (documents && documents.length > 0) {
-  //     noDocumentsMessage.style.display = "none";
-  //     documentsTable.style.display = "block";
-
-  //     documents.forEach((doc) => {
-  //       const row = document.createElement("tr");
-  //       row.innerHTML = `
-  //                   <td>${doc.document_type}</td>
-  //                   <td><a href="${doc.file
-  //         }" target="_blank" class="text-blue-600 hover:underline">View Document</a></td>
-  //                   <td>${doc.issue_date}</td>
-  //                   <td>${doc.expiry_date || "N/A"}</td>
-  //                   <td>
-  //                       <button class="text-red-600 hover:text-red-800 delete-document" data-doc-id="${doc.id
-  //         }">
-  //                           <i class="fas fa-trash"></i>
-  //                       </button>
-  //                   </td>
-  //               `;
-  //       documentsTbody.appendChild(row);
-  //     });
-  //   } else {
-  //     noDocumentsMessage.style.display = "block";
-  //     documentsTable.style.display = "none";
-  //   }
-  // });
-
-</script>
 {% endblock %}

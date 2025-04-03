@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
-from .models import User, ServiceProviderDocument  # Make sure ServiceProviderDocument is imported correctly
+from .models import (
+    User,
+    ServiceProviderDocument,
+)  # Make sure ServiceProviderDocument is imported correctly
+
 
 class UserRegistrationForm(UserCreationForm):
     ROLE_CHOICES = [
@@ -81,10 +85,12 @@ class ProfileImageForm(forms.ModelForm):
 class ServiceProviderDocumentForm(forms.ModelForm):
     class Meta:
         model = ServiceProviderDocument
-        fields = ['document_type', 'file', 'issue_date', 'expiry_date']
+        fields = ["document_type", "file", "issue_date", "expiry_date"]
         widgets = {
-            'issue_date': forms.DateInput(attrs={'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+            "issue_date": forms.DateInput(attrs={"type": "date"}),
+            "expiry_date": forms.DateInput(attrs={"type": "date"}),
         }
-    
-    expiry_date = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
+
+    expiry_date = forms.DateField(
+        required=False, widget=forms.DateInput(attrs={"type": "date"})
+    )

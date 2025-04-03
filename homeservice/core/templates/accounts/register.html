@@ -1,375 +1,256 @@
 {% load static %} {% block content %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <title>HomeFix - Register</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
-      type="text/css"
-    />
-    <style>
-      .iti {
-        width: 100%;
-      }
-    </style>
-  </head>
 
-  <body class="bg-gray-50">
-    <div
-      id="loading-auth"
-      class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
-    >
-      <div
-        class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
-      ></div>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+  <title>HomeFix - Register</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+    type="text/css" />
+  <style>
+    .iti {
+      width: 100%;
+    }
+  </style>
+</head>
 
-    <div
-      class="min-h-screen flex flex-col items-center justify-center md:p-4 bg-gray-50 hidden"
-      id="content"
-    >
-      <div class="md:w-1/2 w-full">
-        <div class="card w-full bg-white shadow-sm">
-          <div class="card-body md:p-6">
-            <h2 class="text-2xl text-center font-semibold text-gray-800 mb-1">
-              Create an account
-            </h2>
-            <p class="text-gray-500 mb-2 text-center">
-              Sign up to start using our home services platform
-            </p>
+<body class="bg-gray-50">
+  <div id="loading-auth" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"></div>
+  </div>
 
-            {% if messages %}
-            <div class="mb-4">
-              {% for message in messages %}
-              <div
-                class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}"
-              >
-                {{ message }}
-              </div>
-              {% endfor %}
+  <div class="min-h-screen flex flex-col items-center justify-center md:p-4 bg-gray-50 hidden" id="content">
+    <div class="md:w-1/2 w-full">
+      <div class="card w-full bg-white shadow-sm">
+        <div class="card-body md:p-6">
+          <h2 class="text-2xl text-center font-semibold text-gray-800 mb-1">
+            Create an account
+          </h2>
+          <p class="text-gray-500 mb-2 text-center">
+            Sign up to start using our home services platform
+          </p>
+
+          {% if messages %}
+          <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+              {{ message }}
             </div>
-            {% endif %}
+            {% endfor %}
+          </div>
+          {% endif %}
 
-            <form method="post" class="space-y-4" id="signup-form">
-              {% csrf_token %}
+          <form method="post" class="space-y-4" id="signup-form">
+            {% csrf_token %}
+
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700" for="id_role">Account Type</label>
+              <select name="role" id="id_role"
+                class="input input-bordered w-full border-gray-300 bg-white text-gray-900" required>
+                <option value="" disabled selected>
+                  Select Account Type
+                </option>
+                <option value="1">Customer</option>
+                <option value="2">Service Provider</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700" for="id_first_name">
+                  First Name
+                </label>
+                <input id="id_first_name" name="first_name" type="text" placeholder="John"
+                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900" required />
+              </div>
 
               <div class="space-y-2">
-                <label
-                  class="block text-sm font-medium text-gray-700"
-                  for="id_role"
-                  >Account Type</label
-                >
-                <select
-                  name="role"
-                  id="id_role"
-                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                  required
-                >
-                  <option value="" disabled selected>
-                    Select Account Type
-                  </option>
-                  <option value="1">Customer</option>
-                  <option value="2">Service Provider</option>
-                </select>
+                <label class="block text-sm font-medium text-gray-700" for="id_last_name">
+                  Last Name
+                </label>
+                <input id="id_last_name" name="last_name" type="text" placeholder="Doe"
+                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900" required />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700" for="id_email">
+                  Email
+                </label>
+                <input id="id_email" name="email" type="email" placeholder="name@example.com"
+                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900" required />
               </div>
 
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="space-y-2">
-                  <label
-                    class="block text-sm font-medium text-gray-700"
-                    for="id_first_name"
-                  >
-                    First Name
-                  </label>
-                  <input
-                    id="id_first_name"
-                    name="first_name"
-                    type="text"
-                    placeholder="John"
-                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                    required
-                  />
-                </div>
-
-                <div class="space-y-2">
-                  <label
-                    class="block text-sm font-medium text-gray-700"
-                    for="id_last_name"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    id="id_last_name"
-                    name="last_name"
-                    type="text"
-                    placeholder="Doe"
-                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                    required
-                  />
-                </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700" for="id_phone">
+                  Phone Number
+                </label>
+                <input id="id_phone" name="phone" type="tel"
+                  class="input input-bordered w-full border-gray-300 bg-white text-black" />
+                <input type="hidden" id="full_phone" name="full_phone" />
               </div>
+            </div>
 
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="space-y-2">
-                  <label
-                    class="block text-sm font-medium text-gray-700"
-                    for="id_email"
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="id_email"
-                    name="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                    required
-                  />
-                </div>
-
-                <div class="space-y-2">
-                  <label
-                    class="block text-sm font-medium text-gray-700"
-                    for="id_phone"
-                  >
-                    Phone Number
-                  </label>
-                  <input
-                    id="id_phone"
-                    name="phone"
-                    type="tel"
-                    class="input input-bordered w-full border-gray-300 bg-white text-black"
-                  />
-                  <input type="hidden" id="full_phone" name="full_phone" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="space-y-2">
-                  <label
-                    class="block text-sm font-medium text-gray-700"
-                    for="id_password1"
-                  >
-                    Password
-                  </label>
-                  <div class="relative">
-                    <input
-                      id="id_password1"
-                      name="password1"
-                      type="password"
-                      placeholder="••••••••"
-                      class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      onclick="togglePassword('id_password1')"
-                    >
-                      <svg
-                        id="id_password1-eye-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
-                        ></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-
-                <div class="space-y-2">
-                  <label
-                    class="block text-sm font-medium text-gray-700"
-                    for="id_password2"
-                  >
-                    Confirm Password
-                  </label>
-                  <div class="relative">
-                    <input
-                      id="id_password2"
-                      name="password2"
-                      type="password"
-                      placeholder="••••••••"
-                      class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      onclick="togglePassword('id_password2')"
-                    >
-                      <svg
-                        id="id_password2-eye-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path
-                          d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
-                        ></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="pt-4">
-                <button
-                  type="submit"
-                  class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  id="submit-btn"
-                >
-                  <span id="submit-text">Create account</span>
-                  <span id="loading" class="hidden ml-2">
-                    <svg
-                      class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                      ></circle>
-                      <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700" for="id_password1">
+                  Password
+                </label>
+                <div class="relative">
+                  <input id="id_password1" name="password1" type="password" placeholder="••••••••"
+                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10" required />
+                  <button type="button"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    onclick="togglePassword('id_password1')">
+                    <svg id="id_password1-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
                     </svg>
-                  </span>
-                </button>
+                  </button>
+                </div>
               </div>
 
-              <div class="text-center text-sm text-gray-600 pt-2">
-                Already have an account?
-                <a
-                  href="{% url 'login' %}"
-                  class="font-medium text-black hover:text-blue-500"
-                >
-                  Sign in
-                </a>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700" for="id_password2">
+                  Confirm Password
+                </label>
+                <div class="relative">
+                  <input id="id_password2" name="password2" type="password" placeholder="••••••••"
+                    class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10" required />
+                  <button type="button"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    onclick="togglePassword('id_password2')">
+                    <svg id="id_password2-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </form>
-          </div>
+            </div>
+
+            <div class="pt-4">
+              <button type="submit"
+                class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                id="submit-btn">
+                <span id="submit-text">Create account</span>
+                <span id="loading" class="hidden ml-2">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                </span>
+              </button>
+            </div>
+
+            <div class="text-center text-sm text-gray-600 pt-2">
+              Already have an account?
+              <a href="{% url 'login' %}" class="font-medium text-black hover:text-blue-500">
+                Sign in
+              </a>
+            </div>
+          </form>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
-    <script>
-      window.onload = function () {
-        const isAuthenticated =
-          "{{ request.user.is_authenticated|yesno:'true,false' }}";
-        const loadingElement = document.getElementById("loading-auth");
-        const contentElement = document.getElementById("content");
+  <script>
+    window.onload = function () {
+      const isAuthenticated =
+        "{{ request.user.is_authenticated|yesno:'true,false' }}";
+      const loadingElement = document.getElementById("loading-auth");
+      const contentElement = document.getElementById("content");
 
-        if (isAuthenticated === "true") {
-          if (!window.location.href.includes("home")) {
-            window.location.href = "/home"; 
-          }
-        } else {
-          loadingElement.style.display = "none";
-          contentElement.style.display = "flex"; 
+      if (isAuthenticated === "true") {
+        if (!window.location.href.includes("home")) {
+          window.location.href = "/home";
         }
-      };
+      } else {
+        loadingElement.style.display = "none";
+        contentElement.style.display = "flex";
+      }
+    };
 
-      document.addEventListener("DOMContentLoaded", function () {
-        // Initialize phone input
-        const phoneInput = document.getElementById("id_phone");
-        const iti = window.intlTelInput(phoneInput, {
-          utilsScript:
-            "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-          preferredCountries: [
-            "us",
-            "gb",
-            "fr",
-            "de",
-            "it",
-            "es",
-            "ae",
-            "sa",
-            "in",
-            "jp",
-          ],
-          separateDialCode: true,
-          initialCountry: "auto",
-          geoIpLookup: function (callback) {
-            fetch("https://ipapi.co/json/")
-              .then((res) => res.json())
-              .then((data) => callback(data.country_code))
-              .catch(() => callback("us"));
-          },
-        });
-
-        document
-          .getElementById("signup-form")
-          .addEventListener("submit", function (e) {
-            const fullPhone = iti.getNumber();
-            document.getElementById("full_phone").value = fullPhone;
-
-            const submitText = document.getElementById("submit-text");
-            const loading = document.getElementById("loading");
-            const submitButton = document.getElementById("submit-btn");
-
-            submitText.classList.add("hidden");
-            loading.classList.remove("hidden");
-            submitButton.disabled = true;
-          });
+    document.addEventListener("DOMContentLoaded", function () {
+      // Initialize phone input
+      const phoneInput = document.getElementById("id_phone");
+      const iti = window.intlTelInput(phoneInput, {
+        utilsScript:
+          "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        preferredCountries: [
+          "us",
+          "gb",
+          "fr",
+          "de",
+          "it",
+          "es",
+          "ae",
+          "sa",
+          "in",
+          "jp",
+        ],
+        separateDialCode: true,
+        initialCountry: "auto",
+        geoIpLookup: function (callback) {
+          fetch("https://ipapi.co/json/")
+            .then((res) => res.json())
+            .then((data) => callback(data.country_code))
+            .catch(() => callback("us"));
+        },
       });
 
-      function togglePassword(fieldId) {
-        const inputField = document.getElementById(fieldId);
-        const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+      document
+        .getElementById("signup-form")
+        .addEventListener("submit", function (e) {
+          const fullPhone = iti.getNumber();
+          document.getElementById("full_phone").value = fullPhone;
 
-        if (inputField.type === "password") {
-          inputField.type = "text";
-          eyeIcon.innerHTML = `
+          const submitText = document.getElementById("submit-text");
+          const loading = document.getElementById("loading");
+          const submitButton = document.getElementById("submit-btn");
+
+          submitText.classList.add("hidden");
+          loading.classList.remove("hidden");
+          submitButton.disabled = true;
+        });
+    });
+
+    function togglePassword(fieldId) {
+      const inputField = document.getElementById(fieldId);
+      const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+
+      if (inputField.type === "password") {
+        inputField.type = "text";
+        eyeIcon.innerHTML = `
         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
       `;
-        } else {
-          inputField.type = "password";
-          eyeIcon.innerHTML = `
+      } else {
+        inputField.type = "password";
+        eyeIcon.innerHTML = `
         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
         <circle cx="12" cy="12" r="3"></circle>
       `;
-        }
       }
-    </script>
-  </body>
+    }
+  </script>
+</body>
+
 </html>
 
 {% endblock %}

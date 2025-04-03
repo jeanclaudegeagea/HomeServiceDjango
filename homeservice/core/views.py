@@ -21,6 +21,9 @@ from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
 
 
 @never_cache
@@ -87,17 +90,19 @@ def login_view(request):
         if form.is_valid():
             email = form.cleaned_data.get("email")
             password = form.cleaned_data.get("password")
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
 
-            # Attempt to authenticate user
-            user = authenticate(request, username=user.username, password=password)
+            if user:
+                # Attempt to authenticate user
+                user = authenticate(request, username=user.username, password=password)
 
-            if user is not None:
-                login(request, user)
-                return redirect("home")
+                if user is not None:
+                    login(request, user)
+                    return redirect("home")
+                else:
+                    messages.error(request, "Invalid email or password")
             else:
-                # Authentication failed
-                messages.error(request, "Invalid email or password")
+                messages.error(request, "No account found with this email")
         else:
             # Form is not valid
             messages.error(request, "Invalid email or password")
@@ -424,3 +429,36 @@ def customer_settings(request):
     # Render the partial content
     html_content = render(request, "customer/settings.html")
     return JsonResponse({"html": html_content.content.decode("utf-8")})
+
+
+@csrf_exempt
+@login_required
+def changePassword(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            password1 = data.get("password1")
+            password2 = data.get("password2")
+
+            if password1 != password2:
+                return JsonResponse(
+                    {"success": False, "error": "Passwords do not match"},
+                )
+
+            # Validate password using Django's built-in validators
+            validate_password(password1, user=request.user)
+
+            # Update password
+            request.user.password = make_password(
+                password1
+            )  # Hash password before saving
+            request.user.save()
+
+            return JsonResponse(
+                {"success": True, "message": "Password changed successfully"},
+                status=200,
+            )
+
+        except ValidationError as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
