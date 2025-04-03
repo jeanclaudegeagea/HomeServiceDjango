@@ -1,416 +1,584 @@
 {% block content %}
-    <div class="container p-2">
-        <div class="flex flex-col gap-4">
-            <!-- Sidebar Navigation -->
-            <div class="bg-white w-full">
-                <h1 class="text-2xl font-bold mb-5">Account Settings</h1>
-                <ul class="flex items-center px-2 py-4 menu-items menu-lg bg-[#f1f1f0] rounded-md">
-                    <li><a href="#personal-info" class="text-md bg-white"><i class="fas fa-user mr-2"></i> Personal Information</a></li>
-                    <li><a href="#documents"><i class="fas fa-file mr-2 text-md text-[#878088]"></i> Documents</a></li>
-                    <li><a href="#specializations"><i class="fas fa-star mr-2 text-md text-[#878088]"></i> Specializations</a></li>
-                    <li><a href="#account"><i class="fas fa-cog mr-2 text-md text-[#878088]"></i> Account</a></li>
-                </ul>
-            </div>
-
-            <hr/>
-
-            <div class="space-y-6">
-                <!-- Personal Information Section -->
-                <form method="post" id="change-personal-info">
-                    {% csrf_token %}
-                    
-                    {% if messages %}
-                    <div class="mb-4">
-                        {% for message in messages %}
-                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    <div id="personal-info" class="bg-white p-3 rounded-lg content-section">
-                        <h2 class="text-2xl font-bold mb-4">Personal Information</h2>
-                        <p class="mb-5 text-md text-[#878088]">Update your personal details here.</p>
-                        
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2">
-                                <div class="space-y-1 w-[48%]">
-                                    <label class="block text-lg font-medium text-gray-700" for="id_first_name">First Name</label>
-                                    <input 
-                                        type="text" 
-                                        class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
-                                        id="id_first_name"
-                                        name="first_name"
-                                        required
-                                        value="{{request.user.first_name}}"
-                                    />
-                                </div>
-
-                                <div class="space-y-1 w-[48%]">
-                                    <label class="block text-lg font-medium text-gray-700" for="id_last_name">Last Name</label>
-                                    <input 
-                                        type="text" 
-                                        class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
-                                        id="id_last_name"
-                                        name="last_name"
-                                        required
-                                        value="{{request.user.last_name}}"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                <div class="space-y-1 w-[48%]">
-                                    <label class="block text-lg font-medium text-gray-700" for="id_phone">Phone Number</label>
-                                    <input
-                                        id="id_phone"
-                                        name="phone"
-                                        type="tel"
-                                        class="input input-bordered w-full border-gray-300 bg-white text-black"
-                                        value="{{request.user.phone}}"
-                                    />
-                                    <input type="hidden" id="full_phone" name="full_phone" />
-                                </div>
-
-                                <div class="space-y-1 w-[48%]">
-                                    <label class="block text-lg font-medium text-gray-700" for="id_email">Email</label>
-                                    <input
-                                        id="id_email"
-                                        name="email"
-                                        type="email"
-                                        class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                                        value="{{request.user.email}}"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-8">
-                            <button 
-                                type="submit"
-                                class="flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                                id="submit-PI-btn">
-                                <span id="submit-PI-text">Save Changes</span>
-                                <span id="PI-loading" class="hidden ml-2">
-                                    <svg
-                                        class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <circle
-                                            class="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            stroke-width="4"
-                                        ></circle>
-                                        <path
-                                            class="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
-                                    </svg>
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Documents Section -->
-                <div id="documents" class="bg-white p-3 rounded-lg content-section {% if not request.GET.tab == 'documents' %}hidden{% endif %}">
-                    <h2 class="text-2xl font-bold mb-4">Documents</h2>
-                    <p class="mb-5 text-md text-[#878088]">Manage your professional documents here.</p>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <h3 class="font-semibold mb-2">Upload New Document</h3>
-                            <form method="post" enctype="multipart/form-data" id="document-upload-form">
-                                {% csrf_token %}
-                                <div class="space-y-4">
-                                    <div class="space-y-1 w-full">
-                                        <label class="block text-lg font-medium text-gray-700">Document Type</label>
-                                        <select name="document_type" class="select select-bordered w-full border-gray-300 bg-white text-gray-900" required>
-                                            <option value="" disabled selected>Select document type</option>
-                                            <option value="license">Professional License</option>
-                                            <option value="certification">Certification</option>
-                                            <option value="insurance">Insurance Document</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="space-y-1 w-full">
-                                        <label class="block text-lg font-medium text-gray-700">File</label>
-                                        <input 
-                                            type="file" 
-                                            name="file" 
-                                            class="file-input file-input-bordered w-full border-gray-300 bg-white text-gray-900" 
-                                            required
-                                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                        >
-                                        <p class="text-sm text-gray-500 mt-1">Accepted formats: PDF, DOC, DOCX, JPG, PNG</p>
-                                    </div>
-                                    
-                                    <div class="flex gap-4">
-                                        <div class="space-y-1 w-full">
-                                            <label class="block text-lg font-medium text-gray-700">Issue Date</label>
-                                            <input 
-                                                type="date" 
-                                                name="issue_date" 
-                                                class="input input-bordered w-full border-gray-300 bg-white text-gray-900" 
-                                                required
-                                                max="{% now 'Y-m-d' %}"
-                                            >
-                                        </div>
-                                        
-                                        <div class="space-y-1 w-full">
-                                            <label class="block text-lg font-medium text-gray-700">Expiry Date (if applicable)</label>
-                                            <input 
-                                                type="date" 
-                                                name="expiry_date" 
-                                                class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
-                                                min="{% now 'Y-m-d' %}"
-                                            >
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-4">
-                                        <button 
-                                            type="submit" 
-                                            class="flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                                            id="submit-doc-btn"
-                                        >
-                                            <span id="submit-doc-text">Upload Document</span>
-                                            <span id="doc-loading" class="hidden ml-2">
-                                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <div id="document-section">
-                            <!-- This is the static message for when no documents exist -->
-                            <div id="no-documents-message" class="text-center py-8" style="display: none;">
-                                <div class="text-gray-500 mb-4">
-                                    <i class="fas fa-folder-open text-4xl"></i>
-                                </div>
-                                <p class="text-lg text-gray-600">No documents uploaded yet.</p>
-                                <p class="text-sm text-gray-500">Upload your professional documents to get started.</p>
-                            </div>
-                        
-                            <!-- The documents table will only be visible when documents exist -->
-                            <div id="documents-table" style="display: none;">
-                                <h3 class="font-semibold mb-2">Your Documents</h3>
-                                <div class="overflow-x-auto">
-                                    <table class="table w-full">
-                                        <thead>
-                                            <tr>
-                                                <th>Type</th>
-                                                <th>File</th>
-                                                <th>Issued</th>
-                                                <th>Expires</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="documents-tbody">
-                                            <!-- Documents will be dynamically added here using JavaScript -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                               
-                    </div>
-                </div>
-
-                <!-- Specializations Section -->
-                <div id="specializations" class="bg-white p-3 rounded-lg content-section">
-                    <h2 class="text-2xl font-bold mb-4 text-black">Specializations</h2>
-                    <p class="mb-5 text-md text-[#878088]">Manage your professional specializations here.</p>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <h3 class="font-semibold mb-2 text-black">Add Specialization</h3>
-                            <div class="flex gap-2">
-                                <div class="w-full">
-                                    <select class="select border border-gray-300 rounded-md px-3 py-2 w-full text-black bg-white">
-                                        <option disabled selected>Select a specialization</option>
-                                        <option value="web">Web Development</option>
-                                        <option value="mobile">Mobile Development</option>
-                                        <option value="uiux">UI/UX Design</option>
-                                        <option value="data">Data Science</option>
-                                    </select>
-                                    <div class="mt-2 text-sm text-gray-500" id="specialization-description">
-                                        <!-- Description will appear here when a specialization is selected -->
-                                    </div>
-                                </div>
-                                <button class="btn bg-gray-500 text-white hover:bg-gray-600 flex items-center px-4 rounded-md">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-                                    </svg>
-                                    Add
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h3 class="font-semibold mb-2 text-black">Your Specializations</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <div class="bg-gray-100 rounded-md px-3 py-2 flex items-center justify-between">
-                                    <div>
-                                        <span class="font-medium text-black">Web Development</span>
-                                        <p class="text-xs text-gray-500 mt-1">Frontend and backend web application development</p>
-                                    </div>
-                                    <button class="ml-3 text-gray-500 hover:text-gray-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="bg-gray-100 rounded-md px-3 py-2 flex items-center justify-between">
-                                    <div>
-                                        <span class="font-medium text-black">Mobile Development</span>
-                                        <p class="text-xs text-gray-500 mt-1">Native and cross-platform mobile app development</p>
-                                    </div>
-                                    <button class="ml-3 text-gray-500 hover:text-gray-700">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Account Section -->
-                <div id="account" class="bg-white p-3 rounded-lg content-section hidden">
-                    <h2 class="text-2xl font-bold mb-4">Account Management</h2>
-                    <p class="mb-5 text-md text-[#878088]">Manage your account settings here.</p>
-                    
-                    <div class="space-y-6">
-                        <div class="border border-error rounded-lg p-4">
-                            <h3 class="font-semibold text-error mb-2">Danger Zone</h3>
-                            <p class="mb-4">Once you delete your account, there is no going back. Please be certain.</p>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" class="checkbox checkbox-error" id="confirm-delete" />
-                                <span class="label-text">I understand that this action cannot be undone</span>
-                            </label>
-                            <button 
-                                id="delete-account-btn" 
-                                class="btn btn-error mt-4 text-white"
-                                disabled
-                            >
-                                Delete My Account
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div> 
-        </div>
+<div class="container p-2">
+  <div class="flex flex-col gap-4">
+    <!-- Sidebar Navigation -->
+    <div class="bg-white w-full">
+      <h1 class="text-2xl font-bold mb-5">Account Settings</h1>
+      <ul class="flex items-center px-2 py-4 menu-items menu-lg bg-[#f1f1f0] rounded-md">
+        <li>
+          <a href="#personal-info" class="text-md bg-white"><i class="fas fa-user mr-2"></i> Personal Information</a>
+        </li>
+        <li>
+          <a href="#specializations"><i class="fas fa-star mr-2 text-md text-[#878088]"></i>
+            Specializations</a>
+        </li>
+        <li>
+          <a href="#documents"><i class="fas fa-file mr-2 text-md text-[#878088]"></i>
+            Documents</a>
+        </li>
+        <li>
+          <a href="#account"><i class="fas fa-cog mr-2 text-md text-[#878088]"></i> Account</a>
+        </li>
+      </ul>
     </div>
 
-    <script>
+    <hr />
 
+    <div class="space-y-6">
+      <!-- Personal Information Section -->
+      <form method="post" id="change-personal-info">
+        {% csrf_token %} {% if messages %}
+        <div class="mb-4">
+          {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-    // document.addEventListener('DOMContentLoaded', function() {
-    //     // Tab switching
-    //     const tabs = document.querySelectorAll('.menu-items a');
-    //     tabs.forEach(tab => {
-    //         tab.addEventListener('click', function(e) {
-    //             e.preventDefault();
-                
-    //             // Update active tab styling
-    //             tabs.forEach(t => {
-    //                 t.classList.remove('bg-white');
-    //                 t.classList.add('text-[#878088]');
-    //                 t.querySelector('i').classList.add('text-[#878088]');
-    //                 t.querySelector('i').classList.remove('text-black');
-    //             });
-                
-    //             this.classList.add('bg-white');
-    //             this.classList.remove('text-[#878088]');
-    //             this.querySelector('i').classList.remove('text-[#878088]');
-    //             this.querySelector('i').classList.add('text-black');
-                
-    //             // Show the selected section
-    //             const targetId = this.getAttribute('href').substring(1);
-    //             document.querySelectorAll('.content-section').forEach(section => {
-    //                 section.classList.add('hidden');
-    //             });
-    //             document.getElementById(targetId).classList.remove('hidden');
-    //         });
-    //     });
+        <div id="personal-info" class="bg-white p-3 rounded-lg content-section">
+          <h2 class="text-2xl font-bold mb-4">Personal Information</h2>
+          <p class="mb-5 text-md text-[#878088]">
+            Update your personal details here.
+          </p>
 
-    //     // Document upload form submission
-    //     const docForm = document.getElementById('document-upload-form');
-    //     if (docForm) {
-    //         docForm.addEventListener('submit', function(e) {
-    //             const submitBtn = document.getElementById('submit-doc-btn');
-    //             const submitText = document.getElementById('submit-doc-text');
-    //             const loadingIcon = document.getElementById('doc-loading');
-                
-    //             submitBtn.disabled = true;
-    //             submitText.textContent = 'Uploading...';
-    //             loadingIcon.classList.remove('hidden');
-    //         });
-    //     }
+          <div class="space-y-4">
+            <div class="flex items-center gap-2">
+              <div class="space-y-1 w-[48%]">
+                <label class="block text-lg font-medium text-gray-700" for="id_first_name">First Name</label>
+                <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                  id="id_first_name" name="first_name" required value="{{request.user.first_name}}" />
+              </div>
 
-    //     // Personal info form submission
-    //     const personalInfoForm = document.getElementById('change-personal-info');
-    //     if (personalInfoForm) {
-    //         personalInfoForm.addEventListener('submit', function(e) {
-    //             const submitBtn = document.getElementById('submit-PI-btn');
-    //             const submitText = document.getElementById('submit-PI-text');
-    //             const loadingIcon = document.getElementById('PI-loading');
-                
-    //             submitBtn.disabled = true;
-    //             submitText.textContent = 'Saving...';
-    //             loadingIcon.classList.remove('hidden');
-    //         });
-    //     }
+              <div class="space-y-1 w-[48%]">
+                <label class="block text-lg font-medium text-gray-700" for="id_last_name">Last Name</label>
+                <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                  id="id_last_name" name="last_name" required value="{{request.user.last_name}}" />
+              </div>
+            </div>
 
-    //     // Account deletion confirmation
-    //     const confirmDelete = document.getElementById('confirm-delete');
-    //     const deleteAccountBtn = document.getElementById('delete-account-btn');
-    //     if (confirmDelete && deleteAccountBtn) {
-    //         confirmDelete.addEventListener('change', function() {
-    //             deleteAccountBtn.disabled = !this.checked;
-    //         });
-    //     }
+            <div class="flex items-center gap-2">
+              <div class="space-y-1 w-[48%]">
+                <label class="block text-lg font-medium text-gray-700" for="id_phone">Phone Number</label>
+                <input id="id_phone" name="phone" type="tel"
+                  class="input input-bordered w-full border-gray-300 bg-white text-black"
+                  value="{{request.user.phone}}" />
+                <input type="hidden" id="full_phone" name="full_phone" />
+              </div>
 
-    //     // Initialize tooltips
-    //     const tooltips = document.querySelectorAll('[data-tip]');
-    //     tooltips.forEach(tooltip => {
-    //         tooltip.addEventListener('mouseenter', function() {
-    //             const tipText = this.getAttribute('data-tip');
-    //             const tooltipElement = document.createElement('div');
-    //             tooltipElement.className = 'tooltip-text absolute z-10 bg-gray-900 text-white text-xs py-1 px-2 rounded';
-    //             tooltipElement.textContent = tipText;
-                
-    //             const rect = this.getBoundingClientRect();
-    //             tooltipElement.style.top = `${rect.top - 30}px`;
-    //             tooltipElement.style.left = `${rect.left + rect.width/2}px`;
-    //             tooltipElement.style.transform = 'translateX(-50%)';
-                
-    //             document.body.appendChild(tooltipElement);
-    //             this.tooltipElement = tooltipElement;
-    //         });
-            
-    //         tooltip.addEventListener('mouseleave', function() {
-    //             if (this.tooltipElement) {
-    //                 this.tooltipElement.remove();
-    //             }
-    //         });
-    //     });
-    // });
+              <div class="space-y-1 w-[48%]">
+                <label class="block text-lg font-medium text-gray-700" for="id_email">Email</label>
+                <input id="id_email" name="email" type="email"
+                  class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                  value="{{request.user.email}}" required />
+              </div>
+            </div>
+          </div>
 
-    </script>
+          <div class="mt-8">
+            <button type="submit"
+              class="flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              id="submit-PI-btn">
+              <span id="submit-PI-text">Save Changes</span>
+              <span id="PI-loading" class="hidden ml-2">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
+                </svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Specializations Section -->
+      <div id="specializations" class="bg-white p-3 rounded-lg content-section">
+        <h2 class="text-2xl font-bold mb-4">Specializations</h2>
+        <p class="mb-5 text-md text-[#878088]">
+          Manage your professional specializations and experience here.
+        </p>
+
+        <div class="space-y-6">
+          <!-- Years of Experience -->
+          <div>
+            <h3 class="font-semibold mb-2">Years of Experience</h3>
+            <div class="flex items-center gap-4">
+              <input type="number" id="years-of-experience"
+                class="input input-bordered w-24 border-gray-300 bg-white text-gray-900" min="0" max="50"
+                value="{{ years_of_experience }}" />
+              <button id="save-experience-btn"
+                class="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                Save
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Specialization -->
+          <div>
+            <h3 class="font-semibold mb-2">Add Specialization</h3>
+            <div class="flex gap-2">
+              <select id="specialization-select"
+                class="select select-bordered w-full max-w-xs border-gray-300 bg-white text-gray-900">
+                <option disabled selected>Select a specialization</option>
+                {% for spec in specializations %}
+                <option value="{{ spec.id }}">{{ spec.name }}</option>
+                {% endfor %}
+              </select>
+              <button id="add-specialization-btn" class="btn bg-gray-900 text-white hover:bg-black">
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Current Specializations -->
+          <div>
+            <h3 class="font-semibold mb-2">Your Specializations</h3>
+            <div class="flex flex-wrap gap-2" id="current-specializations">
+              {% for spec in request.user.serviceprovider.specialization.all %}
+              <div class="badge badge-primary gap-2 p-3">
+                {{ spec.name }}
+                <button class="text-xs remove-specialization" data-spec-id="{{ spec.id }}">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              {% empty %}
+              <p class="text-gray-500">No specializations added yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Section -->
+      <div id="documents" class="bg-white p-3 rounded-lg content-section hidden">
+        <h2 class="text-2xl font-bold mb-4">Documents</h2>
+        <p class="mb-5 text-md text-[#878088]">
+          Manage your professional documents here.
+        </p>
+
+        <div class="space-y-6">
+          <div>
+            <h3 class="font-semibold mb-2">Upload New Document</h3>
+            <form method="post" enctype="multipart/form-data" id="document-upload-form">
+              {% csrf_token %}
+              <div class="space-y-4">
+                <div class="space-y-1 w-full">
+                  <label class="block text-lg font-medium text-gray-700">Document Type</label>
+                  <select name="document_type"
+                    class="select select-bordered w-full border-gray-300 bg-white text-gray-900" required>
+                    <option value="" disabled selected>
+                      Select document type
+                    </option>
+                    <option value="license">Professional License</option>
+                    <option value="certification">Certification</option>
+                    <option value="insurance">Insurance Document</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1 w-full">
+                  <label class="block text-lg font-medium text-gray-700">File</label>
+                  <input type="file" name="file"
+                    class="file-input file-input-bordered w-full border-gray-300 bg-white text-gray-900" required
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                  <p class="text-sm text-gray-500 mt-1">
+                    Accepted formats: PDF, DOC, DOCX, JPG, PNG
+                  </p>
+                </div>
+
+                <div class="flex gap-4">
+                  <div class="space-y-1 w-full">
+                    <label class="block text-lg font-medium text-gray-700">Issue Date</label>
+                    <input type="date" name="issue_date"
+                      class="input input-bordered w-full border-gray-300 bg-white text-gray-900" required
+                      max="{% now 'Y-m-d' %}" />
+                  </div>
+
+                  <div class="space-y-1 w-full">
+                    <label class="block text-lg font-medium text-gray-700">Expiry Date (if applicable)</label>
+                    <input type="date" name="expiry_date"
+                      class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                      min="{% now 'Y-m-d' %}" />
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <button type="submit"
+                    class="flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                    id="submit-doc-btn">
+                    <span id="submit-doc-text">Upload Document</span>
+                    <span id="doc-loading" class="hidden ml-2">
+                      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div id="document-section">
+            <!-- This is the static message for when no documents exist -->
+            <div id="no-documents-message" class="text-center py-8" style="display: none">
+              <div class="text-gray-500 mb-4">
+                <i class="fas fa-folder-open text-4xl"></i>
+              </div>
+              <p class="text-lg text-gray-600">No documents uploaded yet.</p>
+              <p class="text-sm text-gray-500">
+                Upload your professional documents to get started.
+              </p>
+            </div>
+
+            <!-- The documents table will only be visible when documents exist -->
+            <div id="documents-table" style="display: none">
+              <h3 class="font-semibold mb-2">Your Documents</h3>
+              <div class="overflow-x-auto">
+                <table class="table w-full">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>File</th>
+                      <th>Issued</th>
+                      <th>Expires</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="documents-tbody">
+                    <!-- Documents will be dynamically added here using JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Section -->
+      <div id="account" class="bg-white p-3 rounded-lg content-section hidden">
+        <h2 class="text-2xl font-bold mb-4">Account Management</h2>
+        <p class="mb-5 text-md text-[#878088]">
+          Manage your account settings here.
+        </p>
+
+        <div class="space-y-6">
+          <div class="border border-error rounded-lg p-4">
+            <h3 class="font-semibold text-error mb-2">Danger Zone</h3>
+            <p class="mb-4">
+              Once you delete your account, there is no going back. Please be
+              certain.
+            </p>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-error" id="confirm-delete" />
+              <span class="label-text">I understand that this action cannot be undone</span>
+            </label>
+            <button id="delete-account-btn" class="btn btn-error mt-4 text-white" disabled>
+              Delete My Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Tab switching
+    const tabs = document.querySelectorAll(".menu-items a");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", function (e) {
+        e.preventDefault();
+
+        // Update active tab styling
+        tabs.forEach((t) => {
+          t.classList.remove("bg-white", "text-black");
+          t.classList.add("text-[#878088]");
+          t.querySelector("i").classList.add("text-[#878088]");
+          t.querySelector("i").classList.remove("text-black");
+        });
+
+        this.classList.add("bg-white", "text-black");
+        this.querySelector("i").classList.remove("text-[#878088]");
+        this.querySelector("i").classList.add("text-black");
+
+        // Show the selected section
+        const targetId = this.getAttribute("href").substring(1);
+        document.querySelectorAll(".content-section").forEach((section) => {
+          section.classList.add("hidden");
+        });
+        document.getElementById(targetId).classList.remove("hidden");
+      });
+    });
+
+    // Initialize with personal info visible by default
+    document.querySelector('.menu-items a[href="#personal-info"]').click();
+
+    // Save Years of Experience
+    const saveExperienceBtn = document.getElementById("save-experience-btn");
+    if (saveExperienceBtn) {
+      saveExperienceBtn.addEventListener("click", function () {
+        const yearsInput = document.getElementById("years-of-experience");
+        const years = yearsInput.value;
+
+        // Validation
+        if (!years || isNaN(years)) {
+          alert("Please enter a valid number of years");
+          return;
+        }
+
+        // Add loading state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="loading loading-spinner"></span> Saving...';
+        this.disabled = true;
+
+        fetch("/update_experience/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          body: JSON.stringify({
+            years_of_experience: years,
+          }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.success) {
+              alert("Years of experience updated successfully!");
+            } else {
+              alert("Error: " + (data.error || "Unknown error occurred"));
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred: " + error.message);
+          })
+          .finally(() => {
+            this.disabled = false;
+            this.innerHTML = originalText;
+          });
+      });
+    }
+
+    // Add Specialization
+    const addSpecializationBtn = document.getElementById(
+      "add-specialization-btn"
+    );
+    if (addSpecializationBtn) {
+      addSpecializationBtn.addEventListener("click", function () {
+        const select = document.getElementById("specialization-select");
+        const specId = select.value;
+
+        if (!specId) {
+          alert("Please select a specialization");
+          return;
+        }
+
+        // Add loading state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="loading loading-spinner"></span> Adding...';
+        this.disabled = true;
+
+        fetch("/add_specialization/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+          body: JSON.stringify({
+            specialization_id: specId,
+          }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (data.success) {
+              // Add the new specialization to the UI
+              const currentSpecs = document.getElementById(
+                "current-specializations"
+              );
+
+              // Remove the "no specializations" message if it exists
+              const noSpecsMessage =
+                currentSpecs.querySelector("p.text-gray-500");
+              if (noSpecsMessage) {
+                noSpecsMessage.remove();
+              }
+
+              const newBadge = document.createElement("div");
+              newBadge.className = "badge badge-primary gap-2 p-3";
+              newBadge.innerHTML = `
+                    ${data.specialization_name}
+                    <button class="text-xs remove-specialization" data-spec-id="${specId}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+              currentSpecs.appendChild(newBadge);
+
+              // Add event listener to the new remove button
+              newBadge
+                .querySelector(".remove-specialization")
+                .addEventListener("click", removeSpecialization);
+
+              // Reset the select
+              select.value = "";
+              alert("Specialization added successfully!");
+            } else {
+              alert("Error: " + (data.error || "Failed to add specialization"));
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("An error occurred: " + error.message);
+          })
+          .finally(() => {
+            this.disabled = false;
+            this.innerHTML = originalText;
+          });
+      });
+    }
+
+    // Remove Specialization
+    function removeSpecialization() {
+      if (!confirm("Are you sure you want to remove this specialization?")) {
+        return;
+      }
+
+      const specId = this.getAttribute("data-spec-id");
+      const badge = this.closest(".badge");
+
+      fetch("/remove_specialization/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+          specialization_id: specId,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.success) {
+            // Remove the specialization from the UI
+            badge.remove();
+
+            // Show "no specializations" message if none left
+            const currentSpecs = document.getElementById("current-specializations");
+            if (currentSpecs.children.length === 0) {
+              const noSpecsMessage = document.createElement("p");
+              noSpecsMessage.className = "text-gray-500";
+              noSpecsMessage.textContent = "No specializations added yet.";
+              currentSpecs.appendChild(noSpecsMessage);
+            }
+
+            alert("Specialization removed successfully!");
+          } else {
+            alert("Error removing specialization: " + data.error);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while removing specialization");
+        });
+    }
+
+    // Add event listeners to all remove buttons
+    document.querySelectorAll(".remove-specialization").forEach((btn) => {
+      btn.addEventListener("click", removeSpecialization);
+    });
+
+    // Document upload form submission
+    const docForm = document.getElementById("document-upload-form");
+    if (docForm) {
+      docForm.addEventListener("submit", function (e) {
+        const submitBtn = document.getElementById("submit-doc-btn");
+        const submitText = document.getElementById("submit-doc-text");
+        const loadingIcon = document.getElementById("doc-loading");
+
+        submitBtn.disabled = true;
+        submitText.textContent = "Uploading...";
+        loadingIcon.classList.remove("hidden");
+      });
+    }
+
+    // Personal info form submission
+    const personalInfoForm = document.getElementById("change-personal-info");
+    if (personalInfoForm) {
+      personalInfoForm.addEventListener("submit", function (e) {
+        const submitBtn = document.getElementById("submit-PI-btn");
+        const submitText = document.getElementById("submit-PI-text");
+        const loadingIcon = document.getElementById("PI-loading");
+
+        submitBtn.disabled = true;
+        submitText.textContent = "Saving...";
+        loadingIcon.classList.remove("hidden");
+      });
+    }
+
+    // Account deletion confirmation
+    const confirmDelete = document.getElementById("confirm-delete");
+    const deleteAccountBtn = document.getElementById("delete-account-btn");
+    if (confirmDelete && deleteAccountBtn) {
+      confirmDelete.addEventListener("change", function () {
+        deleteAccountBtn.disabled = !this.checked;
+      });
+    }
+
+    // Initialize documents display if needed
+    const documents = JSON.parse('{{ documents|escapejs }}');
+    const noDocumentsMessage = document.getElementById("no-documents-message");
+    const documentsTable = document.getElementById("documents-table");
+    const documentsTbody = document.getElementById("documents-tbody");
+
+    if (documents && documents.length > 0) {
+      noDocumentsMessage.style.display = "none";
+      documentsTable.style.display = "block";
+
+      documents.forEach((doc) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                    <td>${doc.document_type}</td>
+                    <td><a href="${doc.file
+          }" target="_blank" class="text-blue-600 hover:underline">View Document</a></td>
+                    <td>${doc.issue_date}</td>
+                    <td>${doc.expiry_date || "N/A"}</td>
+                    <td>
+                        <button class="text-red-600 hover:text-red-800 delete-document" data-doc-id="${doc.id
+          }">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+        documentsTbody.appendChild(row);
+      });
+    } else {
+      noDocumentsMessage.style.display = "block";
+      documentsTable.style.display = "none";
+    }
+  });
+</script>
 {% endblock %}
