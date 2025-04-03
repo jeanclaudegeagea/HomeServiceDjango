@@ -394,6 +394,62 @@
                         });
                     }
 
+                    const yearsOfExperience = '{{ years_of_experience }}'
+                    const yearsOfExperienceInput = document.getElementById("years-of-experience")
+
+                    yearsOfExperienceInput.value = yearsOfExperience
+
+                    // Save Years of Experience
+                    const saveExperienceBtn = document.getElementById("save-experience-btn");
+                    if (saveExperienceBtn) {
+                        saveExperienceBtn.addEventListener("click", function () {
+                            const yearsInput = document.getElementById("years-of-experience");
+                            const years = yearsInput.value;
+
+                            // Validation
+                            if (!years || isNaN(years)) {
+                                alert("Please enter a valid number of years");
+                                return;
+                            }
+
+                            // Add loading state
+                            const originalText = this.innerHTML;
+                            this.innerHTML = '<span class="loading loading-spinner"></span> Saving...';
+                            this.disabled = true;
+
+                            fetch("/update_experience/", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRFToken": "{{ csrf_token }}",
+                                },
+                                body: JSON.stringify({
+                                    years_of_experience: years,
+                                }),
+                            })
+                                .then((response) => {
+                                    if (!response.ok) {
+                                        throw new Error("Network response was not ok");
+                                    }
+                                    return response.json();
+                                })
+                                .then((data) => {
+                                    if (data.success) {
+                                        alert("Years of experience updated successfully!");
+                                    } else {
+                                        alert("Error: " + (data.error || "Unknown error occurred"));
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error("Error:", error);
+                                    alert("An error occurred: " + error.message);
+                                })
+                                .finally(() => {
+                                    this.disabled = false;
+                                    this.innerHTML = originalText;
+                                });
+                        });
+                    }
                 }
                 else if (Number(isCustomer) === 1) {
 
