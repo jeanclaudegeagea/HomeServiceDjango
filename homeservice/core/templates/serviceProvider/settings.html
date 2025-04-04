@@ -1,6 +1,5 @@
 {% block content %}
 <div class="container p-2 flex flex-col gap-4">
-  <!-- Sidebar Navigation -->
   <header class="bg-white w-full">
     <h1 class="text-2xl font-bold mb-5">Account Settings</h1>
     <ul class="flex items-center px-2 py-4 menu-items menu-lg bg-[#f1f1f0] rounded-md">
@@ -24,7 +23,6 @@
   <hr />
 
   <main class="space-y-6">
-    <!-- Personal Information Section -->
     <form method="post" id="change-personal-info">
       {% csrf_token %} {% if messages %}
       <div class="mb-4">
@@ -94,7 +92,6 @@
       </section>
     </form>
 
-    <!-- Specializations Section -->
     <section id="specializations" class="bg-white p-3 rounded-lg content-section hidden">
       <h2 class="text-2xl font-bold mb-4">Specializations</h2>
       <p class="mb-5 text-md text-[#878088]">
@@ -102,7 +99,6 @@
       </p>
 
       <div class="space-y-6">
-        <!-- Years of Experience -->
         <div>
           <h3 class="font-semibold mb-2">Years of Experience</h3>
           <div class="flex items-center gap-4">
@@ -115,7 +111,6 @@
           </div>
         </div>
 
-        <!-- Add Specialization -->
         <div>
           <h3 class="font-semibold mb-2">Add Specialization</h3>
           <div class="flex gap-2 items-center " id="specialization-select" style="display: none;">
@@ -132,11 +127,9 @@
           </p>
         </div>
 
-        <!-- Current Specializations -->
         <div class="space-y-6">
           <h3 class="font-semibold mb-2 text-gray-900">Your Specializations</h3>
           <div class="flex flex-wrap gap-2" id="current-specializations">
-            <!-- Specializations will be added here dynamically -->
           </div>
         </div>
       </div>
@@ -144,7 +137,6 @@
 
 
 
-    <!-- Documents Section -->
     <section id="documents" class="bg-white p-3 rounded-lg content-section hidden">
       <h2 class="text-2xl font-bold mb-4">Documents</h2>
       <p class="mb-5 text-md text-[#878088]">
@@ -218,7 +210,6 @@
         </div>
 
         <div id="document-section">
-          <!-- This is the static message for when no documents exist -->
           <div id="no-documents-message" class="text-center py-8" style="display: none">
             <div class="text-gray-500 mb-4">
               <i class="fas fa-folder-open text-4xl"></i>
@@ -229,7 +220,6 @@
             </p>
           </div>
 
-          <!-- The documents table will only be visible when documents exist -->
           <div id="documents-table" style="display: none">
             <h3 class="font-semibold mb-2">Your Documents</h3>
             <div class="overflow-x-auto">
@@ -244,7 +234,6 @@
                   </tr>
                 </thead>
                 <tbody id="documents-tbody">
-                  <!-- Documents will be dynamically added here using JavaScript -->
                 </tbody>
               </table>
             </div>
@@ -253,7 +242,6 @@
       </div>
     </section>
 
-    <!-- Account Section -->
     <section id="account" class="bg-white p-3 rounded-lg content-section hidden">
       <h2 class="text-2xl font-bold mb-4">Account Management</h2>
       <p class="mb-5 text-md text-[#878088]">

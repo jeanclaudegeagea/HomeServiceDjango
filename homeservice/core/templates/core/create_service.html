@@ -1,0 +1,160 @@
+{% extends 'core/base.html' %} {% block content %}
+<div class="bg-white mx-auto p-6">
+  <div class="card bg-gray-100 shadow-xl">
+    <div class="card-body">
+      <h1 class="card-title text-2xl font-bold mb-6">Create New Service</h1>
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+
+        <!-- Specialization Dropdown - Only show provider's specializations -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text text-gray-700">Specialization</span>
+          </label>
+          <select
+            name="specialization"
+            class="select select-bordered bg-white w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+            required
+          >
+            {% for spec in request.user.serviceprovider.specialization.all %}
+            <option value="{{ spec.id }}">{{ spec.name }}</option>
+            {% empty %}
+            <option disabled selected>No specializations available</option>
+            {% endfor %}
+          </select>
+          {% if not request.user.serviceprovider.specialization.all %}
+          <div class="mt-2 text-error">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            You need to add specializations in your profile before creating
+            services
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Service Name -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text text-gray-700">Service Name</span>
+          </label>
+          <input
+            type="text"
+            name="name"
+            placeholder="e.g. Deep Cleaning, Electrical Repair"
+            class="input bg-white input-bordered w-full focus:ring-2 focus:ring-blue-500 text-black"
+            required
+          />
+        </div>
+
+        <!-- Description Textarea -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text text-gray-700">Description</span>
+          </label>
+          <textarea
+            name="description"
+            rows="4"
+            class="textarea bg-white textarea-bordered w-full focus:ring-2 focus:ring-blue-500 text-black"
+            placeholder="Describe the service in detail..."
+            required
+          ></textarea>
+        </div>
+
+        <!-- Price Input -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text text-gray-700">Price ($)</span>
+          </label>
+          <div class="relative">
+            <span
+              class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"
+              >$</span
+            >
+            <input
+              type="number"
+              name="price"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              class="input bg-white input-bordered w-full pl-8 focus:ring-2 focus:ring-blue-500 text-black"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-control grid grid-cols-3 gap-3">
+          <div>
+            <label class="label">
+              <span class="label-text text-gray-700">Country</span>
+            </label>
+            <input
+              type="text"
+              name="country"
+              placeholder="e.g. United States"
+              class="input bg-white input-bordered w-full focus:ring-2 focus:ring-blue-500 text-black"
+              required
+            />
+          </div>
+          <div>
+            <label class="label">
+              <span class="label-text text-gray-700">State</span>
+            </label>
+            <input
+              type="text"
+              name="state"
+              placeholder="e.g. New York"
+              class="input bg-white input-bordered w-full focus:ring-2 focus:ring-blue-500 text-black"
+              required
+            />
+          </div>
+          <div>
+            <label class="label">
+              <span class="label-text text-gray-700">City</span>
+            </label>
+            <input
+              type="text"
+              name="city"
+              placeholder="e.g. Manhattan"
+              class="input bg-white input-bordered w-full focus:ring-2 focus:ring-blue-500 text-black"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Active Toggle -->
+        <div class="form-control">
+          <label class="cursor-pointer label justify-start">
+            <input
+              type="checkbox"
+              name="is_active"
+              checked
+              class="toggle mr-3"
+            />
+            <span class="label-text text-gray-700">Service is active</span>
+          </label>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4">
+          <a href="{% url 'profile' %}" class="btn btn-ghost">Cancel</a>
+          <button
+            type="submit"
+            class="btn"
+            {%
+            if
+            not
+            request.user.serviceprovider.specialization.all
+            %}disabled{%
+            endif
+            %}
+          >
+            <i class="fas fa-plus-circle mr-2"></i>
+            Create Service
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

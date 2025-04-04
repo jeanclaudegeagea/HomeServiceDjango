@@ -41,11 +41,18 @@
           <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
           <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Services</a>
 
+          <!-- Add Service Button (only for service providers) -->
+          {% if request.user.role == request.user.SERVICE_PROVIDER %}
+          <a href="{% url 'create_service' %}" class="btn text-white text-sm">
+            Create Service
+          </a>
+          {% endif %}
+
           <!-- Notification Bell -->
-          <button class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
+          <!-- <button class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none">
             <span class="sr-only">Notifications</span>
             <i class="fas fa-bell"></i>
-          </button>
+          </button> -->
 
           <!-- Profile Dropdown -->
           <div class="relative ml-3">

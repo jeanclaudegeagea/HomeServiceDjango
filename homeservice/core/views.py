@@ -17,6 +17,7 @@ from .forms import (
     ProfileImageForm,
     ChangePersonalInfoForm,
     ServiceProviderDocumentForm,
+    ServiceForm
 )  # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
@@ -692,3 +693,21 @@ def updateLocation(request):
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
     )
+
+@login_required
+def create_service(request):
+    if request.user.role != User.SERVICE_PROVIDER:
+        return redirect("home")
+    
+    if request.method == "POST":
+        form = ServiceForm(request.POST)
+        if form.is_valid():
+            service = form.save(commit=False)
+            service.provider = request.user.serviceprovider
+            service.save()
+            messages.success(request, "Service created successfully!")
+            # return redirect('profile')
+    else:
+        form = ServiceForm()
+    
+    return render(request, 'core/create_service.html', {'form':form})
