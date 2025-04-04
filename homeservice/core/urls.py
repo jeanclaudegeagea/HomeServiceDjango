@@ -31,9 +31,9 @@ urlpatterns = [
         {"document_root": os.path.join(settings.MEDIA_ROOT, "provider_documents")},
     ),
     path("change_password/", views.changePassword, name="change_password"),
+    path("delete_account/", views.deleteAccount, name="delete_account"),
     # path('provider/upload-docs/', views.provider_upload_docs, name='provider_upload_docs'),
 ]
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

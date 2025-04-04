@@ -482,6 +482,49 @@
                             deleteAccountBtn.disabled = !this.checked;
                         });
                     }
+
+                    deleteAccountBtn.addEventListener("click", () => {
+                        const deleteAcccountText = document.getElementById("delete-acccount-text")
+                        const deleteAccountLoading = document.getElementById("delete-account-loading")
+
+                        deleteAcccountText.textContent = "Deleting Account...";
+                        deleteAccountBtn.disabled = true;
+                        deleteAccountLoading.classList.remove("hidden");
+
+
+                        fetch("/delete_account/", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": "{{ csrf_token }}",
+                            },
+                            body: {}
+                        })
+                            .then((response) => {
+                                if (!response.ok) {
+                                    throw new Error("Network response was not ok");
+                                }
+                                return response.json();
+                            })
+                            .then((data) => {
+                                if (data.success) {
+                                    alert(data.message);
+                                    window.location.href = data.redirect_url; // Redirect to login
+                                } else {
+                                    alert("Error: " + (data.error || "Unknown error occurred"));
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error:", error);
+                                alert("An error occurred: " + error.message);
+                            })
+                            .finally(() => {
+                                deleteAccountBtn.disabled = false;
+                                deleteAcccountText.textContent = "Delete Account";
+                                deleteAccountLoading.classList.add("hidden");
+                            });
+
+                    })
                 }
                 else if (Number(isCustomer) === 1) {
 
@@ -537,8 +580,6 @@
                         const changeButton = document.getElementById("change-password-btn");
                         const password1 = document.getElementById("id_password1")
                         const password2 = document.getElementById("id_password2")
-
-
 
                         changeText.textContent = "Changing...";
                         changeButton.disabled = true;

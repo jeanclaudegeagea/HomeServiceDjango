@@ -463,3 +463,43 @@ def changePassword(request):
         except ValidationError as e:
             return JsonResponse({"success": False, "error": str(e)})
     return JsonResponse({"success": False, "error": "Invalid request method"})
+
+
+@csrf_exempt
+@login_required
+def deleteAccount(request):
+    if request.method == "POST":
+        user = request.user
+        if user.role == User.SERVICE_PROVIDER:
+            try:
+                # Delete related ServiceProvider profile (and cascade if needed)
+                ServiceProvider.objects.filter(user=user).delete()
+
+                # Delete the user account
+                user.delete()
+
+                # Log the user out
+                logout(request)
+
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "message": "Account deleted successfully",
+                        "redirect_url": "/login/",  # Frontend can redirect
+                    },
+                    status=200,
+                )
+            except Exception as e:
+                return JsonResponse({"success": False, "error": str(e)}, status=500)
+        else:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Only service providers can delete their account.",
+                },
+                status=403,
+            )
+
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method"}, status=405
+    )
