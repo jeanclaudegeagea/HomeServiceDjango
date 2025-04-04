@@ -25,6 +25,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.db.models import Count
+import os
 
 
 @never_cache
@@ -128,14 +129,36 @@ def signup_from_home(request):
 def delete_document(request):
     if request.method == "POST":
         try:
+            # Get the document ID from the POST data
             doc_id = request.POST.get("doc_id")
+            # Fetch the document by ID
             document = ServiceProviderDocument.objects.get(id=doc_id)
+
+            # Fetch the service provider associated with the current user
             provider = ServiceProvider.objects.get(user=request.user)
+
+            # Check if the document belongs to the provider
             if document in provider.documents.all():
+                # If the document is associated with the provider, delete the file locally
+                document_path = document.file.path
+                # Delete the document file from the storage
                 document.delete()
+
+                # Optionally, you can delete the file physically from the filesystem if needed
+                if os.path.exists(document_path):
+                    os.remove(document_path)
+
+                # Send a success message
                 messages.success(request, "Document deleted successfully!")
+            else:
+                messages.error(request, "Document not associated with your profile!")
+
         except ServiceProviderDocument.DoesNotExist:
             messages.error(request, "Document not found!")
+
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+
     return redirect("profile")
 
 
@@ -473,42 +496,85 @@ def deleteAccount(request):
         user = request.user
         if user.role == User.SERVICE_PROVIDER:
             try:
-                # Delete related ServiceProvider profile (and cascade if needed)
-                ServiceProvider.objects.filter(user=user).delete()
+                service_provider = ServiceProvider.objects.get(user=user)
 
+                # Delete all document files linked to this provider
+                for doc in service_provider.documents.all():
+                    if doc.file:
+                        doc.file.delete(save=False)
+
+                # Delete profile image if exists
                 if user.profile_image:
                     user.profile_image.delete(save=False)
 
-                # Delete the user account
+                # Delete the ServiceProvider and the User
+                service_provider.delete()
                 user.delete()
 
+                # Clean up unused documents from DB and filesystem
                 unused_docs = ServiceProviderDocument.objects.annotate(
                     provider_count=Count("serviceprovider")
                 ).filter(provider_count=0)
-                unused_docs.delete()
 
-                # Log the user out
+                for doc in unused_docs:
+                    if doc.file:
+                        doc.file.delete(save=False)
+                    doc.delete()
+
                 logout(request)
-
                 return JsonResponse(
                     {
                         "success": True,
                         "message": "Account deleted successfully",
-                        "redirect_url": "/login/",  # Frontend can redirect
+                        "redirect": "/login/",
                     },
                     status=200,
                 )
-            except Exception as e:
-                return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+            except ServiceProvider.DoesNotExist:
+                return JsonResponse(
+                    {"success": False, "error": "Service provider not found."},
+                    status=404,
+                )
         else:
             return JsonResponse(
                 {
                     "success": False,
-                    "error": "Only service providers can delete their account.",
+                    "error": "Only service providers can delete their accounts.",
                 },
                 status=403,
             )
 
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
+    )
+
+
+@login_required
+def delete_profile_image(request):
+    if request.method == "POST":
+        user = request.user
+
+        # Check if the user has a profile image
+        if user.profile_image:
+            # Delete the profile image from storage
+            profile_image_path = user.profile_image.path
+            user.profile_image.delete(save=False)  # Deletes the file from storage
+
+            # Optional: If you want to remove it physically from the server (though it might be done by `delete()`):
+            if os.path.exists(profile_image_path):
+                os.remove(profile_image_path)
+
+            # Optionally: Update the user profile field to `null` after deletion
+            user.profile_image = None
+            user.save()
+
+            return JsonResponse({"success": True}, status=200)
+        else:
+            return JsonResponse(
+                {"success": False, "error": "No profile image found."}, status=400
+            )
+
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method."}, status=405
     )
