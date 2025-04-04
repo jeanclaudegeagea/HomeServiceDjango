@@ -119,6 +119,8 @@
 
     const toggleSettings = () => {
         const isCustomer = "{{request.user.role}}"
+        console.log(Number(isCustomer))
+
         fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
             .then(response => response.json())
             .then(data => {
@@ -340,7 +342,6 @@
                                 return;
                             }
 
-
                             // Add loading state
                             const originalText = this.innerHTML;
 
@@ -479,31 +480,77 @@
                         togglePassword("id_password2")
                     })
 
-                    // Account deletion confirmation
-                    const confirmDelete = document.getElementById("confirm-delete");
-                    const deleteAccountBtn = document.getElementById("delete-account-btn");
-                    if (confirmDelete && deleteAccountBtn) {
-                        confirmDelete.addEventListener("change", function () {
-                            deleteAccountBtn.disabled = !this.checked;
+                }
+                else if (Number(isCustomer) === 1) {
+                    document.querySelectorAll('.menu-items li a').forEach(link => {
+                        link.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            // Hide all sections
+                            document.querySelectorAll('#personal-info, #location, #account').forEach(section => {
+                                section.classList.add('hidden');
+                            });
+                            // Show the selected section
+                            const targetId = this.getAttribute('href').substring(1);
+                            document.getElementById(targetId).classList.remove('hidden');
+
+                            // Update active state in menu
+                            document.querySelectorAll('.menu-items a').forEach(item => {
+                                item.classList.remove('bg-white');
+                                item.classList.add('text-[#878088]')
+                            });
+                            this.classList.add('bg-white');
+                            this.classList.remove('text-[#878088]')
                         });
-                    }
+                    });
 
-                    deleteAccountBtn.addEventListener("click", () => {
-                        const deleteAcccountText = document.getElementById("delete-acccount-text")
-                        const deleteAccountLoading = document.getElementById("delete-account-loading")
+                    const locationData = JSON.parse('{{location|safe|escapejs}}')
 
-                        deleteAcccountText.textContent = "Deleting Account...";
-                        deleteAccountBtn.disabled = true;
-                        deleteAccountLoading.classList.remove("hidden");
+                    const _addressLine1 = document.getElementById("id_address_line1");
+                    const _addressLine2 = document.getElementById("id_address_line2");
+                    const _city = document.getElementById("id_city");
+                    const _state = document.getElementById("id_state");
+                    const _postalCode = document.getElementById("id_postal_code");
+                    const _country = document.getElementById("id_country");
+
+                    _addressLine1.value = locationData[0]
+                    _addressLine2.value = locationData[1]
+                    _city.value = locationData[2]
+                    _state.value = locationData[3]
+                    _postalCode.value = locationData[4]
+                    _country.value = locationData[5]
+
+                    const submitLocationBtn = document.getElementById("submit-location-btn")
+                    const submitLocationText = document.getElementById("submit-location-text")
+                    const locationLoading = document.getElementById("location-loading")
 
 
-                        fetch("/delete_account/", {
+                    submitLocationBtn.addEventListener("click", () => {
+
+                        const addressLine1 = document.getElementById("id_address_line1").value;
+                        const addressLine2 = document.getElementById("id_address_line2").value;
+                        const city = document.getElementById("id_city").value;
+                        const state = document.getElementById("id_state").value;
+                        const postalCode = document.getElementById("id_postal_code").value;
+                        const country = document.getElementById("id_country").value;
+
+                        submitLocationBtn.disabled = true
+                        submitLocationText.textContent = "Saving... "
+                        locationLoading.classList.remove("hidden")
+
+                        fetch("/update_location/", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                                 "X-CSRFToken": "{{ csrf_token }}",
                             },
-                            body: {}
+                            body: JSON.stringify({
+                                address_line1: addressLine1,
+                                address_line2: addressLine2,
+                                city,
+                                state,
+                                postal_code: postalCode,
+                                country
+                            })
                         })
                             .then((response) => {
                                 if (!response.ok) {
@@ -514,7 +561,6 @@
                             .then((data) => {
                                 if (data.success) {
                                     alert(data.message);
-                                    window.location.href = data.redirect; // Redirect to login
                                 } else {
                                     alert("Error: " + (data.error || "Unknown error occurred"));
                                 }
@@ -524,14 +570,21 @@
                                 alert("An error occurred: " + error.message);
                             })
                             .finally(() => {
-                                deleteAccountBtn.disabled = false;
-                                deleteAcccountText.textContent = "Delete Account";
-                                deleteAccountLoading.classList.add("hidden");
+                                submitLocationBtn.disabled = false
+                                submitLocationText.textContent = "Save Changes"
+                                locationLoading.classList.add("hidden")
                             });
-
                     })
-                }
-                else if (Number(isCustomer) === 1) {
+
+                    const password1Button = document.getElementById("password1_button")
+                    password1Button.addEventListener("click", () => {
+                        togglePassword("id_password1")
+                    })
+                    const password2Button = document.getElementById("password2_button")
+                    password2Button.addEventListener("click", () => {
+                        togglePassword("id_password2")
+                    })
+
 
                 }
 
@@ -628,6 +681,58 @@
 
                     });
 
+
+                // Account deletion confirmation
+                const confirmDelete = document.getElementById("confirm-delete");
+                const deleteAccountBtn = document.getElementById("delete-account-btn");
+                if (confirmDelete && deleteAccountBtn) {
+                    confirmDelete.addEventListener("change", function () {
+                        deleteAccountBtn.disabled = !this.checked;
+                    });
+                }
+
+                deleteAccountBtn.addEventListener("click", () => {
+                    const deleteAcccountText = document.getElementById("delete-acccount-text")
+                    const deleteAccountLoading = document.getElementById("delete-account-loading")
+
+                    deleteAcccountText.textContent = "Deleting Account...";
+                    deleteAccountBtn.disabled = true;
+                    deleteAccountLoading.classList.remove("hidden");
+
+
+                    fetch("/delete_account/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}",
+                        },
+                        body: {}
+                    })
+                        .then((response) => {
+                            if (!response.ok) {
+                                throw new Error("Network response was not ok");
+                            }
+                            return response.json();
+                        })
+                        .then((data) => {
+                            if (data.success) {
+                                alert(data.message);
+                                window.location.href = data.redirect; // Redirect to login
+                            } else {
+                                alert("Error: " + (data.error || "Unknown error occurred"));
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            alert("An error occurred: " + error.message);
+                        })
+                        .finally(() => {
+                            deleteAccountBtn.disabled = false;
+                            deleteAcccountText.textContent = "Delete Account";
+                            deleteAccountLoading.classList.add("hidden");
+                        });
+
+                })
             })
             .catch(error => {
                 console.error("Error loading the external HTML file: ", error);

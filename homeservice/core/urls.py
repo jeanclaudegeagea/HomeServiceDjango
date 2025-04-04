@@ -35,6 +35,7 @@ urlpatterns = [
     path(
         "delete_profile_image/", views.delete_profile_image, name="delete_profile_image"
     ),
+    path("update_location/", views.updateLocation, name="update_location"),
     # path('provider/upload-docs/', views.provider_upload_docs, name='provider_upload_docs'),
 ]
 

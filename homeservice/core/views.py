@@ -11,6 +11,7 @@ from .models import (
     Booking,
     ServiceProviderDocument,
     Specialization,
+    Location,
 )
 from .forms import (
     ProfileImageForm,
@@ -280,6 +281,9 @@ def profile(request):
 
     # Handle image upload
     if request.method == "POST" and "profile_image" in request.FILES:
+        if request.user.profile_image:
+            if os.path.exists(request.user.profile_image.path):
+                os.remove(request.user.profile_image.path)
         form = ProfileImageForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
@@ -374,48 +378,75 @@ def profile(request):
             ).order_by("-date", "-time")[:5]
 
     isProvider = False
+    isCustomer = False
 
     if hasattr(request.user, "role"):
         isProvider = request.user.role == User.SERVICE_PROVIDER
+        isCustomer = request.user.role == User.CUSTOMER
 
-    documents_list = list(
-        documents.values("id", "document_type", "file", "issue_date", "expiry_date")
-    )
+    if isProvider:
+        documents_list = list(
+            documents.values("id", "document_type", "file", "issue_date", "expiry_date")
+        )
 
-    for document in documents_list:
-        if document["issue_date"]:
-            document["issue_date"] = document["issue_date"].strftime("%Y-%m-%d")
-        if document["expiry_date"]:
-            document["expiry_date"] = document["expiry_date"].strftime("%Y-%m-%d")
+        for document in documents_list:
+            if document["issue_date"]:
+                document["issue_date"] = document["issue_date"].strftime("%Y-%m-%d")
+            if document["expiry_date"]:
+                document["expiry_date"] = document["expiry_date"].strftime("%Y-%m-%d")
 
-    documents_json = json.dumps(documents_list)
+        documents_json = json.dumps(documents_list)
 
     years_of_experience = 0
     if hasattr(request.user, "serviceprovider"):
         years_of_experience = request.user.serviceprovider.years_of_experience
 
-    specializations = Specialization.objects.all()
-    specializations_list = list(specializations.values("id", "name", "description"))
-    specializations_json = json.dumps(specializations_list)
+    if isProvider:
+        specializations = Specialization.objects.all()
+        specializations_list = list(specializations.values("id", "name", "description"))
+        specializations_json = json.dumps(specializations_list)
 
-    user_specializations = Specialization.objects.filter(
-        serviceprovider__user=request.user
-    ).values("id", "name", "description")
-    user_specializations_list = list(user_specializations)
-    user_specializations_list_json = json.dumps(user_specializations_list)
+        user_specializations = Specialization.objects.filter(
+            serviceprovider__user=request.user
+        ).values("id", "name", "description")
+        user_specializations_list = list(user_specializations)
+        user_specializations_list_json = json.dumps(user_specializations_list)
 
-    context = {
-        "active_tab": active_tab,
-        "upcoming_bookings": upcoming_bookings,
-        "past_bookings": past_bookings,
-        "is_provider": isProvider,
-        "form": form,  # Add the form to context
-        "documents": documents_json,
-        "document_form": document_form,
-        "years_of_experience": years_of_experience,
-        "specializations": specializations_json,
-        "user_specializations": user_specializations_list_json,
-    }
+    if isProvider:
+        context = {
+            "active_tab": active_tab,
+            "upcoming_bookings": upcoming_bookings,
+            "past_bookings": past_bookings,
+            "is_provider": isProvider,
+            "form": form,  # Add the form to context
+            "documents": documents_json,
+            "document_form": document_form,
+            "years_of_experience": years_of_experience,
+            "specializations": specializations_json,
+            "user_specializations": user_specializations_list_json,
+        }
+    if isCustomer:
+        customer = (
+            Customer.objects.filter(user=request.user)
+            .select_related("location")
+            .first()
+        )
+        location = customer.location if customer else None
+        location_list = (
+            [
+                location.address_line1,
+                location.address_line2,
+                location.city,
+                location.state,
+                location.postal_code,
+                location.country,
+            ]
+            if location
+            else []
+        )
+        location_list_json = json.dumps(location_list)
+
+        context = {"location": location_list_json}
 
     return render(request, "core/profile.html", context)
 
@@ -494,24 +525,21 @@ def changePassword(request):
 def deleteAccount(request):
     if request.method == "POST":
         user = request.user
-        if user.role == User.SERVICE_PROVIDER:
-            try:
+
+        try:
+            # If the user is a service provider
+            if user.role == User.SERVICE_PROVIDER:
                 service_provider = ServiceProvider.objects.get(user=user)
 
-                # Delete all document files linked to this provider
+                # Delete all associated document files
                 for doc in service_provider.documents.all():
                     if doc.file:
                         doc.file.delete(save=False)
 
-                # Delete profile image if exists
-                if user.profile_image:
-                    user.profile_image.delete(save=False)
-
-                # Delete the ServiceProvider and the User
+                # Delete the ServiceProvider object
                 service_provider.delete()
-                user.delete()
 
-                # Clean up unused documents from DB and filesystem
+                # Clean up unused documents
                 unused_docs = ServiceProviderDocument.objects.annotate(
                     provider_count=Count("serviceprovider")
                 ).filter(provider_count=0)
@@ -521,28 +549,46 @@ def deleteAccount(request):
                         doc.file.delete(save=False)
                     doc.delete()
 
-                logout(request)
+            # If the user is a customer
+            elif user.role == User.CUSTOMER:
+                customer = Customer.objects.get(user=user)
+
+                # Delete associated location if exists
+                if customer.location:
+                    customer.location.delete()
+
+                # Delete the Customer object
+                customer.delete()
+
+            else:
                 return JsonResponse(
-                    {
-                        "success": True,
-                        "message": "Account deleted successfully",
-                        "redirect": "/login/",
-                    },
-                    status=200,
+                    {"success": False, "error": "Invalid user role."},
+                    status=403,
                 )
 
-            except ServiceProvider.DoesNotExist:
-                return JsonResponse(
-                    {"success": False, "error": "Service provider not found."},
-                    status=404,
-                )
-        else:
+            # Delete the profile image (if exists)
+            if user.profile_image:
+                user.profile_image.delete(save=False)
+
+            # Delete the User account
+            user.delete()
+
+            # Logout the user
+            logout(request)
+
             return JsonResponse(
                 {
-                    "success": False,
-                    "error": "Only service providers can delete their accounts.",
+                    "success": True,
+                    "message": "Account deleted successfully",
+                    "redirect": "/login/",
                 },
-                status=403,
+                status=200,
+            )
+
+        except (ServiceProvider.DoesNotExist, Customer.DoesNotExist):
+            return JsonResponse(
+                {"success": False, "error": "User not found."},
+                status=404,
             )
 
     return JsonResponse(
@@ -577,4 +623,72 @@ def delete_profile_image(request):
 
     return JsonResponse(
         {"success": False, "error": "Invalid request method."}, status=405
+    )
+
+
+@csrf_exempt
+@login_required
+def updateLocation(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            # Extract user and location data
+            user = request.user
+            address_line1 = data.get("address_line1", "").strip()
+            address_line2 = data.get("address_line2", "").strip()
+            city = data.get("city", "").strip()
+            state = data.get("state", "").strip()
+            postal_code = data.get("postal_code", "").strip()
+            country = data.get("country", "").strip()
+
+            # Validate required fields
+            if (
+                not address_line1
+                or not city
+                or not state
+                or not postal_code
+                or not country
+            ):
+                return JsonResponse(
+                    {"success": False, "error": "Missing required fields"}, status=400
+                )
+
+            # Get or create customer record
+            customer, created = Customer.objects.get_or_create(user=user)
+
+            # Check if the customer has an existing location
+            if customer.location:
+                location = customer.location
+            else:
+                location = Location()
+
+            # Update location fields
+            location.address_line1 = address_line1
+            location.address_line2 = address_line2
+            location.city = city
+            location.state = state
+            location.postal_code = postal_code
+            location.country = country
+            location.save()
+
+            # Link location to customer if not already linked
+            if not customer.location:
+                customer.location = location
+                customer.save()
+
+            return JsonResponse(
+                {"success": True, "message": "Location updated successfully"},
+                status=200,
+            )
+
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": False, "error": "Invalid JSON format"}, status=400
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method"}, status=405
     )
