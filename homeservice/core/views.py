@@ -4,12 +4,29 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm, UserLoginForm
 from django.utils import timezone
-from .models import User, Customer, ServiceProvider, Booking, ServiceProviderDocument, Specialization
-from .forms import ProfileImageForm, ChangePersonalInfoForm , ServiceProviderDocumentForm # We'll create this form
+from .models import (
+    User,
+    Customer,
+    ServiceProvider,
+    Booking,
+    ServiceProviderDocument,
+    Specialization,
+    Location,
+)
+from .forms import (
+    ProfileImageForm,
+    ChangePersonalInfoForm,
+    ServiceProviderDocumentForm,
+)  # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
+from django.db.models import Count
+import os
 
 
 @never_cache
@@ -76,17 +93,19 @@ def login_view(request):
         if form.is_valid():
             email = form.cleaned_data.get("email")
             password = form.cleaned_data.get("password")
-            user = User.objects.get(email=email)
+            user = User.objects.filter(email=email).first()
 
-            # Attempt to authenticate user
-            user = authenticate(request, username=user.username, password=password)
+            if user:
+                # Attempt to authenticate user
+                user = authenticate(request, username=user.username, password=password)
 
-            if user is not None:
-                login(request, user)
-                return redirect("home")
+                if user is not None:
+                    login(request, user)
+                    return redirect("home")
+                else:
+                    messages.error(request, "Invalid email or password")
             else:
-                # Authentication failed
-                messages.error(request, "Invalid email or password")
+                messages.error(request, "No account found with this email")
         else:
             # Form is not valid
             messages.error(request, "Invalid email or password")
@@ -106,19 +125,43 @@ def signup_from_home(request):
     logout(request)
     return redirect("register")
 
+
 @login_required
 def delete_document(request):
     if request.method == "POST":
         try:
+            # Get the document ID from the POST data
             doc_id = request.POST.get("doc_id")
+            # Fetch the document by ID
             document = ServiceProviderDocument.objects.get(id=doc_id)
+
+            # Fetch the service provider associated with the current user
             provider = ServiceProvider.objects.get(user=request.user)
+
+            # Check if the document belongs to the provider
             if document in provider.documents.all():
+                # If the document is associated with the provider, delete the file locally
+                document_path = document.file.path
+                # Delete the document file from the storage
                 document.delete()
+
+                # Optionally, you can delete the file physically from the filesystem if needed
+                if os.path.exists(document_path):
+                    os.remove(document_path)
+
+                # Send a success message
                 messages.success(request, "Document deleted successfully!")
+            else:
+                messages.error(request, "Document not associated with your profile!")
+
         except ServiceProviderDocument.DoesNotExist:
             messages.error(request, "Document not found!")
+
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+
     return redirect("profile")
+
 
 @csrf_exempt
 @login_required
@@ -126,21 +169,26 @@ def update_experience(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            years = data.get('years_of_experience')
+            years = data.get("years_of_experience")
 
             if years is None or not str(years).isdigit():
-                return JsonResponse({'success': False, 'error': 'Invalid years of experience'})
-            
+                return JsonResponse(
+                    {"success": False, "error": "Invalid years of experience"}
+                )
+
             try:
                 provider = ServiceProvider.objects.get(user=request.user)
                 provider.years_of_experience = int(years)
                 provider.save()
-                return JsonResponse({'success': True})
+                return JsonResponse({"success": True})
             except ServiceProvider.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User is not a service provider'})
+                return JsonResponse(
+                    {"success": False, "error": "User is not a service provider"}
+                )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
 
 @csrf_exempt
 @login_required
@@ -148,30 +196,43 @@ def add_specialization(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            spec_id = data.get('specialization_id')
+            spec_id = data.get("specialization_id")
 
             if not spec_id:
-                return JsonResponse({'success': False, 'error': 'Specialization ID is required'})
-            
+                return JsonResponse(
+                    {"success": False, "error": "Specialization ID is required"}
+                )
+
             try:
                 specialization = Specialization.objects.get(id=spec_id)
                 provider = ServiceProvider.objects.get(user=request.user)
 
                 if provider.specialization.filter(id=spec_id).exists():
-                    return JsonResponse({'success': False, 'error': 'Specialization already added'})
-                
+                    return JsonResponse(
+                        {"success": False, "error": "Specialization already added"}
+                    )
+
                 provider.specialization.add(specialization)
-                return JsonResponse({
-                    'success': True, 
-                    'specialization_name': specialization.name
-                })
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "specialization_name": specialization.name,
+                        "specialization_description": specialization.description,
+                        "specialization_id": specialization.id,
+                    }
+                )
             except Specialization.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Specialization not found'})
+                return JsonResponse(
+                    {"success": False, "error": "Specialization not found"}
+                )
             except ServiceProvider.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User is not a service provider'})
+                return JsonResponse(
+                    {"success": False, "error": "User is not a service provider"}
+                )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
 
 @csrf_exempt
 @login_required
@@ -179,34 +240,50 @@ def remove_specialization(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            spec_id = data.get('specialization_id')
+            spec_id = data.get("specialization_id")
 
             if not spec_id:
-                return JsonResponse({'success': False, 'error': 'Specialization ID is required'})
-            
+                return JsonResponse(
+                    {"success": False, "error": "Specialization ID is required"}
+                )
+
             try:
                 specialization = Specialization.objects.get(id=spec_id)
                 provider = ServiceProvider.objects.get(user=request.user)
 
                 if not provider.specialization.filter(id=spec_id).exists():
-                    return JsonResponse({'success': False, 'error': 'Specialization not found in your profile'})
-                
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "error": "Specialization not found in your profile",
+                        }
+                    )
+
                 provider.specialization.remove(specialization)
-                return JsonResponse({'success': True})
+                return JsonResponse({"success": True})
             except Specialization.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Specialization not found'})
+                return JsonResponse(
+                    {"success": False, "error": "Specialization not found"}
+                )
             except ServiceProvider.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User is not a service provider'})
+                return JsonResponse(
+                    {"success": False, "error": "User is not a service provider"}
+                )
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
 
 @never_cache
+@login_required
 def profile(request):
     active_tab = request.GET.get("tab", "upcoming")
 
     # Handle image upload
     if request.method == "POST" and "profile_image" in request.FILES:
+        if request.user.profile_image:
+            if os.path.exists(request.user.profile_image.path):
+                os.remove(request.user.profile_image.path)
         form = ProfileImageForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
@@ -301,38 +378,75 @@ def profile(request):
             ).order_by("-date", "-time")[:5]
 
     isProvider = False
+    isCustomer = False
 
     if hasattr(request.user, "role"):
         isProvider = request.user.role == User.SERVICE_PROVIDER
+        isCustomer = request.user.role == User.CUSTOMER
 
+    if isProvider:
+        documents_list = list(
+            documents.values("id", "document_type", "file", "issue_date", "expiry_date")
+        )
 
-    documents_list = list(documents.values("id", "document_type", "file", "issue_date", "expiry_date"))
+        for document in documents_list:
+            if document["issue_date"]:
+                document["issue_date"] = document["issue_date"].strftime("%Y-%m-%d")
+            if document["expiry_date"]:
+                document["expiry_date"] = document["expiry_date"].strftime("%Y-%m-%d")
 
-    for document in documents_list:
-        if document['issue_date']:
-            document['issue_date'] = document['issue_date'].strftime('%Y-%m-%d')
-        if document['expiry_date']:
-            document['expiry_date'] = document['expiry_date'].strftime('%Y-%m-%d')
-
-    documents_json = json.dumps(documents_list)
+        documents_json = json.dumps(documents_list)
 
     years_of_experience = 0
-    if hasattr(request.user, 'serviceprovider'):
+    if hasattr(request.user, "serviceprovider"):
         years_of_experience = request.user.serviceprovider.years_of_experience
 
-    specializations = Specialization.objects.all()
+    if isProvider:
+        specializations = Specialization.objects.all()
+        specializations_list = list(specializations.values("id", "name", "description"))
+        specializations_json = json.dumps(specializations_list)
 
-    context = {
-        "active_tab": active_tab,
-        "upcoming_bookings": upcoming_bookings,
-        "past_bookings": past_bookings,
-        "is_provider": isProvider,
-        "form": form,  # Add the form to context
-        "documents": documents_json,
-        "document_form": document_form,
-        "years_of_experience": years_of_experience,
-        "specializations": specializations,
-    }
+        user_specializations = Specialization.objects.filter(
+            serviceprovider__user=request.user
+        ).values("id", "name", "description")
+        user_specializations_list = list(user_specializations)
+        user_specializations_list_json = json.dumps(user_specializations_list)
+
+    if isProvider:
+        context = {
+            "active_tab": active_tab,
+            "upcoming_bookings": upcoming_bookings,
+            "past_bookings": past_bookings,
+            "is_provider": isProvider,
+            "form": form,  # Add the form to context
+            "documents": documents_json,
+            "document_form": document_form,
+            "years_of_experience": years_of_experience,
+            "specializations": specializations_json,
+            "user_specializations": user_specializations_list_json,
+        }
+    if isCustomer:
+        customer = (
+            Customer.objects.filter(user=request.user)
+            .select_related("location")
+            .first()
+        )
+        location = customer.location if customer else None
+        location_list = (
+            [
+                location.address_line1,
+                location.address_line2,
+                location.city,
+                location.state,
+                location.postal_code,
+                location.country,
+            ]
+            if location
+            else []
+        )
+        location_list_json = json.dumps(location_list)
+
+        context = {"location": location_list_json}
 
     return render(request, "core/profile.html", context)
 
@@ -371,3 +485,210 @@ def customer_settings(request):
     # Render the partial content
     html_content = render(request, "customer/settings.html")
     return JsonResponse({"html": html_content.content.decode("utf-8")})
+
+
+@csrf_exempt
+@login_required
+def changePassword(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            password1 = data.get("password1")
+            password2 = data.get("password2")
+
+            if password1 != password2:
+                return JsonResponse(
+                    {"success": False, "error": "Passwords do not match"},
+                )
+
+            # Validate password using Django's built-in validators
+            validate_password(password1, user=request.user)
+
+            # Update password
+            request.user.password = make_password(
+                password1
+            )  # Hash password before saving
+            request.user.save()
+
+            return JsonResponse(
+                {"success": True, "message": "Password changed successfully"},
+                status=200,
+            )
+
+        except ValidationError as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Invalid request method"})
+
+
+@csrf_exempt
+@login_required
+def deleteAccount(request):
+    if request.method == "POST":
+        user = request.user
+
+        try:
+            # If the user is a service provider
+            if user.role == User.SERVICE_PROVIDER:
+                service_provider = ServiceProvider.objects.get(user=user)
+
+                # Delete all associated document files
+                for doc in service_provider.documents.all():
+                    if doc.file:
+                        doc.file.delete(save=False)
+
+                # Delete the ServiceProvider object
+                service_provider.delete()
+
+                # Clean up unused documents
+                unused_docs = ServiceProviderDocument.objects.annotate(
+                    provider_count=Count("serviceprovider")
+                ).filter(provider_count=0)
+
+                for doc in unused_docs:
+                    if doc.file:
+                        doc.file.delete(save=False)
+                    doc.delete()
+
+            # If the user is a customer
+            elif user.role == User.CUSTOMER:
+                customer = Customer.objects.get(user=user)
+
+                # Delete associated location if exists
+                if customer.location:
+                    customer.location.delete()
+
+                # Delete the Customer object
+                customer.delete()
+
+            else:
+                return JsonResponse(
+                    {"success": False, "error": "Invalid user role."},
+                    status=403,
+                )
+
+            # Delete the profile image (if exists)
+            if user.profile_image:
+                user.profile_image.delete(save=False)
+
+            # Delete the User account
+            user.delete()
+
+            # Logout the user
+            logout(request)
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Account deleted successfully",
+                    "redirect": "/login/",
+                },
+                status=200,
+            )
+
+        except (ServiceProvider.DoesNotExist, Customer.DoesNotExist):
+            return JsonResponse(
+                {"success": False, "error": "User not found."},
+                status=404,
+            )
+
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method"}, status=405
+    )
+
+
+@login_required
+def delete_profile_image(request):
+    if request.method == "POST":
+        user = request.user
+
+        # Check if the user has a profile image
+        if user.profile_image:
+            # Delete the profile image from storage
+            profile_image_path = user.profile_image.path
+            user.profile_image.delete(save=False)  # Deletes the file from storage
+
+            # Optional: If you want to remove it physically from the server (though it might be done by `delete()`):
+            if os.path.exists(profile_image_path):
+                os.remove(profile_image_path)
+
+            # Optionally: Update the user profile field to `null` after deletion
+            user.profile_image = None
+            user.save()
+
+            return JsonResponse({"success": True}, status=200)
+        else:
+            return JsonResponse(
+                {"success": False, "error": "No profile image found."}, status=400
+            )
+
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method."}, status=405
+    )
+
+
+@csrf_exempt
+@login_required
+def updateLocation(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            # Extract user and location data
+            user = request.user
+            address_line1 = data.get("address_line1", "").strip()
+            address_line2 = data.get("address_line2", "").strip()
+            city = data.get("city", "").strip()
+            state = data.get("state", "").strip()
+            postal_code = data.get("postal_code", "").strip()
+            country = data.get("country", "").strip()
+
+            # Validate required fields
+            if (
+                not address_line1
+                or not city
+                or not state
+                or not postal_code
+                or not country
+            ):
+                return JsonResponse(
+                    {"success": False, "error": "Missing required fields"}, status=400
+                )
+
+            # Get or create customer record
+            customer, created = Customer.objects.get_or_create(user=user)
+
+            # Check if the customer has an existing location
+            if customer.location:
+                location = customer.location
+            else:
+                location = Location()
+
+            # Update location fields
+            location.address_line1 = address_line1
+            location.address_line2 = address_line2
+            location.city = city
+            location.state = state
+            location.postal_code = postal_code
+            location.country = country
+            location.save()
+
+            # Link location to customer if not already linked
+            if not customer.location:
+                customer.location = location
+                customer.save()
+
+            return JsonResponse(
+                {"success": True, "message": "Location updated successfully"},
+                status=200,
+            )
+
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": False, "error": "Invalid JSON format"}, status=400
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+    return JsonResponse(
+        {"success": False, "error": "Invalid request method"}, status=405
+    )

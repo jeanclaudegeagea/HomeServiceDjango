@@ -1,6 +1,254 @@
 {% block content %}
-<div class="md:col-span-9 bg-blue-900">
-  <p>Customer settings</p>    
-</div>
+<div class="container p-2 flex flex-col gap-4">
+  <!-- Sidebar Navigation -->
+  <header class="bg-white w-full">
+    <h1 class="text-2xl font-bold mb-5">Account Settings</h1>
+    <ul class="flex items-center px-2 py-4 menu-items menu-lg bg-[#f1f1f0] rounded-md">
+      <li>
+        <a href="#personal-info" class="text-md bg-white"><i class="fas fa-user mr-2"></i> Personal Information</a>
+      </li>
+      <li>
+        <a href="#location"><i class="fas fa-file mr-2 text-md text-[#878088]"></i>
+          Location</a>
+      </li>
+      <li>
+        <a href="#account"><i class="fas fa-cog mr-2 text-md text-[#878088]"></i> Account</a>
+      </li>
+    </ul>
+  </header>
 
+  <hr />
+
+  <main class="space-y-6">
+    <!-- Personal Information Section -->
+    <form method="post" id="change-personal-info">
+      {% csrf_token %} {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <section id="personal-info" class="bg-white p-3 rounded-lg content-section">
+        <h2 class="text-2xl font-bold mb-4">Personal Information</h2>
+        <p class="mb-5 text-md text-[#878088]">
+          Update your personal details here.
+        </p>
+
+        <div class="space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="space-y-1 w-[48%]">
+              <label class="block text-lg font-medium text-gray-700" for="id_first_name">First Name</label>
+              <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                id="id_first_name" name="first_name" required value="{{request.user.first_name}}" />
+            </div>
+
+            <div class="space-y-1 w-[48%]">
+              <label class="block text-lg font-medium text-gray-700" for="id_last_name">Last Name</label>
+              <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+                id="id_last_name" name="last_name" required value="{{request.user.last_name}}" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="space-y-1 w-[48%]">
+              <label class="block text-lg font-medium text-gray-700" for="id_phone">Phone Number</label>
+              <input id="id_phone" name="phone" type="tel"
+                class="input input-bordered w-full border-gray-300 bg-white text-black"
+                value="{{request.user.phone}}" />
+              <input type="hidden" id="full_phone" name="full_phone" />
+            </div>
+
+            <div class="space-y-1 w-[48%]">
+              <label class="block text-lg font-medium text-gray-700" for="id_email">Email</label>
+              <input id="id_email" name="email" type="email"
+                class="input input-bordered w-full border-gray-300 bg-white text-gray-900"
+                value="{{request.user.email}}" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8">
+          <button type="submit"
+            class="flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            id="submit-PI-btn">
+            <span id="submit-PI-text">Save Changes</span>
+            <span id="PI-loading" class="hidden ml-2">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </section>
+    </form>
+
+    <!-- Location Section -->
+    <section id="location" class="bg-white p-3 rounded-lg content-section hidden">
+      <h2 class="text-2xl font-bold mb-4">Location</h2>
+      <p class="mb-5 text-md text-[#878088]">
+        Update your location details here.
+      </p>
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-2">
+          <div class="space-y-1 w-[48%]">
+            <label class="block text-lg font-medium text-gray-700" for="id_address_line1">Address Line 1</label>
+            <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+              id="id_address_line1" name="address_line1" />
+          </div>
+
+          <div class="space-y-1 w-[48%]">
+            <label class="block text-lg font-medium text-gray-700" for="id_address_line2">Address Line 2</label>
+            <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+              id="id_address_line2" name="address_line2" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="space-y-1 w-[48%]">
+            <label class="block text-lg font-medium text-gray-700" for="id_city">City</label>
+            <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+              id="id_city" name="city" />
+          </div>
+
+          <div class="space-y-1 w-[48%]">
+            <label class="block text-lg font-medium text-gray-700" for="id_state">State</label>
+            <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+              id="id_state" name="state" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="space-y-1 w-[48%]">
+            <label class="block text-lg font-medium text-gray-700" for="id_postal_code">Postal Code</label>
+            <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+              id="id_postal_code" name="postal_code" />
+          </div>
+
+          <div class="space-y-1 w-[48%]">
+            <label class="block text-lg font-medium text-gray-700" for="id_country">Country</label>
+            <input type="text" class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10"
+              id="id_country" name="country" />
+          </div>
+        </div>
+      </div>
+      <div class="mt-8">
+        <button
+          class="flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          id="submit-location-btn">
+          <span id="submit-location-text">Save Changes</span>
+          <span id="location-loading" class="hidden ml-2">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Account Section -->
+    <section id="account" class="bg-white p-3 rounded-lg content-section hidden">
+      <h2 class="text-2xl font-bold mb-4">Account Management</h2>
+      <p class="mb-5 text-md text-[#878088]">
+        Manage your account settings here.
+      </p>
+
+      <div class="flex items-center gap-2">
+        <div class="space-y-1 w-[48%]">
+          <label class="block text-sm font-medium text-gray-700" for="id_password1">
+            Password
+          </label>
+          <div class="relative">
+            <input id="id_password1" name="password1" type="password" placeholder="••••••••"
+              class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10" required />
+            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              id="password1_button">
+              <svg id="id_password1-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1 w-[48%]">
+          <label class="block text-sm font-medium text-gray-700" for="id_password2">
+            Confirm Password
+          </label>
+          <div class="relative">
+            <input id="id_password2" name="password2" type="password" placeholder="••••••••"
+              class="input input-bordered w-full border-gray-300 bg-white text-gray-900 pr-10" required />
+            <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              id="password2_button">
+              <svg id="id_password2-eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button
+          class="flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+          id="change-password-btn">
+          <span id="change-password-text">Change Password</span>
+          <span id="change-password-loading" class="hidden ml-2">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <div class="space-y-6 mt-3">
+        <div class="border border-error rounded-lg p-4">
+          <h3 class="font-semibold text-error mb-2">Danger Zone</h3>
+          <p class="mb-4">
+            Once you delete your account, there is no going back. Please be
+            certain.
+          </p>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="checkbox checkbox-error" id="confirm-delete" />
+            <span class="label-text">I understand that this action cannot be undone</span>
+          </label>
+          <button id="delete-account-btn" class="btn btn-error mt-4 text-white" disabled>
+            <span id="delete-acccount-text">Delete Account</span>
+            <span id="delete-account-loading" class="hidden ml-2">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
 {% endblock %}
