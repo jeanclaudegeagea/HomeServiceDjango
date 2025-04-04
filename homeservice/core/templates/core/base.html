@@ -38,7 +38,7 @@
           {% if request.user.is_authenticated %}
           <!-- Authenticated User Links -->
           <a href="{% url 'home' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Home</a>
-          <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
+          <a href="{% url 'providers' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
           <a href="{% url 'services' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Services</a>
 
           <!-- Add Service Button (only for service providers) -->
@@ -88,7 +88,7 @@
           {% else %}
           <!-- Unauthenticated User Links -->
           <a href="{% url 'home' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Home</a>
-          <a href="#" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
+          <a href="{% url 'providers' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Service Providers</a>
           <a href="{% url 'services' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Services</a>
           <a href="{% url 'register' %}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900">Sign
             Up</a>
