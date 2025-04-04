@@ -24,6 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
+from django.db.models import Count
 
 
 @never_cache
@@ -475,8 +476,16 @@ def deleteAccount(request):
                 # Delete related ServiceProvider profile (and cascade if needed)
                 ServiceProvider.objects.filter(user=user).delete()
 
+                if user.profile_image:
+                    user.profile_image.delete(save=False)
+
                 # Delete the user account
                 user.delete()
+
+                unused_docs = ServiceProviderDocument.objects.annotate(
+                    provider_count=Count("serviceprovider")
+                ).filter(provider_count=0)
+                unused_docs.delete()
 
                 # Log the user out
                 logout(request)
