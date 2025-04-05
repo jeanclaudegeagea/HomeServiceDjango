@@ -38,7 +38,8 @@ urlpatterns = [
     path("update_location/", views.updateLocation, name="update_location"),
     path("create-service/", views.create_service, name='create_service'),
     path("services/", views.services_view, name="services"),
-    path("providers/", views.providers_view, name="providers")
+    path("providers/", views.providers_view, name="providers"),
+    path("servicedetails/<int:service_id>", views.service_details, name="service_details")
 ]
 
 if settings.DEBUG:

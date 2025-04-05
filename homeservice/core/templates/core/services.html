@@ -62,6 +62,7 @@
   {% if services %}
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for service in services %}
+    <a href="{% url 'service_details' service.id %}" class="block">
     <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div class="p-6">
         <div class="flex items-center space-x-4 mb-4">
@@ -93,6 +94,7 @@
         {% endif %}
       </div>
     </div>
+  </a>
     {% endfor %}
   </div>
   

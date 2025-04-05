@@ -811,3 +811,11 @@ def providers_view(request):
     }
     
     return render(request, 'core/providers.html', context)
+
+def service_details(request, id):
+
+
+
+
+    
+    return render(request, 'core/service_details.html')
