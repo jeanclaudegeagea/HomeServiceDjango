@@ -80,15 +80,13 @@ class Booking(models.Model):
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    date = models.DateField()
-    time = models.TimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     notes = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.service.name} - {self.date} {self.time}"
+        return f"{self.service.name}"
 
 
 class ServiceReview(models.Model):

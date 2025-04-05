@@ -28,6 +28,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 import os
 
 
@@ -855,5 +856,28 @@ def service_provider_profile(request, id):
     return render(request, "core/service_provider_profile.html", context)
 
 
+@csrf_exempt  # Only use this if CSRF is not handled in frontend!
+@login_required
 def book_service(request, id):
-    pass
+    if request.method == "POST":
+        service = get_object_or_404(Service, id=id)
+        customer = get_object_or_404(Customer, user=request.user)
+
+        booking = Booking.objects.create(
+            customer=customer,
+            service=service,
+            notes="",
+            status="pending",
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Service booked successfully.",
+                "booking_id": booking.id,
+            }
+        )
+
+    return JsonResponse(
+        {"success": False, "message": "Only POST requests are allowed."}
+    )
