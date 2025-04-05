@@ -101,10 +101,18 @@ class ServiceReview(models.Model):
         (5, "Excellent"),
     ]
 
-    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name="review")
-    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, related_name="reviews_given")
-    provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE, related_name="reviews_received")
-    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, related_name="reviews")
+    booking = models.OneToOneField(
+        Booking, on_delete=models.CASCADE, related_name="review"
+    )
+    customer = models.ForeignKey(
+        Customer, on_delete=models.SET_NULL, null=True, related_name="reviews_given"
+    )
+    provider = models.ForeignKey(
+        ServiceProvider, on_delete=models.CASCADE, related_name="reviews_received"
+    )
+    service = models.ForeignKey(
+        Service, on_delete=models.SET_NULL, null=True, related_name="reviews"
+    )
     rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)

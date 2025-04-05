@@ -18,7 +18,7 @@ from .forms import (
     ProfileImageForm,
     ChangePersonalInfoForm,
     ServiceProviderDocumentForm,
-    ServiceForm
+    ServiceForm,
 )  # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
@@ -695,11 +695,12 @@ def updateLocation(request):
         {"success": False, "error": "Invalid request method"}, status=405
     )
 
+
 @login_required
 def create_service(request):
     if request.user.role != User.SERVICE_PROVIDER:
         return redirect("home")
-    
+
     if request.method == "POST":
         form = ServiceForm(request.POST)
         if form.is_valid():
@@ -710,104 +711,106 @@ def create_service(request):
             # return redirect('profile')
     else:
         form = ServiceForm()
-    
-    return render(request, 'core/create_service.html', {'form':form})
+
+    return render(request, "core/create_service.html", {"form": form})
+
 
 def services_view(request):
     # Get all active services
-    services = Service.objects.filter(is_active=True).select_related('provider__user', 'specialization')
-    
+    services = Service.objects.filter(is_active=True).select_related(
+        "provider__user", "specialization"
+    )
+
     # Get filter parameters from GET request
-    specialization = request.GET.get('specialization')
-    search_query = request.GET.get('search')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    location = request.GET.get('location')
-    
+    specialization = request.GET.get("specialization")
+    search_query = request.GET.get("search")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    location = request.GET.get("location")
+
     # Apply filters
     if specialization:
         services = services.filter(specialization__id=specialization)
-    
+
     if search_query:
         services = services.filter(
-            Q(name__icontains=search_query) | 
-            Q(description__icontains=search_query) |
-            Q(specialization__name__icontains=search_query)
+            Q(name__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(specialization__name__icontains=search_query)
         )
-    
+
     if min_price:
         services = services.filter(price__gte=min_price)
-    
+
     if max_price:
         services = services.filter(price__lte=max_price)
-    
+
     if location:
         services = services.filter(
-            Q(city__icontains=location) |
-            Q(state__icontains=location) |
-            Q(country__icontains=location)
+            Q(city__icontains=location)
+            | Q(state__icontains=location)
+            | Q(country__icontains=location)
         )
-    
+
     # Get all specializations for filter dropdown
     specializations = Specialization.objects.all()
-    
+
     context = {
-        'services': services,
-        'specializations': specializations,
-        'search_query': search_query or '',
-        'selected_specialization': int(specialization) if specialization else '',
-        'min_price': min_price or '',
-        'max_price': max_price or '',
-        'location': location or '',
+        "services": services,
+        "specializations": specializations,
+        "search_query": search_query or "",
+        "selected_specialization": int(specialization) if specialization else "",
+        "min_price": min_price or "",
+        "max_price": max_price or "",
+        "location": location or "",
     }
-    
-    return render(request, 'core/services.html', context)
+
+    return render(request, "core/services.html", context)
+
 
 def providers_view(request):
     # Get all active service providers with their services count
-    providers = ServiceProvider.objects.filter(
-        user__is_active=True
-    ).annotate(
-        service_count=Count('service', filter=Q(service__is_active=True))
+    providers = ServiceProvider.objects.filter(user__is_active=True).annotate(
+        service_count=Count("service", filter=Q(service__is_active=True))
     )
-    
+
     # Get filter parameters from GET request
-    specialization = request.GET.get('specialization')
-    search_query = request.GET.get('search')
-    min_experience = request.GET.get('min_experience')
-    location = request.GET.get('location')
-    
+    specialization = request.GET.get("specialization")
+    search_query = request.GET.get("search")
+    min_experience = request.GET.get("min_experience")
+    location = request.GET.get("location")
+
     # Apply filters
     if specialization:
         providers = providers.filter(specialization__id=specialization)
-    
+
     if search_query:
         providers = providers.filter(
-            Q(user__first_name__icontains=search_query) | 
-            Q(user__last_name__icontains=search_query) |
-            Q(specialization__name__icontains=search_query)
+            Q(user__first_name__icontains=search_query)
+            | Q(user__last_name__icontains=search_query)
+            | Q(specialization__name__icontains=search_query)
         )
-    
+
     if min_experience:
         providers = providers.filter(years_of_experience__gte=min_experience)
-    
+
     if location:
         providers = providers.filter(
-            Q(service__city__icontains=location) |
-            Q(service__state__icontains=location) |
-            Q(service__country__icontains=location)
+            Q(service__city__icontains=location)
+            | Q(service__state__icontains=location)
+            | Q(service__country__icontains=location)
         ).distinct()
-    
+
     # Get all specializations for filter dropdown
     specializations = Specialization.objects.all()
-    
+
     context = {
-        'providers': providers,
-        'specializations': specializations,
-        'search_query': search_query or '',
-        'selected_specialization': int(specialization) if specialization else '',
-        'min_experience': min_experience or '',
-        'location': location or '',
+        "providers": providers,
+        "specializations": specializations,
+        "search_query": search_query or "",
+        "selected_specialization": int(specialization) if specialization else "",
+        "min_experience": min_experience or "",
+        "location": location or "",
     }
-    
-    return render(request, 'core/providers.html', context)
+
+    return render(request, "core/providers.html", context)
