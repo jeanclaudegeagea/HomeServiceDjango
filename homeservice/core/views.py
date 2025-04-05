@@ -728,6 +728,17 @@ def services_view(request):
     max_price = request.GET.get("max_price")
     location = request.GET.get("location")
 
+    sort = request.GET.get("sort")
+
+    if sort == "price_asc":
+        services = services.order_by("price")
+    elif sort == "price_desc":
+        services = services.order_by("-price")
+    elif sort == "name_asc":
+        services = services.order_by("name")
+    elif sort == "name_desc":
+        services = services.order_by("-name")
+
     # Apply filters
     if specialization:
         services = services.filter(specialization__id=specialization)
@@ -763,6 +774,7 @@ def services_view(request):
         "min_price": min_price or "",
         "max_price": max_price or "",
         "location": location or "",
+        "sort": sort or "",
     }
 
     return render(request, "core/services.html", context)
