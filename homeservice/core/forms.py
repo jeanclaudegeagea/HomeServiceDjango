@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from .models import (
     User,
     ServiceProviderDocument,
-    Service
+    Service,
 )  # Make sure ServiceProviderDocument is imported correctly
 
 
@@ -96,13 +96,23 @@ class ServiceProviderDocumentForm(forms.ModelForm):
         required=False, widget=forms.DateInput(attrs={"type": "date"})
     )
 
+
 class ServiceForm(forms.ModelForm):
     class Meta:
         model = Service
-        fields = ['specialization', 'name', 'description', 'price', 'country', 'state', 'city', 'is_active']
+        fields = [
+            "specialization",
+            "name",
+            "description",
+            "price",
+            "country",
+            "state",
+            "city",
+            "is_active",
+        ]
 
     def __init__(self, *args, **kwargs):
-        provider = kwargs.pop('provider', None)
+        provider = kwargs.pop("provider", None)
         super().__init__(*args, **kwargs)
         if provider:
-            self.fields['specialization'].queryset = provider.specialization.all()
+            self.fields["specialization"].queryset = provider.specialization.all()
