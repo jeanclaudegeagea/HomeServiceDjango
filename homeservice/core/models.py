@@ -79,7 +79,6 @@ class Booking(models.Model):
     ]
 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    provider = models.ForeignKey(ServiceProvider, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     date = models.DateField()
     time = models.TimeField()

@@ -853,3 +853,7 @@ def service_provider_profile(request, id):
     }
 
     return render(request, "core/service_provider_profile.html", context)
+
+
+def book_service(request, id):
+    pass
