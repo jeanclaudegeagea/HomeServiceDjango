@@ -727,7 +727,6 @@ def services_view(request):
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
     location = request.GET.get("location")
-
     sort = request.GET.get("sort")
 
     if sort == "price_asc":
@@ -738,6 +737,10 @@ def services_view(request):
         services = services.order_by("name")
     elif sort == "name_desc":
         services = services.order_by("-name")
+    elif sort == "created_newest":
+        services = services.order_by("-created_at")
+    elif sort == "created_oldest":
+        services = services.order_by("created_at")
 
     # Apply filters
     if specialization:
@@ -826,3 +829,27 @@ def providers_view(request):
     }
 
     return render(request, "core/providers.html", context)
+
+
+def service_provider_profile(request, id):
+    # Retrieve the service provider related to the given user_id
+    service_provider = ServiceProvider.objects.get(user_id=id)
+
+    # Get the years_of_experience
+    years_of_experience = service_provider.years_of_experience
+    specializations = service_provider.specialization.all()
+
+    services = (
+        Service.objects.filter(provider=service_provider, is_active=True)
+        .select_related("provider__user", "specialization")
+        .order_by("-created_at")
+    )
+
+    context = {
+        "service_provider": service_provider,
+        "years_of_experience": years_of_experience,
+        "specializations": specializations,
+        "services": services,
+    }
+
+    return render(request, "core/service_provider_profile.html", context)

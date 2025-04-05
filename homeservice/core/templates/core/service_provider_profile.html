@@ -1,0 +1,178 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="p-6 bg-white flex justify-center items-start gap-10 w-full ">
+  <div class="bg-white rounded-lg shadow-lg p-4 w-[35%]">
+    <div class="flex flex-col items-center mb-5 gap-6">
+      {%  if service_provider.user.profile_image %}
+        <img class="object-cover w-24 h-24 rounded-full" src="{{ service_provider.user.profile_image.url }}" alt="" />
+      {% else %}
+        <div class="w-24 h-24  text-lg rounded-full bg-gray-500 flex items-center justify-center text-white">
+          {{ service_provider.user.first_name|first|upper }}{{service_provider.user.last_name|first|upper }}
+        </div>
+      {% endif %}
+        <h1 class="text-3xl font-bold">{{ service_provider.user.first_name }} {{service_provider.user.last_name }}</h1>
+        <div class="flex items-center gap-2">
+            <div class="rating rating-sm">
+                <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" checked />
+                <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" checked />
+                <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" checked />
+                <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" checked />
+                <input type="radio" name="rating-2" class="mask mask-star-2 bg-orange-400" />
+            </div>
+            <span class="text-gray-600">4.7 (47 reviews)</span>
+        </div>
+          <!-- Service Tags -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            {% if specializations %}
+                {% for specialization in specializations %}
+                    <span class="badge badge-outline font-semibold p-2" title="{{ specialization.description }}">
+                        {{ specialization.name }}
+                    </span>
+                {% endfor %}
+            {% else %}
+                <span class="badge badge-outline font-semibold p-2">No specializations available</span>
+            {% endif %}
+        </div>
+    </div>
+      <!-- Verified Provider Section -->
+      <div class="flex gap-3 mb-6">
+        <i class="fas fa-check-circle text-green-500 text-lg"></i>
+        <div class="flex flex-col">
+          <h2 class="font-bold text-lg">
+            Verified Provider
+          </h2>
+          <p class="text-gray-700"> {{ years_of_experience }} years of experience</p>
+        </div>
+      </div>
+      <!-- Contact Info -->
+      <div class="flex gap-3 mb-6">
+        <i class="fas fa-phone-alt text-lg"></i> 
+        <div class="flex flex-col">
+          <h2 class="font-bold text-lg">
+            Phone
+          </h2>
+          <p class="text-gray-700">{{ service_provider.user.phone }}</p>
+        </div>
+      </div>
+        
+      <div  class="flex gap-3 mb-6">
+        <i class="fas fa-envelope text-lg"></i>
+        <div class="flex flex-col">
+          <h2 class="font-bold text-lg">
+            Email
+           </h2>
+           <p class="text-gray-700">{{ service_provider.user.email }}</p>
+        </div>
+      </div>
+
+  </div>
+
+  <div class="flex flex-col w-[50%] gap-3">
+    <ul class="flex items-center justify-center px-1 py-1 menu-items menu-lg bg-[#f1f1f0] rounded-md w-full mb-2">
+      <li class="w-[50%] bg-white rounded-md py-2 text-center">
+        <a href="#services" class="text-md"><i class="fas fa-user mr-2"></i>Services</a>
+      </li>
+      <li class="w-[50%] rounded-md py-2 text-center text-[#878088]">
+        <a href="#reviews" class="text-md"><i class="fas fa-file mr-2 "></i>
+          Reviews</a>
+      </li>
+    </ul>
+
+    <div class="space-y-4" id="services">
+      {% for service in services %}
+      <div class="card bg-white shadow-sm border rounded-md p-4">
+        <div class="flex justify-between items-start">
+          <div class="space-y-2">
+            <h3 class="text-lg font-semibold text-gray-800">{{ service.name }}</h3>
+            <span class="inline-block text-xs bg-white text-black font-semibold px-2 py-0.5 rounded-md border border-gray-200 mt-1">
+              {{ service.specialization.name }}
+            </span>
+          </div>
+          <div class="text-right">
+            <p class="text-lg font-bold text-gray-800">${{ service.price }}</p>
+          </div>
+        </div>
+    
+        <p class="text-gray-700 mt-2">{{ service.description }}</p>
+    
+        <div class="flex items-center text-sm text-gray-500 mt-1">
+          <i class="fa-solid fa-location-dot mr-1"></i>
+          {{ service.city }}, {{ service.state }} , {{ service.country}}
+        </div>
+    
+        <div class="flex justify-between items-center mt-4">
+          <a href="#" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
+          {% if request.user != service.provider.user %}
+          <a href="#" class="rounded-md bg-black text-white hover:bg-gray-800 px-3 py-2">Book Now</a>
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="card bg-white shadow-sm border text-center p-6">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold text-gray-700">No services available</h3>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    
+     <!-- <div class="mb-8 bg-green-500 hidden" id="reviews">
+        <h2 class="font-bold text-xl mb-4">Reviews</h2>
+        
+        <div class="space-y-4">
+            <div class="bg-base-100 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-semibold">Alice Smith</h3>
+                    <span class="text-gray-500 text-sm">October 15, 2023</span>
+                </div>
+                <p class="text-gray-700">"John did an excellent job fixing our kitchen sink. He was prompt, professional, and thorough."</p>
+            </div>
+            
+            <div class="bg-base-100 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-semibold">Bob Johnson</h3>
+                    <span class="text-gray-500 text-sm">September 22, 2023</span>
+                </div>
+                <p class="text-gray-700">"Very good service. Fixed our electrical issues quickly and efficiently."</p>
+            </div>
+            
+            <div class="bg-base-100 p-4 rounded-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-semibold">Carol Williams</h3>
+                    <span class="text-gray-500 text-sm">August 9, 2023</span>
+                </div>
+                <p class="text-gray-700">"Highly recommend John for any home repair needs. Help knowledgeable and professional."</p>
+            </div>
+        </div> 
+    </div> -->
+
+  </div>
+</div>
+
+<script>
+       document.querySelectorAll('.menu-items li a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                  e.preventDefault();
+                  // Hide all sections
+                  document.querySelectorAll('#services, #reviews').forEach(section => {
+                                section.classList.add('hidden');
+                            });
+                            // Show the selected section
+                  const targetId = this.getAttribute('href').substring(1);
+                  document.getElementById(targetId).classList.remove('hidden');
+
+                  // Update active state in menu
+                  document.querySelectorAll('.menu-items li').forEach(item => {
+                                item.classList.remove('bg-white');
+                                item.classList.add('text-[#878088]')
+                  });
+
+                  const parentLi = this.closest('li');
+                  parentLi.classList.add('bg-white');
+                  parentLi.classList.remove('text-[#878088]');
+              });
+      });
+</script>
+
+{% endblock %}
