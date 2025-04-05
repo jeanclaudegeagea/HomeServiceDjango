@@ -836,22 +836,40 @@ def service_provider_profile(request, id):
     # Retrieve the service provider related to the given user_id
     service_provider = ServiceProvider.objects.get(user_id=id)
 
-    # Get the years_of_experience
+    # Get the years_of_experience and specializations
     years_of_experience = service_provider.years_of_experience
     specializations = service_provider.specialization.all()
 
+    # Get the services provided by this service provider that are active
     services = (
         Service.objects.filter(provider=service_provider, is_active=True)
         .select_related("provider__user", "specialization")
         .order_by("-created_at")
     )
 
-    context = {
-        "service_provider": service_provider,
-        "years_of_experience": years_of_experience,
-        "specializations": specializations,
-        "services": services,
-    }
+    if request.user.role == User.CUSTOMER:
+        # Get the bookings of the user for this service provider
+        customer = Customer.objects.get(user=request.user)
+
+        customer_bookings = Booking.objects.filter(
+            customer=customer,
+        )
+
+        context = {
+            "service_provider": service_provider,
+            "years_of_experience": years_of_experience,
+            "specializations": specializations,
+            "services": services,
+            "customer_bookings": customer_bookings,  # Pass bookings to the context
+        }
+
+    else:
+        context = {
+            "service_provider": service_provider,
+            "years_of_experience": years_of_experience,
+            "specializations": specializations,
+            "services": services,
+        }
 
     return render(request, "core/service_provider_profile.html", context)
 
@@ -877,6 +895,29 @@ def book_service(request, id):
                 "booking_id": booking.id,
             }
         )
+
+    return JsonResponse(
+        {"success": False, "message": "Only POST requests are allowed."}
+    )
+
+
+@csrf_exempt
+@login_required
+def unbook_service(request, id):
+    if request.method == "POST":
+        # Get the service object or return a 404 if not found
+        service = get_object_or_404(Service, id=id)
+        customer = get_object_or_404(Customer, user=request.user)
+
+        # Get the booking related to the service and the logged-in user
+        booking = Booking.objects.filter(service=service, customer=customer).first()
+
+        if booking:
+            # Delete the booking from the database
+            booking.delete()
+            return JsonResponse({"message": "Booking has been successfully removed."})
+
+        return JsonResponse({"error": "No booking found for this service."}, status=404)
 
     return JsonResponse(
         {"success": False, "message": "Only POST requests are allowed."}

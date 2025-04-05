@@ -115,8 +115,7 @@
 
     const toggleSettings = () => {
         const isCustomer = "{{request.user.role}}"
-        console.log(Number(isCustomer))
-
+        
         fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
             .then(response => response.json())
             .then(data => {

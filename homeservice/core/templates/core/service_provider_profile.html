@@ -1,5 +1,8 @@
 {% extends 'core/base.html' %}
 
+{% load booking_tags %}  <!-- Load the custom filter -->
+
+
 {% block content %}
 <div class="p-6 bg-white flex justify-center items-start gap-10 w-full ">
   <div class="bg-white rounded-lg shadow-lg p-4 w-[35%]">
@@ -104,7 +107,39 @@
         {% if request.user.role == request.user.CUSTOMER %}
         <div class="flex justify-between items-center mt-4">
           <a href="#" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
-          <a href="#" class="rounded-md bg-black text-white hover:bg-gray-800 px-3 py-2">Book Now</a>
+        {% with isFound=customer_bookings|filter_booking_for_service:service.id %}
+            {% if not isFound %}
+                <!-- Show "Book now" button -->
+                <button 
+                    class="rounded-md bg-black text-white hover:bg-gray-800 px-3 py-2 flex items-center" 
+                    onclick="bookService('{{ service.id }}')" 
+                    id="booking-btn-{{ service.id }}"
+                >
+                    <span id="booking-text-{{ service.id }}">Book now</span>
+                    <span id="booking-loading-{{ service.id }}" class="hidden ml-2">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                </button>
+              {% else %}
+                <!-- Show "Unbook" button -->
+                <button 
+                    class="rounded-md bg-black text-white hover:bg-gray-800 px-3 py-2 flex items-center" 
+                    onclick="unBookService('{{ service.id }}')" 
+                    id="booking-btn-{{ service.id }}"
+                >
+                    <span id="booking-text-{{ service.id }}">Unbook</span>
+                    <span id="booking-loading-{{ service.id }}" class="hidden ml-2">
+                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                </button>
+            {% endif %}
+        {% endwith %}
         </div>
         {% endif %}
       </div>
@@ -173,6 +208,72 @@
                   parentLi.classList.remove('text-[#878088]');
               });
       });
-</script>
 
+
+  const bookService = async (serviceId) => {
+    const bookingBtn = document.getElementById(`booking-btn-${serviceId}`)
+    const bookingText = document.getElementById(`booking-text-${serviceId}`)
+    const bookingLoading = document.getElementById(`booking-loading-${serviceId}`)
+    
+    bookingBtn.disabled = true
+    bookingText.textContent = "Booking... "
+    bookingLoading.classList.remove("hidden")
+
+    const providerId = '{{ service_provider.user.id }}'
+    const response = await fetch(`/book_service/${serviceId}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded", // or 'application/json' if you send JSON
+            "X-CSRFToken": "{{ csrf_token }}"// if CSRF is handled
+          },
+          body: {}
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(result.message);
+          // Optionally redirect or update UI
+          window.location.href = `/serviceprovider_profile/${providerId}`
+        } else {
+          alert(result.message);
+        }
+
+        bookingBtn.disabled = false
+        bookingText.textContent = "Unbook"
+        bookingLoading.classList.add("hidden")
+    };
+
+  const unBookService = async (serviceId) =>{
+    const bookingBtn = document.getElementById(`booking-btn-${serviceId}`)
+    const bookingText = document.getElementById(`booking-text-${serviceId}`)
+    const bookingLoading = document.getElementById(`booking-loading-${serviceId}`)
+    
+    bookingBtn.disabled = true
+    bookingText.textContent = "unbooking... "
+    bookingLoading.classList.remove("hidden")
+
+    const providerId = '{{ service_provider.user.id }}'
+    const response = await fetch(`/unbook_service/${serviceId}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded", // or 'application/json' if you send JSON
+            "X-CSRFToken": "{{ csrf_token }}"// if CSRF is handled
+          },
+          body: {}
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(result.message);
+          // Optionally redirect or update UI
+          window.location.href = `/serviceprovider_profile/${providerId}`
+        } else {
+          alert(result.message);
+        }
+
+        bookingBtn.disabled = false
+        bookingText.textContent = "Book now"
+        bookingLoading.classList.add("hidden")
+    };
+</script>
 {% endblock %}

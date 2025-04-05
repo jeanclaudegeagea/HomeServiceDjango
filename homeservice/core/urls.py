@@ -44,6 +44,8 @@ urlpatterns = [
         views.service_provider_profile,
         name="service_provider_profile",
     ),
+    path("book_service/<int:id>/", views.book_service, name="book_service"),
+    path("unbook_service/<int:id>/", views.unbook_service, name="book_service"),
 ]
 
 if settings.DEBUG:
