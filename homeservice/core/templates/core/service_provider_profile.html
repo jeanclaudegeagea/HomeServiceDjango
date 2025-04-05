@@ -101,12 +101,12 @@
           {{ service.city }}, {{ service.state }} , {{ service.country}}
         </div>
     
+        {% if request.user.role == request.user.CUSTOMER %}
         <div class="flex justify-between items-center mt-4">
           <a href="#" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
-          {% if request.user != service.provider.user %}
           <a href="#" class="rounded-md bg-black text-white hover:bg-gray-800 px-3 py-2">Book Now</a>
-          {% endif %}
         </div>
+        {% endif %}
       </div>
       {% empty %}
       <div class="card bg-white shadow-sm border text-center p-6">
