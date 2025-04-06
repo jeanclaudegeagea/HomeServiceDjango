@@ -36,10 +36,18 @@ urlpatterns = [
         "delete_profile_image/", views.delete_profile_image, name="delete_profile_image"
     ),
     path("update_location/", views.updateLocation, name="update_location"),
-    path("create-service/", views.create_service, name='create_service'),
+    path("create-service/", views.create_service, name="create_service"),
     path("services/", views.services_view, name="services"),
     path("providers/", views.providers_view, name="providers"),
-    path("servicedetails/<int:service_id>", views.service_details, name="service_details")
+    path(
+        "serviceprovider_profile/<int:id>/",
+        views.service_provider_profile,
+        name="service_provider_profile",
+    ),
+    path("book_service/<int:id>/", views.book_service, name="book_service"),
+    path("unbook_service/<int:id>/", views.unbook_service, name="book_service"),
+    path('service/<int:service_id>/book/', views.service_booking, name='service_booking'),
+    path('manage-schedule/', views.manage_schedule, name='manage_schedule'),
 ]
 
 if settings.DEBUG:

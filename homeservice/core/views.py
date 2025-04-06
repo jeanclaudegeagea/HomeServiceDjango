@@ -13,12 +13,13 @@ from .models import (
     ServiceProviderDocument,
     Specialization,
     Location,
+    ProviderSchedule
 )
 from .forms import (
     ProfileImageForm,
     ChangePersonalInfoForm,
     ServiceProviderDocumentForm,
-    ServiceForm
+    ServiceForm,
 )  # We'll create this form
 from django.views.decorators.cache import never_cache
 from django.http import JsonResponse
@@ -28,7 +29,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.contrib.auth.hashers import make_password
 from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 import os
+import re
 
 
 @never_cache
@@ -359,25 +362,25 @@ def profile(request):
             upcoming_bookings = Booking.objects.filter(
                 customer=customer,
                 status__in=["pending", "confirmed"],
-                date__gte=timezone.now().date(),
-            ).order_by("date", "time")[:5]
+                created_at__gte=timezone.now().date()
+            ).order_by("created_at")[:5]
 
             past_bookings = Booking.objects.filter(
-                customer=customer, status="completed", date__lt=timezone.now().date()
-            ).order_by("-date", "-time")[:5]
+                customer=customer, status="completed", created_at__lt=timezone.now().date()
+            ).order_by("-created_at")[:5]
 
         elif request.user.role == User.SERVICE_PROVIDER:
             # Service Provider view
             provider = ServiceProvider.objects.get(user=request.user)
             upcoming_bookings = Booking.objects.filter(
-                provider=provider,
+                service__provider=provider,  
                 status__in=["pending", "confirmed"],
-                date__gte=timezone.now().date(),
-            ).order_by("date", "time")[:5]
+                created_at__gte=timezone.now().date()  
+            ).order_by("created_at")[:5]
 
             past_bookings = Booking.objects.filter(
-                provider=provider, status="completed", date__lt=timezone.now().date()
-            ).order_by("-date", "-time")[:5]
+                service__provider=provider, status="completed", created_at__lt=timezone.now().date()
+            ).order_by("-created_at")[:5]
 
     isProvider = False
     isCustomer = False
@@ -695,11 +698,12 @@ def updateLocation(request):
         {"success": False, "error": "Invalid request method"}, status=405
     )
 
+
 @login_required
 def create_service(request):
     if request.user.role != User.SERVICE_PROVIDER:
         return redirect("home")
-    
+
     if request.method == "POST":
         form = ServiceForm(request.POST)
         if form.is_valid():
@@ -710,112 +714,296 @@ def create_service(request):
             # return redirect('profile')
     else:
         form = ServiceForm()
-    
-    return render(request, 'core/create_service.html', {'form':form})
+
+    return render(request, "core/create_service.html", {"form": form})
+
 
 def services_view(request):
     # Get all active services
-    services = Service.objects.filter(is_active=True).select_related('provider__user', 'specialization')
-    
+    services = Service.objects.filter(is_active=True).select_related(
+        "provider__user", "specialization"
+    )
+
     # Get filter parameters from GET request
-    specialization = request.GET.get('specialization')
-    search_query = request.GET.get('search')
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    location = request.GET.get('location')
-    
+    specialization = request.GET.get("specialization")
+    search_query = request.GET.get("search")
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    location = request.GET.get("location")
+    sort = request.GET.get("sort")
+
+    if sort == "price_asc":
+        services = services.order_by("price")
+    elif sort == "price_desc":
+        services = services.order_by("-price")
+    elif sort == "name_asc":
+        services = services.order_by("name")
+    elif sort == "name_desc":
+        services = services.order_by("-name")
+    elif sort == "created_newest":
+        services = services.order_by("-created_at")
+    elif sort == "created_oldest":
+        services = services.order_by("created_at")
+
     # Apply filters
     if specialization:
         services = services.filter(specialization__id=specialization)
-    
+
     if search_query:
         services = services.filter(
-            Q(name__icontains=search_query) | 
-            Q(description__icontains=search_query) |
-            Q(specialization__name__icontains=search_query)
+            Q(name__icontains=search_query)
+            | Q(description__icontains=search_query)
+            | Q(specialization__name__icontains=search_query)
         )
-    
+
     if min_price:
         services = services.filter(price__gte=min_price)
-    
+
     if max_price:
         services = services.filter(price__lte=max_price)
-    
+
     if location:
         services = services.filter(
-            Q(city__icontains=location) |
-            Q(state__icontains=location) |
-            Q(country__icontains=location)
+            Q(city__icontains=location)
+            | Q(state__icontains=location)
+            | Q(country__icontains=location)
         )
-    
+
     # Get all specializations for filter dropdown
     specializations = Specialization.objects.all()
-    
+
     context = {
-        'services': services,
-        'specializations': specializations,
-        'search_query': search_query or '',
-        'selected_specialization': int(specialization) if specialization else '',
-        'min_price': min_price or '',
-        'max_price': max_price or '',
-        'location': location or '',
+        "services": services,
+        "specializations": specializations,
+        "search_query": search_query or "",
+        "selected_specialization": int(specialization) if specialization else "",
+        "min_price": min_price or "",
+        "max_price": max_price or "",
+        "location": location or "",
+        "sort": sort or "",
     }
-    
-    return render(request, 'core/services.html', context)
+
+    return render(request, "core/services.html", context)
+
 
 def providers_view(request):
     # Get all active service providers with their services count
-    providers = ServiceProvider.objects.filter(
-        user__is_active=True
-    ).annotate(
-        service_count=Count('service', filter=Q(service__is_active=True))
+    providers = ServiceProvider.objects.filter(user__is_active=True).annotate(
+        service_count=Count("service", filter=Q(service__is_active=True))
     )
-    
+
     # Get filter parameters from GET request
-    specialization = request.GET.get('specialization')
-    search_query = request.GET.get('search')
-    min_experience = request.GET.get('min_experience')
-    location = request.GET.get('location')
-    
+    specialization = request.GET.get("specialization")
+    search_query = request.GET.get("search")
+    min_experience = request.GET.get("min_experience")
+    location = request.GET.get("location")
+
     # Apply filters
     if specialization:
         providers = providers.filter(specialization__id=specialization)
-    
+
     if search_query:
         providers = providers.filter(
-            Q(user__first_name__icontains=search_query) | 
-            Q(user__last_name__icontains=search_query) |
-            Q(specialization__name__icontains=search_query)
+            Q(user__first_name__icontains=search_query)
+            | Q(user__last_name__icontains=search_query)
+            | Q(specialization__name__icontains=search_query)
         )
-    
+
     if min_experience:
         providers = providers.filter(years_of_experience__gte=min_experience)
-    
+
     if location:
         providers = providers.filter(
-            Q(service__city__icontains=location) |
-            Q(service__state__icontains=location) |
-            Q(service__country__icontains=location)
+            Q(service__city__icontains=location)
+            | Q(service__state__icontains=location)
+            | Q(service__country__icontains=location)
         ).distinct()
-    
+
     # Get all specializations for filter dropdown
     specializations = Specialization.objects.all()
+
+    context = {
+        "providers": providers,
+        "specializations": specializations,
+        "search_query": search_query or "",
+        "selected_specialization": int(specialization) if specialization else "",
+        "min_experience": min_experience or "",
+        "location": location or "",
+    }
+
+    return render(request, "core/providers.html", context)
+
+
+def service_provider_profile(request, id):
+    # Retrieve the service provider related to the given user_id
+    service_provider = ServiceProvider.objects.get(user_id=id)
+
+    # Get the years_of_experience and specializations
+    years_of_experience = service_provider.years_of_experience
+    specializations = service_provider.specialization.all()
+
+    # Get the services provided by this service provider that are active
+    services = (
+        Service.objects.filter(provider=service_provider, is_active=True)
+        .select_related("provider__user", "specialization")
+        .order_by("-created_at")
+    )
+
+    if request.user.role == User.CUSTOMER:
+        # Get the bookings of the user for this service provider
+        customer = Customer.objects.get(user=request.user)
+
+        customer_bookings = Booking.objects.filter(
+            customer=customer,
+        )
+
+        context = {
+            "service_provider": service_provider,
+            "years_of_experience": years_of_experience,
+            "specializations": specializations,
+            "services": services,
+            "customer_bookings": customer_bookings,  # Pass bookings to the context
+        }
+
+    else:
+        context = {
+            "service_provider": service_provider,
+            "years_of_experience": years_of_experience,
+            "specializations": specializations,
+            "services": services,
+        }
+
+    return render(request, "core/service_provider_profile.html", context)
+
+
+@csrf_exempt  # Only use this if CSRF is not handled in frontend!
+@login_required
+def book_service(request, id):
+    if request.method == "POST":
+        service = get_object_or_404(Service, id=id)
+        customer = get_object_or_404(Customer, user=request.user)
+
+        booking = Booking.objects.create(
+            customer=customer,
+            service=service,
+            notes="",
+            status="pending",
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Service booked successfully.",
+                "booking_id": booking.id,
+            }
+        )
+
+    return JsonResponse(
+        {"success": False, "message": "Only POST requests are allowed."}
+    )
+
+
+@csrf_exempt
+@login_required
+def unbook_service(request, id):
+    if request.method == "POST":
+        # Get the service object or return a 404 if not found
+        service = get_object_or_404(Service, id=id)
+        customer = get_object_or_404(Customer, user=request.user)
+
+        # Get the booking related to the service and the logged-in user
+        booking = Booking.objects.filter(service=service, customer=customer).first()
+
+        if booking:
+            # Delete the booking from the database
+            booking.delete()
+            return JsonResponse({"message": "Booking has been successfully removed."})
+
+        return JsonResponse({"error": "No booking found for this service."}, status=404)
+
+    return JsonResponse(
+        {"success": False, "message": "Only POST requests are allowed."}
+    )
+
+@login_required
+def service_booking(request, service_id):
+    service = get_object_or_404(Service, id=service_id)
+    provider = service.provider
+
+    schedule = ProviderSchedule.objects.filter(provider=provider, is_active=True)
+
+    if request.method == "POST":
+        booking_day = request.POST.get("day")
+        booking_time = request.POST.get("time")
+        notes = request.POST.get('notes', '')
+
+        try:
+            day_schedule = schedule.get(day=booking_day)
+            if booking_time not in day_schedule.time_slots:
+                messages.error(request, "Invalid Time slot selected")
+                return redirect("service_booking", service_id=service_id)
+            
+            customer = Customer.objects.get(user=request.user)
+            Booking.objects.create(customer=customer, service=service, booking_day=booking_day, booking_time=booking_time, notes=notes, status='pending')
+
+            messages.success(request, "Booking request sent successfully!")
+            return redirect("service_provdier_profile", id=provider.user.id)
+        
+        except ProviderSchedule.DoesNotExist:
+            messages.error(request, "Invalid day selected")
+            return redirect('service_booking', service_id=service_id)
     
     context = {
-        'providers': providers,
-        'specializations': specializations,
-        'search_query': search_query or '',
-        'selected_specialization': int(specialization) if specialization else '',
-        'min_experience': min_experience or '',
-        'location': location or '',
+        'service': service,
+        'provider': provider,
+        'schedule': schedule
     }
+    return render(request, 'core/service_booking.html', context)
+
+
+# views.py
+@login_required
+def manage_schedule(request):
+    if request.user.role != User.SERVICE_PROVIDER:
+        return redirect('home')
     
-    return render(request, 'core/providers.html', context)
-
-def service_details(request, id):
-
-
-
-
+    provider = request.user.serviceprovider
+    weekly_schedule, created = ProviderSchedule.objects.get_or_create(
+        provider=provider,
+        defaults={'day': 'monday', 'time_slots': []}
+    )
     
-    return render(request, 'core/service_details.html')
+    if request.method == 'POST':
+        day = request.POST.get('day')
+        time_slots = request.POST.getlist('time_slots[]')
+        
+        # Validate time slots format
+        valid_slots = []
+        for slot in time_slots:
+            if re.match(r'^\d{1,2}:\d{2}$', slot):
+                valid_slots.append(slot)
+        
+        # Update or create schedule for the day
+        schedule, created = ProviderSchedule.objects.update_or_create(
+            provider=provider,
+            day=day,
+            defaults={'time_slots': valid_slots, 'is_active': bool(valid_slots)}
+        )
+        
+        messages.success(request, f"Schedule for {schedule.get_day_display()} updated successfully!")
+        return redirect('manage_schedule')
+    
+    # Get all days, even if not created yet
+    days = []
+    for day_choice in ProviderSchedule.DAY_CHOICES:
+        day = day_choice[0]
+        try:
+            schedule = ProviderSchedule.objects.get(provider=provider, day=day)
+        except ProviderSchedule.DoesNotExist:
+            schedule = ProviderSchedule(provider=provider, day=day, time_slots=[])
+        days.append(schedule)
+    
+    context = {
+        'days': days,
+    }
+    return render(request, 'serviceProvider/schedule.html', context)

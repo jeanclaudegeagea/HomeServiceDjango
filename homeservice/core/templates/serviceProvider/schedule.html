@@ -1,0 +1,98 @@
+<!-- templates/core/manage_schedule.html -->
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Manage Your Weekly Schedule</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="mb-6">
+            <p class="text-gray-600">Set your available time slots for each day of the week. Customers will be able to book appointments during these times.</p>
+        </div>
+        
+        <div class="space-y-6">
+            {% for day in days %}
+            <div class="border-b border-gray-200 pb-6">
+                <h2 class="text-lg font-medium mb-3">{{ day.get_day_display }}</h2>
+                
+                <form method="post" class="space-y-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="day" value="{{ day.day }}">
+                    
+                    <div class="flex flex-wrap gap-2" id="time-slots-{{ day.day }}">
+                        {% for time in day.time_slots %}
+                        <span class="time-slot-tag inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800">
+                            {{ time }}
+                            <button type="button" class="ml-1.5 inline-flex text-indigo-500 hover:text-indigo-700 remove-time-slot">
+                                &times;
+                            </button>
+                        </span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <input type="time" id="new-time-{{ day.day }}" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm">
+                        <button type="button" class="add-time-slot px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300" data-day="{{ day.day }}">
+                            Add Time
+                        </button>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                            Save {{ day.get_day_display }} Schedule
+                        </button>
+                    </div>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add time slot
+    document.querySelectorAll('.add-time-slot').forEach(button => {
+        button.addEventListener('click', function() {
+            const day = this.dataset.day;
+            const timeInput = document.getElementById(`new-time-${day}`);
+            const timeValue = timeInput.value;
+            
+            if (timeValue) {
+                // Format time as HH:MM
+                const [hours, minutes] = timeValue.split(':');
+                const formattedTime = `${hours}:${minutes}`;
+                
+                // Create a hidden input for the form
+                const container = document.getElementById(`time-slots-${day}`);
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'time_slots[]';
+                input.value = formattedTime;
+                container.appendChild(input);
+                
+                // Create visual tag
+                const tag = document.createElement('span');
+                tag.className = 'time-slot-tag inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800';
+                tag.innerHTML = `
+                    ${formattedTime}
+                    <button type="button" class="ml-1.5 inline-flex text-indigo-500 hover:text-indigo-700 remove-time-slot">
+                        &times;
+                    </button>
+                `;
+                container.appendChild(tag);
+                
+                // Clear the time input
+                timeInput.value = '';
+                
+                // Add event to remove button
+                tag.querySelector('.remove-time-slot').addEventListener('click', function() {
+                    container.removeChild(tag);
+                    container.removeChild(input);
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

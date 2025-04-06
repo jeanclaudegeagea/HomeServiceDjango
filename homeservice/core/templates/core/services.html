@@ -11,14 +11,14 @@
       <div>
         <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
         <input type="text" name="search" id="search" value="{{ search_query }}"
-               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
       </div>
       
       <!-- Specialization Filter -->
       <div>
         <label for="specialization" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
         <select name="specialization" id="specialization"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
           <option value="">All Categories</option>
           {% for spec in specializations %}
           <option value="{{ spec.id }}" {% if selected_specialization == spec.id %}selected{% endif %}>
@@ -33,9 +33,9 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Price Range</label>
         <div class="flex space-x-2">
           <input type="number" name="min_price" placeholder="Min" value="{{ min_price }}"
-                 class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                 class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
           <input type="number" name="max_price" placeholder="Max" value="{{ max_price }}"
-                 class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                 class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
         </div>
       </div>
       
@@ -43,12 +43,27 @@
       <div>
         <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
         <input type="text" name="location" id="location" value="{{ location }}" placeholder="City, State or Country"
-               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+      </div>
+
+      <!-- Sort By -->
+      <div>
+        <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+        <select name="sort" id="sort"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+          <option value="">Default</option>
+          <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+          <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+          <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name: A to Z</option>
+          <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name: Z to A</option>
+          <option value="created_newest" {% if sort == 'created_newest' %}selected{% endif %}>Newest First</option>
+          <option value="created_oldest" {% if sort == 'created_oldest' %}selected{% endif %}>Oldest First</option>
+        </select>
       </div>
       
       <!-- Filter Buttons -->
       <div class="flex items-end space-x-2">
-        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <button type="submit" class="px-4 py-2 text-white rounded-md hover:bg-gray-300 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-black">
           Filter
         </button>
         <a href="{% url 'services' %}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
@@ -62,10 +77,15 @@
   {% if services %}
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for service in services %}
+<<<<<<< HEAD
     <a href="{% url 'service_details' service.id %}" class="block">
     <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+=======
+    <div class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300">
+>>>>>>> 727393f42d2697b97172eec98e1ab85601ed6fac
       <div class="p-6">
-        <div class="flex items-center space-x-4 mb-4">
+        <!-- Clickable Provider Section -->
+        <a href="{% url 'service_provider_profile' service.provider.user.id %}" class="flex items-center space-x-4 mb-4 group">
           {% if service.provider.user.profile_image %}
           <img class="h-12 w-12 rounded-full object-cover" src="{{ service.provider.user.profile_image.url }}" alt="">
           {% else %}
@@ -74,10 +94,12 @@
           </div>
           {% endif %}
           <div>
-            <h3 class="font-medium text-gray-900">{{ service.provider.user.get_full_name }}</h3>
+            <h3 class="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
+              {{ service.provider.user.get_full_name }}
+            </h3>
             <p class="text-sm text-gray-500">{{ service.specialization.name }}</p>
           </div>
-        </div>
+        </a>
         
         <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ service.name }}</h2>
         <p class="text-gray-600 mb-4">{{ service.description|truncatechars:100 }}</p>
@@ -88,7 +110,7 @@
         </div>
         
         {% if request.user.is_authenticated and request.user.role == request.user.CUSTOMER %}
-        <a href="#" class="mt-4 w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <a href="{% url 'service_booking' service.id %}" class="mt-4 w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Book Now
         </a>
         {% endif %}
@@ -107,7 +129,7 @@
     <h3 class="mt-2 text-lg font-medium text-gray-900">No services found</h3>
     <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
     <div class="mt-6">
-      <a href="{% url 'services' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      <a href="{% url 'services' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-black hover:bg-gray-300 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
         Reset filters
       </a>
     </div>
