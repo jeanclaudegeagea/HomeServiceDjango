@@ -7,6 +7,7 @@ from ..models import (
     User,
     Customer,
     ServiceProvider,
+    ServiceProviderDocument,
     Booking,
     Specialization,
 )
@@ -82,15 +83,15 @@ def profile(request):
                 if document_form.is_valid():
                     document = document_form.save(commit=False)
                     provider = ServiceProvider.objects.get(user=request.user)
+                    document.provider = provider  # Set the provider before saving
                     document.save()
-                    provider.documents.add(document)
                     messages.success(request, "Document uploaded successfully!")
                     return redirect("profile")
             else:
                 document_form = ServiceProviderDocumentForm()
 
-            provider = ServiceProvider.objects.get(user=request.user)
-            documents = provider.documents.all()
+                provider = ServiceProvider.objects.get(user=request.user)
+                documents = ServiceProviderDocument.objects.filter(provider=provider)
 
     # Initialize empty querysets
     upcoming_bookings = []

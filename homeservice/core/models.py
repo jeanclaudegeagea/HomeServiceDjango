@@ -16,18 +16,6 @@ class Specialization(models.Model):
     description = models.TextField(blank=True)
 
 
-class ServiceProviderDocument(models.Model):
-    DOCUMENT_TYPES = [
-        ("license", "Professional License"),
-        ("certification", "Certification"),
-        ("insurance", "Insurance Document"),
-    ]
-    document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPES)
-    file = models.FileField(upload_to="provider_documents/")
-    issue_date = models.DateField()
-    expiry_date = models.DateField(null=True, blank=True)
-
-
 class User(AbstractUser):
     CUSTOMER = 1
     SERVICE_PROVIDER = 2
@@ -49,8 +37,23 @@ class Customer(models.Model):
 class ServiceProvider(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     years_of_experience = models.PositiveIntegerField(default=0)
-    documents = models.ManyToManyField(ServiceProviderDocument, blank=True)
     specialization = models.ManyToManyField(Specialization)
+
+
+class ServiceProviderDocument(models.Model):
+    provider = models.ForeignKey(
+        ServiceProvider,
+        on_delete=models.CASCADE,
+    )
+    DOCUMENT_TYPES = [
+        ("license", "Professional License"),
+        ("certification", "Certification"),
+        ("insurance", "Insurance Document"),
+    ]
+    document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPES)
+    file = models.FileField(upload_to="provider_documents/")
+    issue_date = models.DateField()
+    expiry_date = models.DateField(null=True, blank=True)
 
 
 class Service(models.Model):
@@ -100,17 +103,11 @@ class ServiceReview(models.Model):
         (5, "Excellent"),
     ]
 
-    booking = models.OneToOneField(
-        Booking, on_delete=models.CASCADE, related_name="review"
-    )
     customer = models.ForeignKey(
         Customer, on_delete=models.SET_NULL, null=True, related_name="reviews_given"
     )
     provider = models.ForeignKey(
         ServiceProvider, on_delete=models.CASCADE, related_name="reviews_received"
-    )
-    service = models.ForeignKey(
-        Service, on_delete=models.SET_NULL, null=True, related_name="reviews"
     )
     rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES)
     content = models.TextField()
@@ -120,7 +117,7 @@ class ServiceReview(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        unique_together = ("booking", "customer", "provider")
+        unique_together = ("customer", "provider")
 
     def __str__(self):
         return f"Review for {self.provider.user.get_full_name()} by {self.customer.user.get_full_name()}"
@@ -141,13 +138,6 @@ class Notification(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    related_booking = models.ForeignKey(
-        Booking,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="notifications",
-    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -167,7 +157,7 @@ class ProviderSchedule(models.Model):
         ("sunday", "Sunday"),
     ]
     provider = models.ForeignKey(
-        "ServiceProvider", on_delete=models.CASCADE, related_name="schedules"
+        ServiceProvider, on_delete=models.CASCADE, related_name="schedules"
     )
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     time_slots = models.JSONField(default=list)

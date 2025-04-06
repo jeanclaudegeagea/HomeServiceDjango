@@ -48,7 +48,7 @@ def delete_document(request):
             provider = ServiceProvider.objects.get(user=request.user)
 
             # Check if the document belongs to the provider
-            if document in provider.documents.all():
+            if document.provider == provider:  # Changed this line
                 # If the document is associated with the provider, delete the file locally
                 document_path = document.file.path
                 # Delete the document file from the storage
@@ -227,23 +227,17 @@ def deleteAccount(request):
             if user.role == User.SERVICE_PROVIDER:
                 service_provider = ServiceProvider.objects.get(user=user)
 
+                # Get all documents associated with this provider
+                provider_documents = ServiceProviderDocument.objects.filter(provider=service_provider)
+
                 # Delete all associated document files
-                for doc in service_provider.documents.all():
-                    if doc.file:
-                        doc.file.delete(save=False)
-
-                # Delete the ServiceProvider object
-                service_provider.delete()
-
-                # Clean up unused documents
-                unused_docs = ServiceProviderDocument.objects.annotate(
-                    provider_count=Count("serviceprovider")
-                ).filter(provider_count=0)
-
-                for doc in unused_docs:
+                for doc in provider_documents:
                     if doc.file:
                         doc.file.delete(save=False)
                     doc.delete()
+
+                # Delete the ServiceProvider object
+                service_provider.delete()
 
             # If the user is a customer
             elif user.role == User.CUSTOMER:
@@ -290,7 +284,6 @@ def deleteAccount(request):
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
     )
-
 
 @csrf_exempt
 @login_required
