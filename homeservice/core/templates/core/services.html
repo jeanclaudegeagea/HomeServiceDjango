@@ -77,12 +77,7 @@
   {% if services %}
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for service in services %}
-<<<<<<< HEAD
-    <a href="{% url 'service_details' service.id %}" class="block">
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-=======
     <div class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300">
->>>>>>> 727393f42d2697b97172eec98e1ab85601ed6fac
       <div class="p-6">
         <!-- Clickable Provider Section -->
         <a href="{% url 'service_provider_profile' service.provider.user.id %}" class="flex items-center space-x-4 mb-4 group">
@@ -116,7 +111,6 @@
         {% endif %}
       </div>
     </div>
-  </a>
     {% endfor %}
   </div>
   
