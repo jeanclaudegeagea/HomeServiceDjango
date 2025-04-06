@@ -9,7 +9,7 @@
     <div class="grid gap-8 md:grid-cols-12 w-full">
         {% include 'core/sidebar.html' %}
         
-        <div class=" px-4 py-8 md:col-span-9">
+        <div class="px-4 py-8 md:col-span-9">
             <h1 class="text-2xl font-bold mb-6">My Bookings</h1>
             
             <div class="bg-white rounded-lg shadow-md p-6">
@@ -25,7 +25,8 @@
                 {% if page_obj.object_list %}
                     <div class="space-y-4">
                         {% for booking in page_obj.object_list %}
-                        <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="border rounded-lg p-4 hover:shadow-md transition-shadow {% if request.user.role == request.user.SERVICE_PROVIDER %}cursor-pointer booking-item{% endif %}" 
+                             {% if request.user.role == request.user.SERVICE_PROVIDER %}data-booking-id="{{ booking.id }}"{% endif %}>
                             <div class="flex justify-between items-start">
                                 <div>
                                     <h3 class="font-semibold text-lg">{{ booking.service.name }}</h3>
@@ -53,7 +54,7 @@
                                 <div class="text-right">
                                     <p class="font-semibold">${{ booking.service.price }}</p>
                                     {% if booking.status == 'pending' and request.user.role == request.user.CUSTOMER %}
-                                    <button class="mt-2 text-sm text-red-600 hover:text-red-800" onclick="cancelBooking({{ booking.id }})">
+                                    <button class="mt-2 text-sm text-red-600 hover:text-red-800" onclick="event.stopPropagation(); cancelBooking({{ booking.id }})">
                                         Cancel
                                     </button>
                                     {% endif %}
@@ -104,6 +105,16 @@ window.onload = function () {
     if (isAuthenticated === "true") {
         loadingElement.style.display = "none";
         contentElement.style.display = "flex";
+        
+        // Add click handlers for service providers
+        if ("{{ request.user.role }}" == "2") {  // SERVICE_PROVIDER
+            document.querySelectorAll('.booking-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const bookingId = this.getAttribute('data-booking-id');
+                    window.location.href = `/booking/${bookingId}/`;
+                });
+            });
+        }
     } else {
         if (!window.location.href.includes("home")) {
             window.location.href = "/home";
