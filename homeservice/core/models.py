@@ -81,6 +81,8 @@ class Booking(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    booking_time = models.CharField(max_length=5)
+    booking_day = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     notes = models.TextField(blank=True)
@@ -152,3 +154,27 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.user.get_full_name()}"
+
+class ProviderSchedule(models.Model):
+    DAY_CHOICES = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    ]
+    provider = models.ForeignKey('ServiceProvider', on_delete=models.CASCADE, related_name='schedules')
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    time_slots = models.JSONField(default=list)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta: 
+        unique_together = ('provider', 'day')
+        ordering = ['day']
+    
+    def __str__(self):
+        return f"{self.provider.user.get_full_name()} - {self.get_day_display()}"

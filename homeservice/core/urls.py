@@ -46,6 +46,8 @@ urlpatterns = [
     ),
     path("book_service/<int:id>/", views.book_service, name="book_service"),
     path("unbook_service/<int:id>/", views.unbook_service, name="book_service"),
+    path('service/<int:service_id>/book/', views.service_booking, name='service_booking'),
+    path('manage-schedule/', views.manage_schedule, name='manage_schedule'),
 ]
 
 if settings.DEBUG:
