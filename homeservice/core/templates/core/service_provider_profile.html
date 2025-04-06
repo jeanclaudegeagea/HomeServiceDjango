@@ -106,7 +106,7 @@
     
         {% if request.user.role == request.user.CUSTOMER %}
         <div class="flex justify-between items-center mt-4">
-          <a href="#" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
+          <a href="{% url 'service_details' service.id %}" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
         {% with isFound=customer_bookings|filter_booking_for_service:service.id %}
             {% if not isFound %}
             <!-- Show "Book now" link -->

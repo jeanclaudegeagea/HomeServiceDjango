@@ -80,6 +80,7 @@
     <div class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-300">
       <div class="p-6">
         <!-- Clickable Provider Section -->
+        <div class="flex items-center w-full justify-between">
         <a href="{% url 'service_provider_profile' service.provider.user.id %}" class="flex items-center space-x-4 mb-4 group">
           {% if service.provider.user.profile_image %}
           <img class="h-12 w-12 rounded-full object-cover" src="{{ service.provider.user.profile_image.url }}" alt="">
@@ -95,6 +96,12 @@
             <p class="text-sm text-gray-500">{{ service.specialization.name }}</p>
           </div>
         </a>
+        {% if request.user.is_authenticated %}
+            {% if request.user.role == request.user.CUSTOMER %}
+              <a href="{% url 'service_details' service.id %}" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
+            {% endif %}
+        {% endif %}
+      </div>
         
         <h2 class="text-xl font-semibold text-gray-900 mb-2">{{ service.name }}</h2>
         <p class="text-gray-600 mb-4">{{ service.description|truncatechars:100 }}</p>
