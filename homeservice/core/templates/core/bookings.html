@@ -1,0 +1,139 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div id="loading-auth" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"></div>
+</div>
+
+<div class="container bg-white px-3 py-6 md:px-5 md:py-10 hidden" id="content">
+    <div class="grid gap-8 md:grid-cols-12 w-full">
+        {% include 'core/sidebar.html' %}
+        
+        <div class=" px-4 py-8 md:col-span-9">
+            <h1 class="text-2xl font-bold mb-6">My Bookings</h1>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex border-b mb-6">
+                    <a href="?tab=upcoming" class="px-4 py-2 font-medium {% if active_tab == 'upcoming' %}text-black border-b-2 border-black{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+                        Upcoming
+                    </a>
+                    <a href="?tab=past" class="px-4 py-2 font-medium {% if active_tab == 'past' %}text-black border-b-2 border-black{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+                        Past
+                    </a>
+                </div>
+                
+                {% if page_obj.object_list %}
+                    <div class="space-y-4">
+                        {% for booking in page_obj.object_list %}
+                        <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-semibold text-lg">{{ booking.service.name }}</h3>
+                                    <p class="text-gray-600">
+                                        {% if request.user.role == request.user.CUSTOMER %}
+                                        With {{ booking.service.provider.user.get_full_name }}
+                                        {% else %}
+                                        For {{ booking.customer.user.get_full_name }}
+                                        {% endif %}
+                                    </p>
+                                    <div class="mt-2 flex items-center text-sm text-gray-500">
+                                        <i class="fas fa-calendar-day mr-2"></i>
+                                        <span>{{ booking.booking_date }} at {{ booking.booking_time }}</span>
+                                    </div>
+                                    <div class="mt-1 flex items-center text-sm">
+                                        <span class="px-2 py-1 rounded-full text-xs 
+                                            {% if booking.status == 'confirmed' %}bg-green-100 text-green-800
+                                            {% elif booking.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                            {% elif booking.status == 'completed' %}bg-blue-100 text-blue-800
+                                            {% else %}bg-red-100 text-red-800{% endif %}">
+                                            {{ booking.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold">${{ booking.service.price }}</p>
+                                    {% if booking.status == 'pending' and request.user.role == request.user.CUSTOMER %}
+                                    <button class="mt-2 text-sm text-red-600 hover:text-red-800" onclick="cancelBooking({{ booking.id }})">
+                                        Cancel
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if booking.notes %}
+                            <div class="mt-3 pt-3 border-t">
+                                <p class="text-sm text-gray-600"><strong>Notes:</strong> {{ booking.notes }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-6 flex justify-center">
+                        <div class="join">
+                            {% if page_obj.has_previous %}
+                                <a href="?tab={{ active_tab }}&page=1" class="join-item btn">«</a>
+                                <a href="?tab={{ active_tab }}&page={{ page_obj.previous_page_number }}" class="join-item btn">‹</a>
+                            {% endif %}
+                            
+                            <button class="join-item btn">Page {{ page_obj.number }}</button>
+                            
+                            {% if page_obj.has_next %}
+                                <a href="?tab={{ active_tab }}&page={{ page_obj.next_page_number }}" class="join-item btn">›</a>
+                                <a href="?tab={{ active_tab }}&page={{ page_obj.paginator.num_pages }}" class="join-item btn">»</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No {{ active_tab }} bookings found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.onload = function () {
+    const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+    const loadingElement = document.getElementById("loading-auth");
+    const contentElement = document.getElementById("content");
+
+    if (isAuthenticated === "true") {
+        loadingElement.style.display = "none";
+        contentElement.style.display = "flex";
+    } else {
+        if (!window.location.href.includes("home")) {
+            window.location.href = "/home";
+        }
+    }
+};
+
+function cancelBooking(bookingId) {
+    if (confirm('Are you sure you want to cancel this booking?')) {
+        fetch(`/cancel_booking/${bookingId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Booking cancelled successfully');
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while cancelling the booking');
+        });
+    }
+}
+</script>
+{% endblock %}
