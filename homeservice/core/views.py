@@ -13,7 +13,7 @@ from .models import (
     ServiceProviderDocument,
     Specialization,
     Location,
-    ProviderSchedule
+    ProviderSchedule,
 )
 from .forms import (
     ProfileImageForm,
@@ -362,24 +362,28 @@ def profile(request):
             upcoming_bookings = Booking.objects.filter(
                 customer=customer,
                 status__in=["pending", "confirmed"],
-                created_at__gte=timezone.now().date()
+                created_at__gte=timezone.now().date(),
             ).order_by("created_at")[:5]
 
             past_bookings = Booking.objects.filter(
-                customer=customer, status="completed", created_at__lt=timezone.now().date()
+                customer=customer,
+                status="completed",
+                created_at__lt=timezone.now().date(),
             ).order_by("-created_at")[:5]
 
         elif request.user.role == User.SERVICE_PROVIDER:
             # Service Provider view
             provider = ServiceProvider.objects.get(user=request.user)
             upcoming_bookings = Booking.objects.filter(
-                service__provider=provider,  
+                service__provider=provider,
                 status__in=["pending", "confirmed"],
-                created_at__gte=timezone.now().date()  
+                created_at__gte=timezone.now().date(),
             ).order_by("created_at")[:5]
 
             past_bookings = Booking.objects.filter(
-                service__provider=provider, status="completed", created_at__lt=timezone.now().date()
+                service__provider=provider,
+                status="completed",
+                created_at__lt=timezone.now().date(),
             ).order_by("-created_at")[:5]
 
     isProvider = False
@@ -925,6 +929,7 @@ def unbook_service(request, id):
         {"success": False, "message": "Only POST requests are allowed."}
     )
 
+
 @login_required
 def service_booking(request, service_id):
     service = get_object_or_404(Service, id=service_id)
@@ -935,64 +940,68 @@ def service_booking(request, service_id):
     if request.method == "POST":
         booking_day = request.POST.get("day")
         booking_time = request.POST.get("time")
-        notes = request.POST.get('notes', '')
+        notes = request.POST.get("notes", "")
 
         try:
             day_schedule = schedule.get(day=booking_day)
             if booking_time not in day_schedule.time_slots:
                 messages.error(request, "Invalid Time slot selected")
                 return redirect("service_booking", service_id=service_id)
-            
+
             customer = Customer.objects.get(user=request.user)
-            Booking.objects.create(customer=customer, service=service, booking_day=booking_day, booking_time=booking_time, notes=notes, status='pending')
+            Booking.objects.create(
+                customer=customer,
+                service=service,
+                booking_day=booking_day,
+                booking_time=booking_time,
+                notes=notes,
+                status="pending",
+            )
 
             messages.success(request, "Booking request sent successfully!")
             return redirect("service_provdier_profile", id=provider.user.id)
-        
+
         except ProviderSchedule.DoesNotExist:
             messages.error(request, "Invalid day selected")
-            return redirect('service_booking', service_id=service_id)
-    
-    context = {
-        'service': service,
-        'provider': provider,
-        'schedule': schedule
-    }
-    return render(request, 'core/service_booking.html', context)
+            return redirect("service_booking", service_id=service_id)
+
+    context = {"service": service, "provider": provider, "schedule": schedule}
+    return render(request, "core/service_booking.html", context)
 
 
 # views.py
 @login_required
 def manage_schedule(request):
     if request.user.role != User.SERVICE_PROVIDER:
-        return redirect('home')
-    
+        return redirect("home")
+
     provider = request.user.serviceprovider
     weekly_schedule, created = ProviderSchedule.objects.get_or_create(
-        provider=provider,
-        defaults={'day': 'monday', 'time_slots': []}
+        provider=provider, defaults={"day": "monday", "time_slots": []}
     )
-    
-    if request.method == 'POST':
-        day = request.POST.get('day')
-        time_slots = request.POST.getlist('time_slots[]')
-        
+
+    if request.method == "POST":
+        day = request.POST.get("day")
+        time_slots = request.POST.getlist("time_slots[]")
+
         # Validate time slots format
         valid_slots = []
         for slot in time_slots:
-            if re.match(r'^\d{1,2}:\d{2}$', slot):
+            if re.match(r"^\d{1,2}:\d{2}$", slot):
                 valid_slots.append(slot)
-        
+
         # Update or create schedule for the day
         schedule, created = ProviderSchedule.objects.update_or_create(
             provider=provider,
             day=day,
-            defaults={'time_slots': valid_slots, 'is_active': bool(valid_slots)}
+            defaults={"time_slots": valid_slots, "is_active": bool(valid_slots)},
         )
-        
-        messages.success(request, f"Schedule for {schedule.get_day_display()} updated successfully!")
-        return redirect('manage_schedule')
-    
+
+        messages.success(
+            request, f"Schedule for {schedule.get_day_display()} updated successfully!"
+        )
+        return redirect("manage_schedule")
+
     # Get all days, even if not created yet
     days = []
     for day_choice in ProviderSchedule.DAY_CHOICES:
@@ -1002,8 +1011,8 @@ def manage_schedule(request):
         except ProviderSchedule.DoesNotExist:
             schedule = ProviderSchedule(provider=provider, day=day, time_slots=[])
         days.append(schedule)
-    
+
     context = {
-        'days': days,
+        "days": days,
     }
-    return render(request, 'serviceProvider/schedule.html', context)
+    return render(request, "serviceProvider/schedule.html", context)

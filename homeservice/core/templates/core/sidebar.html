@@ -1,0 +1,98 @@
+<div class="md:col-span-3">
+  <div class="bg-white shadow rounded-lg">
+      <div class="p-6 flex flex-row items-center gap-4">
+          <div
+              class="cursor-pointer h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 overflow-hidden relative">
+              {% if request.user.profile_image %}
+              <img src="{{ request.user.profile_image.url }}" alt="Profile"
+                  class="h-full w-full object-cover">
+              <button class="z-10 absolute top-0 right-0 text-white p-1" title="Delete Image"
+                  onclick="deleteImage()">
+                  <i class="fa-solid fa-times"></i>
+              </button>
+
+              {% else %}
+              {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+              {% endif %}
+              {% if request.user.role %}
+              <form method="post" enctype="multipart/form-data" class="absolute inset-0 opacity-0">
+                  {% csrf_token %}
+                  <input type="file" name="profile_image" accept="image/*"
+                      class="w-full h-full cursor-pointer" onchange="this.form.submit()">
+              </form>
+              {% endif %}
+
+          </div>
+          <div>
+              <h2 class="text-lg font-semibold">{{ request.user.get_full_name }}</h2>
+              <p class="text-gray-500 text-sm">{{ request.user.email }}</p>
+              <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full 
+                  {% if request.user.role == request.user.CUSTOMER %}bg-blue-100 text-blue-800
+                  {% else %}bg-green-100 text-green-800{% endif %}">
+                  {% if request.user.role == request.user.CUSTOMER %}Customer
+                  {% else %}Service Provider{% endif %}
+              </span>
+          </div>
+      </div>
+      <div class="border-t border-gray-200">
+          <nav class="flex flex-col">
+              <a href="{% url 'profile' %}"
+                  class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2 {% if request.path == '/profile/' %}bg-gray-50 font-medium{% endif %}">
+                  <i class="fas fa-home"></i>
+                  Dashboard
+              </a>
+              <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-calendar"></i>
+                  Bookings
+              </a>
+              {% if is_provider %}
+              <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-file-invoice"></i>
+                  Services
+              </a>
+              {% else %}
+              <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-file-invoice"></i>
+                  Invoices
+              </a>
+              {% endif %}
+              <a href="#" class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-bell"></i>
+                  Notifications
+              </a>
+              <a href="{% url 'manage_schedule' %}"  class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-calendar"></i>
+                  Schedule
+              </a>
+              <a class="px-6 py-4 text-left hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-cog"></i>
+                  <button  id="settings-btn">Settings</button>
+              </a>
+          </nav>
+      </div>
+      <div class="border-t border-gray-200 p-0">
+          <form action="{% url 'logout' %}" method="post" class="w-full">
+              {% csrf_token %}
+              <button type="submit"
+                  class="w-full px-6 py-4 text-left text-red-500 hover:bg-gray-50 flex items-center gap-2">
+                  <i class="fas fa-sign-out-alt"></i>
+                  Sign Out
+              </button>
+          </form>
+      </div>
+  </div>
+</div>
+
+<script>
+  const settingsBtn = document.getElementById("settings-btn")
+
+  settingsBtn.addEventListener("click",()=>{
+    const  currentLocation = window.location.href
+    if(currentLocation.includes("/profile/")){
+      toggleSettings()
+    }
+    else if (currentLocation.includes("/manage-schedule/")){
+      window.location.href = "/profile"
+    }
+  })
+</script>
