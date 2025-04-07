@@ -43,7 +43,7 @@
 
           <!-- Add Service Button (only for service providers) -->
           {% if request.user.role == request.user.SERVICE_PROVIDER %}
-          <a href="{% url 'create_service' %}" class="btn bg-black text-white text-sm">
+          <a href="{% url 'create_service' %}" class="btn bg-black text-white hover:text-black text-sm">
             Create Service
           </a>
           {% endif %}

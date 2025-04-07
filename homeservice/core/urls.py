@@ -30,6 +30,7 @@ from core.views.bookings import (
     booking_detail_view,
     update_booking_status,
 )
+from core.views.howItWorks import how_it_works
 
 urlpatterns = [
     path("", home_view, name="base"),
@@ -74,6 +75,7 @@ urlpatterns = [
     path("cancel_booking/<int:booking_id>/", cancel_booking, name="cancel_booking"),
     path("booking/<int:booking_id>/", booking_detail_view, name="booking_detail"),
     path("update_booking_status/", update_booking_status, name="update_booking_status"),
+    path("how-it-works/", how_it_works, name="how_it_works"),
 ]
 
 if settings.DEBUG:
