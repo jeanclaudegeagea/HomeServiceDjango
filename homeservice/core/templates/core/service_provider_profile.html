@@ -1,7 +1,6 @@
 {% extends 'core/base.html' %}
 
-{% load booking_tags %}  <!-- Load the custom filter -->
-
+{% load booking_tags %}
 
 {% block content %}
 <div class="p-6 bg-white flex justify-center items-start gap-10 w-full ">
@@ -30,7 +29,6 @@
                   <input type="radio" name="rating-2" value="5" class="mask mask-star-2 bg-orange-400"
                          {% if customer_review_rating == 5 %}checked{% endif %}/>
                 </div>
-                
                 {% endif %}
             {% endif %}
             <span class="text-gray-600">{{ average_rating }} ({{ review_count }} {% if review_count >= 1 %} reviews {% else %} review {% endif %})</span>
@@ -57,7 +55,6 @@
             </div>
               {% endif %}
           {% endif %}
-          <!-- Service Tags -->
     </div>
     <div class="flex flex-col gap-3 self-center  mb-6">
         <h1 class="text-2xl font-bold">Specializations</h1>
@@ -73,7 +70,6 @@
           {% endif %}
         </div>
     </div>
-      <!-- Verified Provider Section -->
       <div class="flex gap-3 mb-6">
         <i class="fas fa-check-circle text-green-500 text-lg"></i>
         <div class="flex flex-col">
@@ -83,7 +79,6 @@
           <p class="text-gray-700"> {{ years_of_experience }} years of experience</p>
         </div>
       </div>
-      <!-- Contact Info -->
       <div class="flex gap-3 mb-6">
         <i class="fas fa-phone-alt text-lg"></i> 
         <div class="flex flex-col">
@@ -103,7 +98,6 @@
            <p class="text-gray-700">{{ service_provider.user.email }}</p>
         </div>
       </div>
-
   </div>
 
   <div class="flex flex-col w-[50%] gap-3">
@@ -141,30 +135,10 @@
     
         {% if request.user.role == request.user.CUSTOMER %}
         <div class="flex justify-between items-center mt-4">
-          <a href="{% url 'service_details' service.id %}" class="rounded-md bg-white border border-gray-300 text-black px-3 py-2 hover:bg-gray-100">View Details</a>
-        {% with isFound=customer_bookings|filter_booking_for_service:service.id %}
-            {% if not isFound %}
-            <!-- Show "Book now" link -->
-            <a href="{% url 'service_booking' service.id %}" class="mt-4  inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-200 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Book Now
-            </a>
-            {% else %}
-                <!-- Show "Unbook" button -->
-                <button 
-                    class="rounded-md bg-black text-white hover:bg-gray-800 px-3 py-2 flex items-center" 
-                    onclick="unBookService('{{ service.id }}')" 
-                    id="booking-btn-{{ service.id }}"
-                >
-                    <span id="booking-text-{{ service.id }}">Unbook</span>
-                    <span id="booking-loading-{{ service.id }}" class="hidden ml-2">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-                </button>
-            {% endif %}
-        {% endwith %}
+          <div></div>
+          <a href="{% url 'service_booking' service.id %}" class="mt-4 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-200 hover:text-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Book Now
+          </a>
         </div>
         {% endif %}
       </div>
@@ -177,26 +151,46 @@
       {% endfor %}
     </div>
     
-     <div class="mb-8  hidden" id="reviews">
-        <div class="space-y-4">
+    <div class="mb-8 hidden" id="reviews">
+      <div class="space-y-4">
           {% for review in reviews %}
-          <div class="bg-base-100 shadow-sm border rounded-md p-4">
-              <div class="flex justify-between items-center mb-2">
-                  <h3 class="font-semibold">{{ review.customer.user.get_full_name }}</h3>
-                  <span class="text-gray-500 text-sm">{{ review.updated_at|date:"F j, Y" }}</span>
+          <div class="bg-white shadow-sm border rounded-md p-4">
+              <div class="flex items-start gap-3 mb-2">
+                  {% if review.customer.user.profile_image %}
+                      <img class="object-cover w-10 h-10 rounded-full" src="{{ review.customer.user.profile_image.url }}" alt="{{ review.customer.user.get_full_name }}" />
+                  {% else %}
+                      <div class="w-10 h-10 text-sm rounded-full bg-gray-500 flex items-center justify-center text-white">
+                          {{ review.customer.user.first_name|first|upper }}{{ review.customer.user.last_name|first|upper }}
+                      </div>
+                  {% endif %}
+                  
+                  <div class="flex-1">
+                      <div class="flex justify-between items-center">
+                          <h3 class="font-semibold">{{ review.customer.user.get_full_name }}</h3>
+                          <span class="text-gray-500 text-sm">{{ review.updated_at|date:"F j, Y" }}</span>
+                      </div>
+                      <div class="rating rating-sm">
+                          {% for i in "12345" %}
+                              {% if i|add:0 <= review.rating %}
+                                  <input type="radio" name="rating-{{ review.id }}" class="mask mask-star-2 bg-orange-400" checked disabled />
+                              {% else %}
+                                  <input type="radio" name="rating-{{ review.id }}" class="mask mask-star-2 bg-gray-300" disabled />
+                              {% endif %}
+                          {% endfor %}
+                      </div>
+                  </div>
               </div>
-              <p class="text-gray-700">{{ review.content }}</p>
+              <p class="text-gray-700 mt-2 pl-[52px]">{{ review.content }}</p>
           </div>
           {% empty %}
           <div class="card bg-white shadow-sm border text-center p-6">
-            <div class="card-body">
-              <h3 class="text-lg font-semibold text-gray-700">No reviews yet</h3>
-            </div>
+              <div class="card-body">
+                  <h3 class="text-lg font-semibold text-gray-700">No reviews yet</h3>
+              </div>
           </div>
           {% endfor %}
-        </div> 
+      </div> 
     </div>
-
   </div>
 </div>
 
@@ -204,15 +198,12 @@
     document.querySelectorAll('.menu-items li a').forEach(link => {
             link.addEventListener('click', function (e) {
                   e.preventDefault();
-                  // Hide all sections
                   document.querySelectorAll('#services, #reviews').forEach(section => {
                                 section.classList.add('hidden');
                             });
-                            // Show the selected section
                   const targetId = this.getAttribute('href').substring(1);
                   document.getElementById(targetId).classList.remove('hidden');
 
-                  // Update active state in menu
                   document.querySelectorAll('.menu-items li').forEach(item => {
                                 item.classList.remove('bg-white');
                                 item.classList.add('text-[#878088]')
@@ -223,40 +214,6 @@
                   parentLi.classList.remove('text-[#878088]');
               });
       });
-
-
-  const unBookService = async (serviceId) =>{
-    const bookingBtn = document.getElementById(`booking-btn-${serviceId}`)
-    const bookingText = document.getElementById(`booking-text-${serviceId}`)
-    const bookingLoading = document.getElementById(`booking-loading-${serviceId}`)
-    
-    bookingBtn.disabled = true
-    bookingText.textContent = "unbooking... "
-    bookingLoading.classList.remove("hidden")
-
-    const providerId = '{{ service_provider.user.id }}'
-    const response = await fetch(`/unbook_service/${serviceId}/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded", // or 'application/json' if you send JSON
-            "X-CSRFToken": "{{ csrf_token }}"// if CSRF is handled
-          },
-          body: {}
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          alert(result.message);
-          // Optionally redirect or update UI
-          window.location.href = `/serviceprovider_profile/${providerId}`
-        } else {
-          alert(result.message);
-        }
-
-        bookingBtn.disabled = false
-        bookingText.textContent = "Book now"
-        bookingLoading.classList.add("hidden")
-    };
 
     const isAuthenticated = "{{ request.user.is_authenticated }}"
 

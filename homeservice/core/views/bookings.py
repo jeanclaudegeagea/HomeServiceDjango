@@ -1,4 +1,3 @@
-# In views.py
 from django.core.paginator import Paginator
 from datetime import date
 from ..models import User, Booking, Customer, ServiceProvider
@@ -58,7 +57,52 @@ def bookings_view(request):
     
     return render(request, 'core/bookings.html', context)
 
-# In views.py
+@login_required
+def booking_detail_view(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    
+    # Verify the user has permission to view this booking
+    if not (request.user == booking.customer.user or 
+            (request.user.role == User.SERVICE_PROVIDER and 
+             booking.service.provider.user == request.user)):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    context = {
+        'booking': booking,
+        'status_choices': Booking.STATUS_CHOICES,
+    }
+    return render(request, 'core/booking_details.html', context)
+
+@login_required
+def update_booking_status(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            booking_id = data.get('booking_id')
+            new_status = data.get('status')
+            
+            booking = Booking.objects.get(id=booking_id)
+            
+            # Verify ownership
+            if not (request.user == booking.customer.user or 
+                   (request.user.role == User.SERVICE_PROVIDER and 
+                    booking.service.provider.user == request.user)):
+                return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+            
+            # Update booking
+            booking.status = new_status
+            booking.save()
+        
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/bookings/'
+            })
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+
 @login_required
 def cancel_booking(request, booking_id):
     if request.method == 'POST':
@@ -80,48 +124,3 @@ def cancel_booking(request, booking_id):
             return JsonResponse({'success': False, 'error': 'Booking not found'}, status=404)
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
-
-@login_required
-def booking_detail_view(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id)
-    
-    # Verify the service provider owns this booking
-    if request.user.role != User.SERVICE_PROVIDER or booking.service.provider.user != request.user:
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
-    
-    context = {
-        'booking': booking,
-        'status_choices': Booking.STATUS_CHOICES,
-    }
-    return render(request, 'core/booking_details.html', context)
-
-@login_required
-def update_booking_status(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            booking_id = data.get('booking_id')
-            new_status = data.get('status')
-            response_message = data.get('response_message', '')
-            
-            booking = Booking.objects.get(id=booking_id)
-            
-            # Verify ownership
-            if request.user.role != User.SERVICE_PROVIDER or booking.service.provider.user != request.user:
-                return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
-            
-            # Update booking
-            booking.status = new_status
-            if response_message:
-                booking.notes = response_message
-            booking.save()
-        
-            return JsonResponse({
-                'success': True,
-                'redirect_url': '/bookings/'  # Add this line to return the redirect URL
-            })
-            
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    
-    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)

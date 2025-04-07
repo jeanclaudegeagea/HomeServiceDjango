@@ -9,7 +9,7 @@
     <div class="grid gap-8 md:grid-cols-12 w-full">
         {% include 'core/sidebar.html' %}
         
-        <div class=" px-4 py-8 md:col-span-9">
+        <div class="px-4 py-8 md:col-span-9">
             <div class="flex items-center mb-6">
                 <button onclick="window.history.back()" class="mr-4">
                     <i class="fas fa-arrow-left"></i>
@@ -115,7 +115,6 @@ document.getElementById('status-update-form').addEventListener('submit', functio
     const formData = {
         booking_id: form.booking_id.value,
         status: form.status.value,
-        response_message: form.response_message.value,
         csrfmiddlewaretoken: form.csrfmiddlewaretoken.value
     };
     
@@ -124,7 +123,7 @@ document.getElementById('status-update-form').addEventListener('submit', functio
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="loading loading-spinner"></span> Updating...';
     
-    fetch('/update_booking_status/', {
+    fetch('{% url "update_booking_status" %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -136,12 +135,7 @@ document.getElementById('status-update-form').addEventListener('submit', functio
     .then(data => {
         if (data.success) {
             alert('Booking status updated successfully!');
-            // Redirect to bookings page if redirect_url is provided
-            if (data.redirect_url) {
-                window.location.href = data.redirect_url;
-            } else {
-                window.location.reload();
-            }
+            window.location.href = data.redirect_url || '/bookings/';
         } else {
             alert('Error: ' + (data.error || 'Failed to update status'));
         }
