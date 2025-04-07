@@ -53,6 +53,9 @@ def service_booking(request, service_id):
                 status="pending",
             )
 
+            from ..models import Notification
+            Notification.create_booking_notification(booking)
+
             messages.success(request, "Your booking has been confirmed successfully!")
             return redirect("profile")  # Or redirect to booking confirmation page
 

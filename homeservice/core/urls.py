@@ -31,6 +31,7 @@ from core.views.bookings import (
     update_booking_status,
 )
 from core.views.howItWorks import how_it_works
+from core.views.notifications import notifications_view
 
 urlpatterns = [
     path("", home_view, name="base"),
@@ -81,6 +82,7 @@ urlpatterns = [
         add_review,
         name="add_review",
     ),
+    path("notifications/", notifications_view, name="notifications")
 ]
 
 if settings.DEBUG:

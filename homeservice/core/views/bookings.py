@@ -92,6 +92,10 @@ def update_booking_status(request):
             # Update booking
             booking.status = new_status
             booking.save()
+
+            if request.user.role == User.SERVICE_PROVIDER:
+                from ..models import Notification
+                Notification.create_booking_update_notification(booking)
         
             return JsonResponse({
                 'success': True,

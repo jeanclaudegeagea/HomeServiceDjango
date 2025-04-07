@@ -111,6 +111,9 @@ def add_review(request, customer_id, service_provider_id):
             },
         )
 
+        from ..models import Notification
+        Notification.create_review_notification(review)
+
         if created:
             message = "Review submitted successfully!"
         else:

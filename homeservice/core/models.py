@@ -124,7 +124,9 @@ class ServiceReview(models.Model):
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
-        ("booking", "Booking Update"),
+        ("booking_created", "New Booking"),
+        ("booking_updated", "Booking Update"),
+        ("review_created", "New Review"),
         ("system", "System Notification"),
         ("promotion", "Promotional"),
     ]
@@ -137,12 +139,58 @@ class Notification(models.Model):
     message = models.TextField()
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Reference to related objects
+    booking = models.ForeignKey(
+        Booking, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    review = models.ForeignKey(
+        ServiceReview, on_delete=models.SET_NULL, null=True, blank=True
+    )
 
     class Meta:
         ordering = ["-created_at"]
 
     def __str__(self):
         return f"{self.title} - {self.user.get_full_name()}"
+
+    @classmethod
+    def create_booking_notification(cls, booking):
+        """Create notification for new booking (to service provider)"""
+        provider = booking.service.provider.user
+        notification = cls.objects.create(
+            user=provider,
+            notification_type="booking_created",
+            title="New Booking Received",
+            message=f"You have a new booking for {booking.service.name} from {booking.customer.user.get_full_name()}",
+            booking=booking,
+        )
+        return notification
+
+    @classmethod
+    def create_booking_update_notification(cls, booking):
+        """Create notification for booking status update (to customer)"""
+        customer = booking.customer.user
+        notification = cls.objects.create(
+            user=customer,
+            notification_type="booking_updated",
+            title="Booking Status Updated",
+            message=f"Your booking for {booking.service.name} is now {booking.get_status_display()}",
+            booking=booking,
+        )
+        return notification
+
+    @classmethod
+    def create_review_notification(cls, review):
+        """Create notification for new review (to service provider)"""
+        provider = review.provider.user
+        notification = cls.objects.create(
+            user=provider,
+            notification_type="review_created",
+            title="New Review Received",
+            message=f"You received a {review.rating}-star review from {review.customer.user.get_full_name()}",
+            review=review,
+        )
+        return notification
 
 
 class ProviderSchedule(models.Model):
