@@ -1,0 +1,82 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Notifications</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Notifications</h1>
+            
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Booking Notifications</h2>
+                <p class="text-gray-500 mb-4">Updates about your service bookings</p>
+                <div class="divider"></div>
+                
+                <!-- New Booking Request -->
+                <div class="mb-6 p-4 border rounded-lg hover:bg-gray-50">
+                    <h3 class="font-bold text-lg text-gray-800">New Booking Request</h3>
+                    <p class="text-gray-600 mt-1">You have a new booking request for Electrical Service on April 12, 2025 at 3:00 PM.</p>
+                    <p class="text-gray-400 text-sm mt-2"><strong>Apr 7, 2025 at 3:10 PM</strong></p>
+                    <button class="btn btn-sm btn-primary mt-3">View Details</button>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <!-- Booking Cancelled -->
+                <div class="mb-6 p-4 border rounded-lg hover:bg-gray-50">
+                    <h3 class="font-bold text-lg text-gray-800">Booking Cancelled</h3>
+                    <p class="text-gray-600 mt-1">A booking for Plumbing Service on April 9, 2025 has been cancelled by the customer.</p>
+                    <p class="text-gray-400 text-sm mt-2"><strong>Apr 5, 2025 at 2:25 PM</strong></p>
+                    <button class="btn btn-sm btn-primary mt-3">View Details</button>
+                </div>
+            </div>
+            
+            <!-- Notification Settings -->
+            <div class="mt-8">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Notification Settings</h2>
+                
+                <div class="space-y-4">
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" checked="checked" class="checkbox checkbox-primary" />
+                            <span class="label-text text-gray-700">Email Notifications</span>
+                        </label>
+                        <p class="text-gray-500 text-sm ml-12">Receive notifications via email</p>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" checked="checked" class="checkbox checkbox-primary" />
+                            <span class="label-text text-gray-700">Push Notifications</span>
+                        </label>
+                        <p class="text-gray-500 text-sm ml-12">Receive notifications on your device</p>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" checked="checked" class="checkbox checkbox-primary" />
+                            <span class="label-text text-gray-700">Booking Updates</span>
+                        </label>
+                        <p class="text-gray-500 text-sm ml-12">Get notified about booking changes</p>
+                    </div>
+                    
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" class="checkbox checkbox-primary" />
+                            <span class="label-text text-gray-700">Promotional Notifications</span>
+                        </label>
+                        <p class="text-gray-500 text-sm ml-12">Receive offers and promotions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
