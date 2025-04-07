@@ -23,6 +23,7 @@ from core.views.providers import providers_view
 from core.views.serviceProvider import service_provider_profile
 from core.views.booking import unbook_service, service_booking
 from core.views.manageSchedule import manage_schedule
+from core.views.serviceDetails import service_details
 from core.views.bookings import bookings_view, cancel_booking, booking_detail_view, update_booking_status
 
 urlpatterns = [
@@ -63,6 +64,7 @@ urlpatterns = [
     path("unbook_service/<int:id>/", unbook_service, name="book_service"),
     path("service/<int:service_id>/book/", service_booking, name="service_booking"),
     path("manage-schedule/", manage_schedule, name="manage_schedule"),
+    path("servicedetails/<int:id>", service_details, name="service_details"),
     path('bookings/', bookings_view, name='bookings'),
     path('cancel_booking/<int:booking_id>/', cancel_booking, name='cancel_booking'),
     path('booking/<int:booking_id>/', booking_detail_view, name='booking_detail'),

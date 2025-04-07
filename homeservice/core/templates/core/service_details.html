@@ -1,0 +1,99 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<div id="loading-auth" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+  <div class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"></div>
+</div>
+
+<div class="container py-8 px-8 " id="content">
+            <!-- Service Card -->
+        <div class="w-full">
+                <div class="card bg-base-100 shadow-md">
+                    <div class="card-body">
+                        <!-- Header with service name and price -->
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+                            <h2 class="card-title text-2xl font-bold">{{ service.name }}</h2>
+                            <div class="text-right">
+                                <div class="text-3xl font-bold text-gray-800">${{ service.price }}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="mb-4">
+                            <span class="text-gray-500">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ service.city }}, {{ service.state }} , {{ service.country}}
+                            </span>
+                        </div>
+                        
+                        <!-- Service Details Tab Content -->
+                        <div class="tab-content">
+                            <h3 class="font-bold text-lg mb-2">Description</h3>
+                            <p class="mb-6">{{ service.description }}</p>
+                            
+                            <h3 class="font-bold text-lg mb-2">Provider Information</h3>
+                            <div class="flex items-center gap-10 mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user mr-2"></i>
+                                    <span>{{ service.provider.user.first_name }} {{ service.provider.user.last_name }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="far fa-clock mr-2"></i>
+                                    <span>{{ service.provider.years_of_experience }} years of experience</span>
+                                </div>
+                            </div>
+                            
+                            <h4 class="font-medium mb-2">Specializations:</h4>
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                {% for provider_specialization in provider_specializations %}
+                                    <span class="badge badge-outline font-semibold p-2" title="{{ provider_specialization.description }}">
+                                        {{ provider_specialization.name }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                            
+                            <h3 class="font-bold text-lg mb-2">Service Information</h3>
+                            <div class="mb-2">
+                                <i class="fas fa-dollar-sign mr-2"></i>
+                                Price: ${{ service.price }}
+                            </div>
+                            <div class="mb-2">
+                                <i class="fas fa-tools mr-2"></i> 
+                                Specialization: 
+                                <span class="badge badge-outline font-semibold p-2" title="{{ service.specialization.description }}" >
+                                    {{ service.specialization.name }}
+                                </span>
+                            </div>
+                            <div class="mb-6">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                Created: {{ service.created_at }}
+                            </div>
+                        
+                            <a href="{% url 'service_booking' service.id %}" class="btn btn-block btn-neutral bg-black text-white">Book This Service</a>
+                        </div>
+                    </div>
+                </div>
+        </div>
+</div>
+
+<script>
+      window.onload = function () {
+        const isAuthenticated =
+            "{{ request.user.is_authenticated|yesno:'true,false' }}";
+        const loadingElement = document.getElementById("loading-auth");
+        const contentElement = document.getElementById("content");
+        const role = "{{ request.user.role }}"
+
+
+        if (isAuthenticated === "true" && Number(role) == 1) {
+            loadingElement.style.display = "none";
+            contentElement.style.display = "flex";
+        } else {
+            if (!window.location.href.includes("home")) {
+                window.location.href = "/home";
+            }
+        }
+    };
+</script>
+{% endblock %}
