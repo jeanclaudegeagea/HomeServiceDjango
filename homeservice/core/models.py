@@ -170,4 +170,3 @@ class ProviderSchedule(models.Model):
 
     def __str__(self):
         return f"{self.provider.user.get_full_name()} - {self.get_day_display()}"
-
