@@ -1,7 +1,4 @@
-from ..models import (
-    ServiceProvider,
-    Specialization,
-)
+from ..models import ServiceProvider, Specialization, User
 from django.db.models import Count, Q
 from django.shortcuts import render
 
@@ -11,6 +8,24 @@ def providers_view(request):
     providers = ServiceProvider.objects.filter(user__is_active=True).annotate(
         service_count=Count("service", filter=Q(service__is_active=True))
     )
+
+    # Check if the user has the 'role' attribute and if it's a 'Service_Provider'
+    if hasattr(request.user, "role"):
+        if request.user.role == User.SERVICE_PROVIDER:
+            # If the user is a service provider, place them first in the list
+            providers = providers.annotate(
+                is_current_user=Q(
+                    user=request.user
+                )  # Custom annotation to check if it's the current user
+            )
+            providers = providers.order_by(
+                "-is_current_user", "user__first_name"
+            )  # Sort with current user first
+        else:
+            providers = providers.order_by("user__first_name")
+    else:
+        # Default order for others
+        providers = providers.order_by("user__first_name")
 
     # Get filter parameters from GET request
     specialization = request.GET.get("specialization")

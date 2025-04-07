@@ -429,12 +429,12 @@
                     const _postalCode = document.getElementById("id_postal_code");
                     const _country = document.getElementById("id_country");
 
-                    _addressLine1.value = locationData[0]
-                    _addressLine2.value = locationData[1]
-                    _city.value = locationData[2]
-                    _state.value = locationData[3]
-                    _postalCode.value = locationData[4]
-                    _country.value = locationData[5]
+                    _addressLine1.value = locationData[0] ?? ""
+                    _addressLine2.value = locationData[1] ?? ""
+                    _city.value = locationData[2] ?? ""
+                    _state.value = locationData[3]?? ""
+                    _postalCode.value = locationData[4] ?? ""
+                    _country.value = locationData[5] ?? ""
 
                     const submitLocationBtn = document.getElementById("submit-location-btn")
                     const submitLocationText = document.getElementById("submit-location-text")

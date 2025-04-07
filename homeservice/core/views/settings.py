@@ -228,7 +228,9 @@ def deleteAccount(request):
                 service_provider = ServiceProvider.objects.get(user=user)
 
                 # Get all documents associated with this provider
-                provider_documents = ServiceProviderDocument.objects.filter(provider=service_provider)
+                provider_documents = ServiceProviderDocument.objects.filter(
+                    provider=service_provider
+                )
 
                 # Delete all associated document files
                 for doc in provider_documents:
@@ -284,6 +286,7 @@ def deleteAccount(request):
     return JsonResponse(
         {"success": False, "error": "Invalid request method"}, status=405
     )
+
 
 @csrf_exempt
 @login_required
