@@ -1,12 +1,13 @@
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.utils import timezone
-from ..models import Service, Booking, ProviderSchedule, Customer, ServiceReview
+from ..models import Service, Booking, ProviderSchedule, Customer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.db.models import Avg, Count
 import json
 
 
@@ -90,6 +91,13 @@ def service_booking(request, service_id):
     time_slots_data = {schedule.day: schedule.time_slots for schedule in schedules}
     time_slots_json = json.dumps(time_slots_data)
 
+    review_stats = provider.reviews_received.aggregate(
+        average_rating=Avg("rating"), review_count=Count("id")
+    )
+
+    average_rating = review_stats["average_rating"] or 0  # Fallback if no reviews
+    review_count = review_stats["review_count"]
+
     context = {
         "service": service,
         "provider": provider,
@@ -97,5 +105,8 @@ def service_booking(request, service_id):
         "booked_slots_json": booked_slots_json,
         "time_slots_json": time_slots_json,
         "today": today.isoformat(),
+        "average_rating": round(average_rating, 1),
+        "review_count": review_count,
+        "star_range": range(1, 6),  # Add this line
     }
     return render(request, "core/service_booking.html", context)

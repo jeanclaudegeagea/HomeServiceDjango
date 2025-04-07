@@ -177,35 +177,25 @@
       {% endfor %}
     </div>
     
-     <!-- <div class="mb-8 bg-green-500 hidden" id="reviews">
-        <h2 class="font-bold text-xl mb-4">Reviews</h2>
-        
+     <div class="mb-8  hidden" id="reviews">
         <div class="space-y-4">
-            <div class="bg-base-100 p-4 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-semibold">Alice Smith</h3>
-                    <span class="text-gray-500 text-sm">October 15, 2023</span>
-                </div>
-                <p class="text-gray-700">"John did an excellent job fixing our kitchen sink. He was prompt, professional, and thorough."</p>
+          {% for review in reviews %}
+          <div class="bg-base-100 shadow-sm border rounded-md p-4">
+              <div class="flex justify-between items-center mb-2">
+                  <h3 class="font-semibold">{{ review.customer.user.get_full_name }}</h3>
+                  <span class="text-gray-500 text-sm">{{ review.updated_at|date:"F j, Y" }}</span>
+              </div>
+              <p class="text-gray-700">{{ review.content }}</p>
+          </div>
+          {% empty %}
+          <div class="card bg-white shadow-sm border text-center p-6">
+            <div class="card-body">
+              <h3 class="text-lg font-semibold text-gray-700">No reviews yet</h3>
             </div>
-            
-            <div class="bg-base-100 p-4 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-semibold">Bob Johnson</h3>
-                    <span class="text-gray-500 text-sm">September 22, 2023</span>
-                </div>
-                <p class="text-gray-700">"Very good service. Fixed our electrical issues quickly and efficiently."</p>
-            </div>
-            
-            <div class="bg-base-100 p-4 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-semibold">Carol Williams</h3>
-                    <span class="text-gray-500 text-sm">August 9, 2023</span>
-                </div>
-                <p class="text-gray-700">"Highly recommend John for any home repair needs. Help knowledgeable and professional."</p>
-            </div>
+          </div>
+          {% endfor %}
         </div> 
-    </div> -->
+    </div>
 
   </div>
 </div>

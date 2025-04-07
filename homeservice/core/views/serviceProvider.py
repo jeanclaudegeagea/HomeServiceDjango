@@ -30,6 +30,10 @@ def service_provider_profile(request, id):
     average_rating = review_stats["average_rating"] or 0  # Default to 0 if no reviews
     review_count = review_stats["review_count"]
 
+    reviews = ServiceReview.objects.filter(provider=service_provider).order_by(
+        "-updated_at"
+    )
+
     context = {
         "service_provider": service_provider,
         "years_of_experience": years_of_experience,
@@ -37,6 +41,7 @@ def service_provider_profile(request, id):
         "services": services,
         "average_rating": round(average_rating, 1),
         "review_count": review_count,
+        "reviews": reviews,
     }
 
     if hasattr(request.user, "role"):
