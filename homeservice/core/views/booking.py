@@ -1,74 +1,105 @@
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.utils import timezone
 from ..models import (
-    Customer,
     Service,
     Booking,
     ProviderSchedule,
+    Customer
 )
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-
+from django.shortcuts import render
+import json
 
 @csrf_exempt
 @login_required
 def unbook_service(request, id):
     if request.method == "POST":
-        # Get the service object or return a 404 if not found
-        service = get_object_or_404(Service, id=id)
-        customer = get_object_or_404(Customer, user=request.user)
-
-        # Get the booking related to the service and the logged-in user
-        booking = Booking.objects.filter(service=service, customer=customer).first()
-
-        if booking:
-            # Delete the booking from the database
-            booking.delete()
-            return JsonResponse({"message": "Booking has been successfully removed."})
-
-        return JsonResponse({"error": "No booking found for this service."}, status=404)
-
-    return JsonResponse(
-        {"success": False, "message": "Only POST requests are allowed."}
-    )
-
+        booking = get_object_or_404(Booking, id=id, customer__user=request.user)
+        booking.delete()
+        return JsonResponse({"message": "Booking has been successfully removed."})
+    return JsonResponse({"error": "Only POST requests are allowed."}, status=405)
 
 @login_required
 def service_booking(request, service_id):
     service = get_object_or_404(Service, id=service_id)
     provider = service.provider
 
-    schedule = ProviderSchedule.objects.filter(provider=provider, is_active=True)
-
-    if request.method == "POST":
-        booking_day = request.POST.get("day")
-        booking_time = request.POST.get("time")
-        notes = request.POST.get("notes", "")
-
+    if request.method == 'POST':
+        # Get form data
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        notes = request.POST.get('notes', '')
+        
+        # Validate required fields
+        if not date or not time:
+            messages.error(request, "Please select both date and time for your booking.")
+            return redirect('service_booking', service_id=service_id)
+        
         try:
-            day_schedule = schedule.get(day=booking_day)
-            if booking_time not in day_schedule.time_slots:
-                messages.error(request, "Invalid Time slot selected")
-                return redirect("service_booking", service_id=service_id)
-
+            # Get customer
             customer = Customer.objects.get(user=request.user)
-            Booking.objects.create(
+            
+            # Create booking
+            booking = Booking.objects.create(
                 customer=customer,
                 service=service,
-                booking_day=booking_day,
-                booking_time=booking_time,
+                booking_date=date,
+                booking_time=time,
                 notes=notes,
-                status="pending",
+                status='pending'
             )
+            
+            messages.success(request, "Your booking has been confirmed successfully!")
+            return redirect('profile')  # Or redirect to booking confirmation page
+            
+        except Exception as e:
+            messages.error(request, f"An error occurred while processing your booking: {str(e)}")
+            return redirect('service_booking', service_id=service_id)
 
-            messages.success(request, "Booking request sent successfully!")
-            return redirect("service_provdier_profile", id=provider.user.id)
+    # GET request handling (original code)
+    schedules = ProviderSchedule.objects.filter(
+        provider=provider,
+        is_active=True
+    ).order_by('day')
 
-        except ProviderSchedule.DoesNotExist:
-            messages.error(request, "Invalid day selected")
-            return redirect("service_booking", service_id=service_id)
+    today = timezone.now().date()
+    date_options = [today + timezone.timedelta(days=i) for i in range(30)]
+    
+    available_dates = []
+    for date_option in date_options:
+        day_of_week = date_option.strftime("%A").lower()
+        if schedules.filter(day=day_of_week).exists():
+            available_dates.append(date_option)
 
-    context = {"service": service, "provider": provider, "schedule": schedule}
+    existing_bookings = Booking.objects.filter(
+        service=service,
+        booking_date__in=available_dates
+    )
+    
+    booked_slots = {}
+    for booking in existing_bookings:
+        date_str = booking.booking_date.isoformat()
+        if date_str not in booked_slots:
+            booked_slots[date_str] = []
+        booked_slots[date_str].append(booking.booking_time)
+
+    booked_slots_json = json.dumps(booked_slots)
+    time_slots_data = {
+        schedule.day: schedule.time_slots
+        for schedule in schedules
+    }
+    time_slots_json = json.dumps(time_slots_data)
+
+    context = {
+        "service": service,
+        "provider": provider,
+        "available_dates": available_dates,
+        "booked_slots_json": booked_slots_json,
+        "time_slots_json": time_slots_json,
+        "today": today.isoformat()
+    }
     return render(request, "core/service_booking.html", context)
