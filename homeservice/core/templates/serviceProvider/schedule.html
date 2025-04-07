@@ -1,124 +1,187 @@
-{% extends 'core/base.html' %}
-
-{% block content %}
-<div id="loading-auth" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-    <div class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"></div>
+{% extends 'core/base.html' %} {% block content %}
+<div
+  id="loading-auth"
+  class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div
+    class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
+  ></div>
 </div>
 
 <div class="container bg-white px-3 py-6 md:px-5 md:py-10 hidden" id="content">
-    <div class="grid gap-8 md:grid-cols-12 w-full">
-        {% include 'core/sidebar.html' %}
-        <div class="max-w-4xl mx-auto px-4 py-8 md:col-span-9">
-            <h1 class="text-2xl font-bold mb-6">Manage Your Weekly Schedule</h1>
-            
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="mb-6">
-                    <p class="text-gray-600">Set your available time slots for each day of the week. Customers will be able to book appointments during these times.</p>
-                </div>
-                
-                <form method="post" class="space-y-6 grid grid-cols-2">
-                    {% csrf_token %}
-                    
-                    {% for day in days %}
-                    <div class="border-b border-gray-200 pb-6">
-                        <h2 class="text-lg font-medium mb-3">{{ day.get_day_display }}</h2>
-                        
-                        <div class="flex flex-wrap gap-2 mb-3" id="time-slots-{{ day.day }}">
-                            {% for time in day.time_slots %}
-                            <span class="time-slot-tag inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800">
-                                {{ time }}
-                                <button type="button" class="ml-1.5 inline-flex text-indigo-500 hover:text-indigo-700 remove-time-slot">
-                                    &times;
-                                </button>
-                            </span>
-                            {% endfor %}
-                        </div>
-                        
-                        <div class="flex space-x-2">
-                            <input type="time" id="new-time-{{ day.day }}" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm">
-                            <button type="button" class="add-time-slot px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300" data-day="{{ day.day }}">
-                                Add Time
-                            </button>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    
-                    <div class="flex justify-end items-end">
-                        <button type="submit" class="bg-black h-fit px-4 py-2 text-white rounded-md hover:bg-gray-200 hover:text-black">
-                            Save Schedule
-                        </button>
-                    </div>
-                </form>
-            </div>
+  <div class="grid gap-8 md:grid-cols-12 w-full">
+    {% include 'core/sidebar.html' %}
+    <div class="max-w-4xl mx-auto px-4 py-8 md:col-span-9">
+      <h1 class="text-2xl font-bold mb-6">Manage Your Weekly Schedule</h1>
+
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="mb-6">
+          <p class="text-gray-600">
+            Set your available time slots for each day of the week. Customers
+            will be able to book appointments during these times.
+          </p>
         </div>
+
+        <form method="post" class="space-y-6 grid grid-cols-2">
+          {% csrf_token %} {% for day in days %}
+          <div class="border-b border-gray-200 pb-6">
+            <h2 class="text-lg font-medium mb-3">{{ day.get_day_display }}</h2>
+
+            <div
+              class="flex flex-wrap gap-2 mb-3"
+              id="time-slots-{{ day.day }}"
+            >
+              {% for time in day.time_slots %}
+              <span
+                class="time-slot-tag inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800"
+              >
+                {{ time }}
+                <button
+                  type="button"
+                  class="ml-1.5 inline-flex text-indigo-500 hover:text-indigo-700 remove-time-slot"
+                >
+                  &times;
+                </button>
+              </span>
+              {% endfor %}
+            </div>
+
+            <div class="flex space-x-2">
+              <input
+                type="time"
+                id="new-time-{{ day.day }}"
+                class="px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              />
+              <button
+                type="button"
+                class="add-time-slot px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                data-day="{{ day.day }}"
+              >
+                Add Time
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+
+          <div class="flex justify-end items-end">
+            <button
+              type="submit"
+              class="bg-black h-fit px-4 py-2 text-white rounded-md hover:bg-gray-200 hover:text-black"
+            >
+              Save Schedule
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-window.onload = function () {
-    const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}";
-    const loadingElement = document.getElementById("loading-auth");
-    const contentElement = document.getElementById("content");
+  window.onload = function () {
+      const isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}";
+      const loadingElement = document.getElementById("loading-auth");
+      const contentElement = document.getElementById("content");
 
-    if (isAuthenticated === "true") {
-        loadingElement.style.display = "none";
-        contentElement.style.display = "flex";
-    } else {
-        if (!window.location.href.includes("home")) {
-            window.location.href = "/home";
-        }
-    }
-};
+      if (isAuthenticated === "true") {
+          loadingElement.style.display = "none";
+          contentElement.style.display = "flex";
+      } else {
+          if (!window.location.href.includes("home")) {
+              window.location.href = "/home";
+          }
+      }
+  };
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Add time slot
-    document.querySelectorAll('.add-time-slot').forEach(button => {
-        button.addEventListener('click', function() {
-            const day = this.dataset.day;
-            const timeInput = document.getElementById(`new-time-${day}`);
-            const timeValue = timeInput.value;
-            
-            if (timeValue) {
-                // Format time as HH:MM
-                const [hours, minutes] = timeValue.split(':');
-                const formattedTime = `${hours}:${minutes}`;
-                
-                // Create a hidden input for the form
-                const container = document.getElementById(`time-slots-${day}`);
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = `time_slots_${day}[]`;
-                input.value = formattedTime;
-                container.appendChild(input);
-                
-                // Create visual tag
-                const tag = document.createElement('span');
-                tag.className = 'time-slot-tag inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800';
-                tag.innerHTML = `
-                    ${formattedTime}
-                    <button type="button" class="ml-1.5 inline-flex text-indigo-500 hover:text-indigo-700 remove-time-slot">
-                        &times;
-                    </button>
-                `;
-                container.appendChild(tag);
-                
-                // Clear the time input
-                timeInput.value = '';
-                
-                // Add event to remove button
-                tag.querySelector('.remove-time-slot').addEventListener('click', function() {
-                    // Find and remove the corresponding hidden input
-                    const inputs = container.querySelectorAll(`input[name="time_slots_${day}[]"]`);
-                    inputs.forEach(input => {
-                        if (input.value === formattedTime) {
-                            container.removeChild(input);
-                        }
-                    });
-                    container.removeChild(tag);
-                });
-            }
-        });
-    });
-});
+  document.addEventListener('DOMContentLoaded', function() {
+      // Initialize existing time slots as hidden inputs
+      {% for day in days %}
+          {% for time in day.time_slots %}
+              (function() {
+                  const container = document.getElementById(`time-slots-{{ day.day }}`);
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = `time_slots_{{ day.day }}[]`;
+                  input.value = '{{ time }}';
+                  container.appendChild(input);
+              })();
+          {% endfor %}
+      {% endfor %}
+
+      // Add time slot
+      document.querySelectorAll('.add-time-slot').forEach(button => {
+          button.addEventListener('click', function() {
+              const day = this.dataset.day;
+              const timeInput = document.getElementById(`new-time-${day}`);
+              const timeValue = timeInput.value;
+
+              if (timeValue) {
+                  // Format time as HH:MM
+                  const [hours, minutes] = timeValue.split(':');
+                  const formattedTime = `${hours}:${minutes}`;
+
+                  // Check if this time already exists
+                  const existingInputs = document.querySelectorAll(`input[name="time_slots_${day}[]"][value="${formattedTime}"]`);
+                  if (existingInputs.length > 0) {
+                      alert('This time slot already exists!');
+                      return;
+                  }
+
+                  // Create a hidden input for the form
+                  const container = document.getElementById(`time-slots-${day}`);
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = `time_slots_${day}[]`;
+                  input.value = formattedTime;
+                  container.appendChild(input);
+
+                  // Create visual tag
+                  const tag = document.createElement('span');
+                  tag.className = 'time-slot-tag inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800';
+                  tag.innerHTML = `
+                      ${formattedTime}
+                      <button type="button" class="ml-1.5 inline-flex text-indigo-500 hover:text-indigo-700 remove-time-slot">
+                          &times;
+                      </button>
+                  `;
+                  container.appendChild(tag);
+
+                  // Clear the time input
+                  timeInput.value = '';
+
+                  // Add event to remove button
+                  tag.querySelector('.remove-time-slot').addEventListener('click', function() {
+                      // Find and remove the corresponding hidden input
+                      const inputs = container.querySelectorAll(`input[name="time_slots_${day}[]"]`);
+                      inputs.forEach(input => {
+                          if (input.value === formattedTime) {
+                              container.removeChild(input);
+                          }
+                      });
+                      container.removeChild(tag);
+                  });
+              }
+          });
+      });
+
+      // Initialize remove functionality for existing time slots
+      document.querySelectorAll('.remove-time-slot').forEach(button => {
+          button.addEventListener('click', function() {
+              const tag = this.closest('.time-slot-tag');
+              const timeValue = tag.textContent.trim().replace('×', '').trim();
+              const container = tag.parentElement;
+              const day = container.id.replace('time-slots-', '');
+
+              // Find and remove the corresponding hidden input
+              const inputs = container.querySelectorAll(`input[name="time_slots_${day}[]"]`);
+              inputs.forEach(input => {
+                  if (input.value === timeValue) {
+                      container.removeChild(input);
+                  }
+              });
+              container.removeChild(tag);
+          });
+      });
+  });
 </script>
 {% endblock %}

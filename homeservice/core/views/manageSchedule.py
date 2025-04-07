@@ -15,32 +15,32 @@ def manage_schedule(request):
     provider = request.user.serviceprovider
 
     if request.method == "POST":
-
         for day_choice in ProviderSchedule.DAY_CHOICES:
             day = day_choice[0]
             time_slots = request.POST.getlist(f"time_slots_{day}[]")
-
-
-            if time_slots:
-
-                valid_slots = []
-                for slot in time_slots:
-                    if re.match(r"^\d{1,2}:\d{2}$", slot):
-                        valid_slots.append(slot)
-
-
-                ProviderSchedule.objects.update_or_create(
-                    provider=provider,
-                    day=day,
-                    defaults={"time_slots": valid_slots, "is_active": bool(valid_slots)},
-                )
-            else:
-
+            
+            valid_slots = []
+            for slot in time_slots:
+                if re.match(r"^\d{1,2}:\d{2}$", slot):
+                    valid_slots.append(slot)
+            
+            schedule, created = ProviderSchedule.objects.get_or_create(
+                provider=provider,
+                day=day,
+                defaults={"time_slots": valid_slots, "is_active": bool(valid_slots)}
+            )
+            
+            if not created:
+                if set(schedule.time_slots) != set(valid_slots):
+                    schedule.time_slots = valid_slots
+                    schedule.is_active = bool(valid_slots)
+                    schedule.save()
+            
+            if not valid_slots:
                 ProviderSchedule.objects.filter(provider=provider, day=day).delete()
 
         messages.success(request, "Schedule updated successfully!")
         return redirect("manage_schedule")
-
 
     days = []
     for day_choice in ProviderSchedule.DAY_CHOICES:
