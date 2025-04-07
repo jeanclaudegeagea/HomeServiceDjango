@@ -20,7 +20,7 @@ from core.views.settings import (
 from core.views.createService import create_service
 from core.views.services import services_view
 from core.views.providers import providers_view
-from core.views.serviceProvider import service_provider_profile
+from core.views.serviceProvider import service_provider_profile, add_review
 from core.views.booking import unbook_service, service_booking
 from core.views.manageSchedule import manage_schedule
 from core.views.serviceDetails import service_details
@@ -76,6 +76,11 @@ urlpatterns = [
     path("booking/<int:booking_id>/", booking_detail_view, name="booking_detail"),
     path("update_booking_status/", update_booking_status, name="update_booking_status"),
     path("how-it-works/", how_it_works, name="how_it_works"),
+    path(
+        "add-review/<int:customer_id>/<int:service_provider_id>",
+        add_review,
+        name="add_review",
+    ),
 ]
 
 if settings.DEBUG:
