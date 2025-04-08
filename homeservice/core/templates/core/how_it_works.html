@@ -1,0 +1,191 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}How It Works{% endblock %}
+
+{% block content %}
+<div class="text-center mb-16 mt-3">
+    <h1 class="text-4xl font-bold tracking-tight mb-4">How It Works</h1>
+    <p class="text-xl text-muted-foreground max-w-2xl mx-auto">
+        Our platform connects customers with skilled service providers for all your home service needs.
+    </p>
+</div>
+
+<div class="tabs max-w-4xl mx-auto">
+    <div class="tabs-boxed grid w-full grid-cols-2 mb-8">
+        <a class="tab tab-lg {% if active_tab == 'customer' %}bg-white text-black{% endif %}" 
+           href="?tab=customer">For Customers</a>
+        <a class="tab tab-lg {% if active_tab == 'provider' %}bg-white text-black{% endif %}" 
+           href="?tab=provider">For Service Providers</a>
+    </div>
+
+    {% if active_tab == 'customer' %}
+    <div class="grid gap-8">
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-search text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">1.</span> Search for Services
+                </h3>
+                <p class="text-muted-foreground">Browse through our wide range of home services and find the right professional for your needs.</p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-calendar-alt text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">2.</span> Book an Appointment
+                </h3>
+                <p class="text-muted-foreground">Select a convenient date and time from the provider's available schedule.</p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-check-circle text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">3.</span> Receive Quality Service
+                </h3>
+                <p class="text-muted-foreground">The service provider will arrive at your location and complete the requested service.</p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-star text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">4.</span> Leave a Review
+                </h3>
+                <p class="text-muted-foreground">Share your experience by rating and reviewing the service provider.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-12 text-center mx-auto">
+        <a href="{% url 'services' %}" class="btn btn-lg bg-black text-white hover:text-black">
+            Find Services  <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </div>
+    {% else %}
+    <div class="grid gap-8">
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-user-check text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">1.</span> Create Your Profile
+                </h3>
+                <p class="text-muted-foreground">Sign up and create your professional profile with your specializations and experience.</p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-search text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">2.</span> Add Your Services
+                </h3>
+                <p class="text-muted-foreground">List the services you offer along with pricing, descriptions, and service areas.</p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-clock text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">3.</span> Set Your Schedule
+                </h3>
+                <p class="text-muted-foreground">Define your availability by setting up your weekly schedule and time slots.</p>
+            </div>
+        </div>
+
+        <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <i class="fas fa-calendar-alt text-black text-2xl"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">
+                    <span class="text-black mr-2">4.</span> Receive Bookings
+                </h3>
+                <p class="text-muted-foreground">Get notified when customers book your services and manage your appointments.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-12 text-center mx-auto">
+        <a href="{% url 'register' %}" class="btn btn-lg bg-black text-white hover:text-black">
+            Become a Provider <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<div class="mt-24 px-4">
+    <h2 class="text-3xl font-bold text-center mb-12">Why Choose Our Platform</h2>
+
+    <div class="grid md:grid-cols-3 gap-8">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h3 class="card-title">Verified Professionals</h3>
+                <p>All service providers are verified with proper documentation and credentials.</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h3 class="card-title">Secure Bookings</h3>
+                <p>Our booking system ensures your appointments are confirmed and scheduled properly.</p>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow">
+            <div class="card-body">
+                <h3 class="card-title">Quality Assurance</h3>
+                <p>Review system helps maintain high service standards across our platform.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-24 bg-base-200 rounded-lg p-8">
+    <div class="max-w-3xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
+
+        <div class="space-y-4">
+            <div class="border-b pb-4">
+                <h3 class="font-medium mb-2">How do I book a service?</h3>
+                <p class="text-muted-foreground text-sm">Simply browse through our services, select the one you need, choose an available time slot, and confirm your booking.</p>
+            </div>
+
+            <div class="border-b pb-4">
+                <h3 class="font-medium mb-2">Can I cancel my booking?</h3>
+                <p class="text-muted-foreground text-sm">Yes, you can cancel your booking through your account bookings.</p>
+            </div>
+
+            <div class="border-b pb-4">
+                <h3 class="font-medium mb-2">How are service providers verified?</h3>
+                <p class="text-muted-foreground text-sm">Service providers must submit professional licenses, certifications, and insurance documents which are verified by our team.</p>
+            </div>
+
+            <div class="border-b pb-4">
+                <h3 class="font-medium mb-2">How do I become a service provider?</h3>
+                <p class="text-muted-foreground text-sm">Register as a service provider, complete your profile with specializations and experience, upload required documents, and start listing your services.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
