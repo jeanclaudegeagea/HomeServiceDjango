@@ -48,6 +48,7 @@ cd homeservice
 ### 6️⃣ Apply Migrations
 
 ```bash
+python manage.py makemigrations
 python manage.py migrate
 ```
 
