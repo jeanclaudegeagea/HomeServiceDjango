@@ -13,7 +13,7 @@ import json
 
 @csrf_exempt
 @login_required
-def unbook_service(request, id):
+def unbook_service(request, id): #delete in database
     if request.method == "POST":
         booking = get_object_or_404(Booking, id=id, customer__user=request.user)
         booking.delete()
