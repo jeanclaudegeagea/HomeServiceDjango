@@ -16,7 +16,7 @@ def create_service(request):
             service.provider = request.user.serviceprovider
             service.save()
             messages.success(request, "Service created successfully!")
-            # return redirect('profile')
+            return redirect("create_service")
     else:
         form = ServiceForm()
 
