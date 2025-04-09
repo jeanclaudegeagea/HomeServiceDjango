@@ -1,230 +1,281 @@
-{% extends 'core/base.html' %}
-
-{% block content %}
-<div id="loading-auth" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
-    <div class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"></div>
+{% extends 'core/base.html' %} {% block content %}
+<div
+  id="loading-auth"
+  class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+>
+  <div
+    class="animate-spin border-4 border-t-4 border-gray-600 border-t-transparent w-16 h-16 rounded-full"
+  ></div>
 </div>
 
 <div class="container bg-white px-3 py-6 md:px-5 md:py-10 hidden" id="content">
-    <div class="grid gap-8 md:grid-cols-12 w-full">
-        <!-- Sidebar -->
-        {% include 'core/sidebar.html' %}
+  <div class="grid gap-8 md:grid-cols-12 w-full">
+    <!-- Sidebar -->
+    {% include 'core/sidebar.html' %}
 
-        <section id="settings" class="md:col-span-9"></section>
-    </div>
+    <section id="settings" class="md:col-span-9"></section>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
 <script>
-    window.onload = function () {
-        const isAuthenticated =
-            "{{ request.user.is_authenticated|yesno:'true,false' }}";
-        const loadingElement = document.getElementById("loading-auth");
-        const contentElement = document.getElementById("content");
+  window.onload = function () {
+    const isAuthenticated =
+      "{{ request.user.is_authenticated|yesno:'true,false' }}";
+    const loadingElement = document.getElementById("loading-auth");
+    const contentElement = document.getElementById("content");
 
-        if (isAuthenticated === "true") {
-            loadingElement.style.display = "none";
-            contentElement.style.display = "flex";
-        } else {
-            if (!window.location.href.includes("home")) {
-                window.location.href = "/home";
-            }
-        }
-        toggleSettings()
-    };
+    if (isAuthenticated === "true") {
+      loadingElement.style.display = "none";
+      contentElement.style.display = "flex";
+    } else {
+      if (!window.location.href.includes("home")) {
+        window.location.href = "/home";
+      }
+    }
+    toggleSettings();
+  };
 
+  const toggleSettings = () => {
+    const isCustomer = "{{request.user.role}}";
 
-    const toggleSettings = () => {
-        const isCustomer = "{{request.user.role}}"
-        
-        fetch(Number(isCustomer) === 1 ? '/load_customer_settings' : "/load_service_settings")
-            .then(response => response.json())
-            .then(data => {
+    fetch(
+      Number(isCustomer) === 1
+        ? "/load_customer_settings"
+        : "/load_service_settings"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        // Get the container where the HTML will be injected
+        const container = document.getElementById("settings");
+        // Inject the external HTML content into the container
+        container.innerHTML = data.html;
 
-                // Get the container where the HTML will be injected
-                const container = document.getElementById("settings");
-                // Inject the external HTML content into the container
-                container.innerHTML = data.html;
+        if (Number(isCustomer) == 2) {
+          document.querySelectorAll(".menu-items li a").forEach((link) => {
+            link.addEventListener("click", function (e) {
+              e.preventDefault();
+              // Hide all sections
+              document
+                .querySelectorAll(
+                  "#personal-info, #documents, #specializations, #account"
+                )
+                .forEach((section) => {
+                  section.classList.add("hidden");
+                });
+              // Show the selected section
+              const targetId = this.getAttribute("href").substring(1);
+              document.getElementById(targetId).classList.remove("hidden");
 
+              // Update active state in menu
+              document.querySelectorAll(".menu-items a").forEach((item) => {
+                item.classList.remove("bg-white");
+                item.classList.add("text-[#878088]");
+              });
+              this.classList.add("bg-white");
+              this.classList.remove("text-[#878088]");
+            });
+          });
 
-                if (Number(isCustomer) == 2) {
+          const documents = JSON.parse("{{ documents|safe|escapejs }}");
+          // Elements for displaying the table or no documents message
+          const table = document.getElementById("documents-table");
+          const noDocumentsMessage = document.getElementById(
+            "no-documents-message"
+          );
+          const tbody = document.getElementById("documents-tbody");
 
-                    document.querySelectorAll('.menu-items li a').forEach(link => {
-                        link.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            // Hide all sections
-                            document.querySelectorAll('#personal-info, #documents, #specializations, #account').forEach(section => {
-                                section.classList.add('hidden');
-                            });
-                            // Show the selected section
-                            const targetId = this.getAttribute('href').substring(1);
-                            document.getElementById(targetId).classList.remove('hidden');
+          if (documents && documents.length > 0) {
+            // Show the documents table and populate the rows
+            table.style.display = "block";
+            noDocumentsMessage.style.display = "none";
 
-                            // Update active state in menu
-                            document.querySelectorAll('.menu-items a').forEach(item => {
-                                item.classList.remove('bg-white');
-                                item.classList.add('text-[#878088]')
-                            });
-                            this.classList.add('bg-white');
-                            this.classList.remove('text-[#878088]')
-                        });
-                    });
+            documents.forEach((doc) => {
+              const row = document.createElement("tr");
 
-                    const documents = JSON.parse('{{ documents|safe|escapejs }}');
-                    // Elements for displaying the table or no documents message
-                    const table = document.getElementById('documents-table');
-                    const noDocumentsMessage = document.getElementById('no-documents-message');
-                    const tbody = document.getElementById('documents-tbody');
-
-
-                    if (documents && documents.length > 0) {
-                        // Show the documents table and populate the rows
-                        table.style.display = 'block';
-                        noDocumentsMessage.style.display = 'none';
-
-                        documents.forEach(doc => {
-                            const row = document.createElement('tr');
-
-                            // Construct the row content
-                            row.innerHTML = `
+              // Construct the row content
+              row.innerHTML = `
                                     <td>${doc.document_type}</td>
                                     <td>
-                                        <a href="http://127.0.0.1:8000/media/${doc.file}" target="_blank" class="text-blue-600 hover:underline" title="View document">
-                                            ${doc.file.length > 20 ? doc.file.slice(0, 20) + "..." : doc.file}
+                                        <a href="${
+                                          doc.file
+                                        }" target="_blank" class="text-blue-600 hover:underline" title="View document">
+                                            ${
+                                              doc.file.length > 20
+                                                ? doc.file.slice(0, 20) + "..."
+                                                : doc.file
+                                            }
                                         </a>
                                     </td>
-                                    <td>${new Date(doc.issue_date).toLocaleDateString()}</td>
+                                    <td>${new Date(
+                                      doc.issue_date
+                                    ).toLocaleDateString()}</td>
                                     <td>
-                                        ${doc.expiry_date ?
-                                    `<span class="${doc.is_expired ? 'text-red-600' : ''}">${new Date(doc.expiry_date).toLocaleDateString()}${doc.is_expired ? ' (Expired)' : ''}</span>` :
-                                    'N/A'}
+                                        ${
+                                          doc.expiry_date
+                                            ? `<span class="${
+                                                doc.is_expired
+                                                  ? "text-red-600"
+                                                  : ""
+                                              }">${new Date(
+                                                doc.expiry_date
+                                              ).toLocaleDateString()}${
+                                                doc.is_expired
+                                                  ? " (Expired)"
+                                                  : ""
+                                              }</span>`
+                                            : "N/A"
+                                        }
                                     </td>
                                     <td class="flex gap-2 items-center">
-                                        <a href="${doc.file}" download class="btn btn-ghost btn-sm tooltip flex items-center" data-tip="Download">
+                                        <a href="${
+                                          doc.file
+                                        }" download class="btn btn-ghost btn-sm tooltip flex items-center" data-tip="Download">
                                             <i class="fas fa-download"></i>
                                         </a>
-                                        <a href="${doc.file}" target="_blank" class="flex items-center btn btn-ghost btn-sm tooltip" data-tip="View">
+                                        <a href="${
+                                          doc.file
+                                        }" target="_blank" class="flex items-center btn btn-ghost btn-sm tooltip" data-tip="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <form method="post"   action="{% url 'delete_document' %}"  onsubmit="return confirm('Are you sure you want to delete this document?');">
                                             {% csrf_token %}
-                                            <input type="hidden" name="doc_id" value="${doc.id}">
+                                            <input type="hidden" name="doc_id" value="${
+                                              doc.id
+                                            }">
                                             <button type="submit" class="flex items-center btn btn-ghost btn-sm text-error tooltip" data-tip="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </td>
                                 `;
-                            tbody.appendChild(row);
-                        });
-                    } else {
-                        // No documents available, show the "No documents" message
-                        table.style.display = 'none';
-                        noDocumentsMessage.style.display = 'block';
-                    }
+              tbody.appendChild(row);
+            });
+          } else {
+            // No documents available, show the "No documents" message
+            table.style.display = "none";
+            noDocumentsMessage.style.display = "block";
+          }
 
-                    // Document upload form submission
-                    const docForm = document.getElementById("document-upload-form");
-                    if (docForm) {
-                        docForm.addEventListener("submit", function (e) {
-                            const submitBtn = document.getElementById("submit-doc-btn");
-                            const submitText = document.getElementById("submit-doc-text");
-                            const loadingIcon = document.getElementById("doc-loading");
+          // Document upload form submission
+          const docForm = document.getElementById("document-upload-form");
+          if (docForm) {
+            docForm.addEventListener("submit", function (e) {
+              const submitBtn = document.getElementById("submit-doc-btn");
+              const submitText = document.getElementById("submit-doc-text");
+              const loadingIcon = document.getElementById("doc-loading");
 
-                            submitBtn.disabled = true;
-                            submitText.textContent = "Uploading...";
-                            loadingIcon.classList.remove("hidden");
-                        });
-                    }
+              submitBtn.disabled = true;
+              submitText.textContent = "Uploading...";
+              loadingIcon.classList.remove("hidden");
+            });
+          }
 
-                    const specializations = JSON.parse('{{ specializations|safe|escapejs }}')
-                    const specializationSelect = document.getElementById("specialization-select");
-                    const specializationDropdown = document.getElementById("specialization-dropdown");
-                    const noSpecializationMessage = document.getElementById("no-specialization-message");
+          const specializations = JSON.parse(
+            "{{ specializations|safe|escapejs }}"
+          );
+          const specializationSelect = document.getElementById(
+            "specialization-select"
+          );
+          const specializationDropdown = document.getElementById(
+            "specialization-dropdown"
+          );
+          const noSpecializationMessage = document.getElementById(
+            "no-specialization-message"
+          );
 
+          if (specializations?.length > 0) {
+            specializationSelect.style.display = "flex"; // Show the dropdown
+            specializations.forEach((spec) => {
+              const option = document.createElement("option");
+              option.value = spec.id;
+              option.textContent = spec.name;
+              specializationDropdown.appendChild(option);
+            });
+          } else {
+            noSpecializationMessage.style.display = "block"; // Show "No specializations available" message
+          }
 
-                    if (specializations?.length > 0) {
-                        specializationSelect.style.display = "flex"; // Show the dropdown
-                        specializations.forEach(spec => {
-                            const option = document.createElement("option");
-                            option.value = spec.id;
-                            option.textContent = spec.name;
-                            specializationDropdown.appendChild(option);
-                        });
-                    }
-                    else {
-                        noSpecializationMessage.style.display = "block"; // Show "No specializations available" message
-                    }
+          const removeSpecialization = function () {
+            // Remove Specialization
+            if (
+              !confirm("Are you sure you want to remove this specialization?")
+            ) {
+              return;
+            }
 
-                    const removeSpecialization = function () {
-                        // Remove Specialization
-                        if (!confirm("Are you sure you want to remove this specialization?")) {
-                            return;
-                        }
+            const specId = this.getAttribute("data-spec-id");
+            const badge = this.closest(".specialization");
 
-                        const specId = this.getAttribute("data-spec-id");
-                        const badge = this.closest(".specialization");
+            fetch("/remove_specialization/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+              body: JSON.stringify({
+                specialization_id: specId,
+              }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.success) {
+                  // Remove the specialization from the UI
+                  badge.remove();
 
-                        fetch("/remove_specialization/", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRFToken": "{{ csrf_token }}",
-                            },
-                            body: JSON.stringify({
-                                specialization_id: specId,
-                            }),
-                        })
-                            .then((response) => {
-                                if (!response.ok) {
-                                    throw new Error("Network response was not ok");
-                                }
-                                return response.json();
-                            })
-                            .then((data) => {
-                                if (data.success) {
-                                    // Remove the specialization from the UI
-                                    badge.remove();
+                  // Show "no specializations" message if none left
+                  const currentSpecs = document.getElementById(
+                    "current-specializations"
+                  );
+                  if (currentSpecs.children.length === 0) {
+                    const noSpecsMessage = document.createElement("p");
+                    noSpecsMessage.className = "text-gray-500";
+                    noSpecsMessage.textContent =
+                      "No specializations added yet.";
+                    currentSpecs.appendChild(noSpecsMessage);
+                  }
 
-                                    // Show "no specializations" message if none left
-                                    const currentSpecs = document.getElementById("current-specializations");
-                                    if (currentSpecs.children.length === 0) {
-                                        const noSpecsMessage = document.createElement("p");
-                                        noSpecsMessage.className = "text-gray-500";
-                                        noSpecsMessage.textContent = "No specializations added yet.";
-                                        currentSpecs.appendChild(noSpecsMessage);
-                                    }
+                  alert("Specialization removed successfully!");
+                } else {
+                  alert("Error removing specialization: " + data.error);
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("An error occurred while removing specialization");
+              });
+          };
 
-                                    alert("Specialization removed successfully!");
-                                } else {
-                                    alert("Error removing specialization: " + data.error);
-                                }
-                            })
-                            .catch((error) => {
-                                console.error("Error:", error);
-                                alert("An error occurred while removing specialization");
-                            });
-                    }
+          const user_specializations = JSON.parse(
+            "{{ user_specializations|safe|escapejs }}"
+          );
+          const specializationsContainer = document.getElementById(
+            "current-specializations"
+          );
 
-                    const user_specializations = JSON.parse('{{ user_specializations|safe|escapejs }}');
-                    const specializationsContainer = document.getElementById("current-specializations");
+          const renderSpecializations = () => {
+            specializationsContainer.innerHTML = ""; // Clear previous content
 
-                    const renderSpecializations = () => {
-                        specializationsContainer.innerHTML = ""; // Clear previous content
+            if (user_specializations?.length === 0) {
+              specializationsContainer.innerHTML =
+                '<p class="text-gray-500">No specializations added yet.</p>';
+              return;
+            }
 
-                        if (user_specializations?.length === 0) {
-                            specializationsContainer.innerHTML = '<p class="text-gray-500">No specializations added yet.</p>';
-                            return;
-                        }
+            user_specializations.forEach((spec) => {
+              // Create specialization badge
+              const badge = document.createElement("div");
+              badge.className =
+                "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col specialization";
 
-                        user_specializations.forEach(spec => {
-                            // Create specialization badge
-                            const badge = document.createElement("div");
-                            badge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col specialization";
-
-                            // Add specialization name and description
-                            badge.innerHTML = `
+              // Add specialization name and description
+              badge.innerHTML = `
                                         <div>
                                             <strong>${spec.name}</strong>
                                             <p class="text-xs text-gray-300">${spec.description}</p>
@@ -234,70 +285,72 @@
                                         </div>
                                     `;
 
-                            badge
-                                .querySelector(".remove-specialization")
-                                .addEventListener("click", removeSpecialization);
-                            // Append the badge to the container
-                            specializationsContainer.appendChild(badge);
-                        });
-                    }
+              badge
+                .querySelector(".remove-specialization")
+                .addEventListener("click", removeSpecialization);
+              // Append the badge to the container
+              specializationsContainer.appendChild(badge);
+            });
+          };
 
-                    // Initial rendering
-                    renderSpecializations();
+          // Initial rendering
+          renderSpecializations();
 
-                    const addSpecializationBtn = document.getElementById(
-                        "add-specialization-btn"
+          const addSpecializationBtn = document.getElementById(
+            "add-specialization-btn"
+          );
+
+          if (addSpecializationBtn) {
+            addSpecializationBtn.addEventListener("click", function () {
+              const select = document.getElementById("specialization-dropdown");
+              const specId = select.value;
+
+              if (!Number(specId)) {
+                alert("Please select a specialization");
+                return;
+              }
+
+              // Add loading state
+              const originalText = this.innerHTML;
+
+              this.innerHTML =
+                '<span class="loading loading-spinner"></span> Adding...';
+              this.disabled = true;
+
+              fetch("/add_specialization/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify({
+                  specialization_id: specId,
+                }),
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  if (data.success) {
+                    // Add the new specialization to the UI
+                    const currentSpecs = document.getElementById(
+                      "current-specializations"
                     );
 
-                    if (addSpecializationBtn) {
-                        addSpecializationBtn.addEventListener("click", function () {
-                            const select = document.getElementById("specialization-dropdown");
-                            const specId = select.value;
+                    //             // Remove the "no specializations" message if it exists
+                    const noSpecsMessage =
+                      currentSpecs.querySelector("p.text-gray-500");
+                    if (noSpecsMessage) {
+                      noSpecsMessage.remove();
+                    }
 
-                            if (!Number(specId)) {
-                                alert("Please select a specialization");
-                                return;
-                            }
-
-                            // Add loading state
-                            const originalText = this.innerHTML;
-
-                            this.innerHTML = '<span class="loading loading-spinner"></span> Adding...';
-                            this.disabled = true;
-
-                            fetch("/add_specialization/", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "X-CSRFToken": "{{ csrf_token }}",
-                                },
-                                body: JSON.stringify({
-                                    specialization_id: specId,
-                                }),
-                            })
-                                .then((response) => {
-                                    if (!response.ok) {
-                                        throw new Error("Network response was not ok");
-                                    }
-                                    return response.json();
-                                })
-                                .then((data) => {
-
-                                    if (data.success) {
-                                        // Add the new specialization to the UI
-                                        const currentSpecs = document.getElementById(
-                                            "current-specializations"
-                                        );
-
-                                        //             // Remove the "no specializations" message if it exists
-                                        const noSpecsMessage = currentSpecs.querySelector("p.text-gray-500");
-                                        if (noSpecsMessage) {
-                                            noSpecsMessage.remove();
-                                        }
-
-                                        const newBadge = document.createElement("div");
-                                        newBadge.className = "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col specialization";
-                                        newBadge.innerHTML = `
+                    const newBadge = document.createElement("div");
+                    newBadge.className =
+                      "relative rounded-md p-3 gap-3 bg-gray-900 text-white flex flex-col specialization";
+                    newBadge.innerHTML = `
                                             <div>
                                                 <strong>${data.specialization_name}</strong>
                                                 <p class="text-xs text-gray-300">${data.specialization_description}</p>
@@ -306,402 +359,410 @@
                                                 </button>
                                             </div>
                                         `;
-                                        currentSpecs.appendChild(newBadge);
+                    currentSpecs.appendChild(newBadge);
 
-                                        // Add event listener to the new remove button
-                                        newBadge
-                                            .querySelector(".remove-specialization")
-                                            .addEventListener("click", removeSpecialization);
+                    // Add event listener to the new remove button
+                    newBadge
+                      .querySelector(".remove-specialization")
+                      .addEventListener("click", removeSpecialization);
 
-                                        // Reset the select
-                                        select.value = "";
-                                        alert("Specialization added successfully!");
-                                    } else {
-                                        alert("Error: " + (data.error || "Failed to add specialization"));
-                                    }
-                                })
-                                .catch((error) => {
-                                    console.error("Error:", error);
-                                    alert("An error occurred: " + error.message);
-                                })
-                                .finally(() => {
-                                    this.disabled = false;
-                                    this.innerHTML = originalText;
-                                });
-                        });
-                    }
-
-                    const yearsOfExperience = '{{ years_of_experience }}'
-                    const yearsOfExperienceInput = document.getElementById("years-of-experience")
-
-                    yearsOfExperienceInput.value = yearsOfExperience
-
-                    // Save Years of Experience
-                    const saveExperienceBtn = document.getElementById("save-experience-btn");
-                    if (saveExperienceBtn) {
-                        saveExperienceBtn.addEventListener("click", function () {
-                            const yearsInput = document.getElementById("years-of-experience");
-                            const years = yearsInput.value;
-
-                            // Validation
-                            if (!years || isNaN(years)) {
-                                alert("Please enter a valid number of years");
-                                return;
-                            }
-
-                            // Add loading state
-                            const originalText = this.innerHTML;
-                            this.innerHTML = '<span class="loading loading-spinner"></span> Saving...';
-                            this.disabled = true;
-
-                            fetch("/update_experience/", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    "X-CSRFToken": "{{ csrf_token }}",
-                                },
-                                body: JSON.stringify({
-                                    years_of_experience: years,
-                                }),
-                            })
-                                .then((response) => {
-                                    if (!response.ok) {
-                                        throw new Error("Network response was not ok");
-                                    }
-                                    return response.json();
-                                })
-                                .then((data) => {
-                                    if (data.success) {
-                                        alert("Years of experience updated successfully!");
-                                    } else {
-                                        alert("Error: " + (data.error || "Unknown error occurred"));
-                                    }
-                                })
-                                .catch((error) => {
-                                    console.error("Error:", error);
-                                    alert("An error occurred: " + error.message);
-                                })
-                                .finally(() => {
-                                    this.disabled = false;
-                                    this.innerHTML = originalText;
-                                });
-                        });
-                    }
-
-                    const password1Button = document.getElementById("password1_button")
-                    password1Button.addEventListener("click", () => {
-                        togglePassword("id_password1")
-                    })
-                    const password2Button = document.getElementById("password2_button")
-                    password2Button.addEventListener("click", () => {
-                        togglePassword("id_password2")
-                    })
-
-                }
-                else if (Number(isCustomer) === 1) {
-                    document.querySelectorAll('.menu-items li a').forEach(link => {
-                        link.addEventListener('click', function (e) {
-                            e.preventDefault();
-                            // Hide all sections
-                            document.querySelectorAll('#personal-info, #location, #account').forEach(section => {
-                                section.classList.add('hidden');
-                            });
-                            // Show the selected section
-                            const targetId = this.getAttribute('href').substring(1);
-                            document.getElementById(targetId).classList.remove('hidden');
-
-                            // Update active state in menu
-                            document.querySelectorAll('.menu-items a').forEach(item => {
-                                item.classList.remove('bg-white');
-                                item.classList.add('text-[#878088]')
-                            });
-                            this.classList.add('bg-white');
-                            this.classList.remove('text-[#878088]')
-                        });
-                    });
-
-                    const locationData = JSON.parse('{{location|safe|escapejs}}')
-
-                    const _addressLine1 = document.getElementById("id_address_line1");
-                    const _addressLine2 = document.getElementById("id_address_line2");
-                    const _city = document.getElementById("id_city");
-                    const _state = document.getElementById("id_state");
-                    const _postalCode = document.getElementById("id_postal_code");
-                    const _country = document.getElementById("id_country");
-
-                    _addressLine1.value = locationData[0] ?? ""
-                    _addressLine2.value = locationData[1] ?? ""
-                    _city.value = locationData[2] ?? ""
-                    _state.value = locationData[3]?? ""
-                    _postalCode.value = locationData[4] ?? ""
-                    _country.value = locationData[5] ?? ""
-
-                    const submitLocationBtn = document.getElementById("submit-location-btn")
-                    const submitLocationText = document.getElementById("submit-location-text")
-                    const locationLoading = document.getElementById("location-loading")
-
-
-                    submitLocationBtn.addEventListener("click", () => {
-
-                        const addressLine1 = document.getElementById("id_address_line1").value;
-                        const addressLine2 = document.getElementById("id_address_line2").value;
-                        const city = document.getElementById("id_city").value;
-                        const state = document.getElementById("id_state").value;
-                        const postalCode = document.getElementById("id_postal_code").value;
-                        const country = document.getElementById("id_country").value;
-
-                        submitLocationBtn.disabled = true
-                        submitLocationText.textContent = "Saving... "
-                        locationLoading.classList.remove("hidden")
-
-                        fetch("/update_location/", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRFToken": "{{ csrf_token }}",
-                            },
-                            body: JSON.stringify({
-                                address_line1: addressLine1,
-                                address_line2: addressLine2,
-                                city,
-                                state,
-                                postal_code: postalCode,
-                                country
-                            })
-                        })
-                            .then((response) => {
-                                if (!response.ok) {
-                                    throw new Error("Network response was not ok");
-                                }
-                                return response.json();
-                            })
-                            .then((data) => {
-                                if (data.success) {
-                                    alert(data.message);
-                                } else {
-                                    alert("Error: " + (data.error || "Unknown error occurred"));
-                                }
-                            })
-                            .catch((error) => {
-                                console.error("Error:", error);
-                                alert("An error occurred: " + error.message);
-                            })
-                            .finally(() => {
-                                submitLocationBtn.disabled = false
-                                submitLocationText.textContent = "Save Changes"
-                                locationLoading.classList.add("hidden")
-                            });
-                    })
-
-                    const password1Button = document.getElementById("password1_button")
-                    password1Button.addEventListener("click", () => {
-                        togglePassword("id_password1")
-                    })
-                    const password2Button = document.getElementById("password2_button")
-                    password2Button.addEventListener("click", () => {
-                        togglePassword("id_password2")
-                    })
-
-
-                }
-
-                const phoneInput = document.getElementById("id_phone");
-                const iti = window.intlTelInput(phoneInput, {
-                    utilsScript:
-                        "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-                    preferredCountries: [
-                        "us",
-                        "gb",
-                        "fr",
-                        "de",
-                        "it",
-                        "es",
-                        "ae",
-                        "sa",
-                        "in",
-                        "jp",
-                    ],
-                    separateDialCode: true,
-                    initialCountry: "auto",
-                    geoIpLookup: function (callback) {
-                        fetch("https://ipapi.co/json/")
-                            .then((res) => res.json())
-                            .then((data) => callback(data.country_code))
-                            .catch(() => callback("us"));
-                    },
+                    // Reset the select
+                    select.value = "";
+                    alert("Specialization added successfully!");
+                  } else {
+                    alert(
+                      "Error: " + (data.error || "Failed to add specialization")
+                    );
+                  }
                 })
-
-                document
-                    .getElementById("change-personal-info")
-                    .addEventListener("submit", function (e) {
-                        const fullPhone = iti.getNumber();
-                        document.getElementById("full_phone").value = fullPhone;
-
-                        const submitText = document.getElementById("submit-PI-text");
-                        const loading = document.getElementById("PI-loading");
-                        const submitButton = document.getElementById("submit-PI-btn");
-
-                        submitText.textContent = "Saving...";
-                        submitButton.disabled = true;
-                        loading.classList.remove("hidden");
-                    });
-
-                document
-                    .getElementById("change-password-btn")
-                    .addEventListener("click", function (e) {
-
-                        const changeText = document.getElementById("change-password-text");
-                        const loading = document.getElementById("change-password-loading");
-                        const changeButton = document.getElementById("change-password-btn");
-                        const password1 = document.getElementById("id_password1")
-                        const password2 = document.getElementById("id_password2")
-
-                        changeText.textContent = "Changing...";
-                        changeButton.disabled = true;
-                        loading.classList.remove("hidden");
-
-                        fetch("/change_password/", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRFToken": "{{ csrf_token }}",
-                            },
-                            body: JSON.stringify({
-                                password1: password1.value,
-                                password2: password2.value
-                            }),
-                        })
-                            .then((response) => {
-                                if (!response.ok) {
-                                    throw new Error("Network response was not ok");
-                                }
-                                return response.json();
-                            })
-                            .then((data) => {
-                                if (data.success) {
-                                    alert("Password changed successfully");
-                                } else {
-                                    alert("Error: " + (data.error || "Unknown error occurred"));
-                                }
-                            })
-                            .catch((error) => {
-                                console.error("Error:", error);
-                                alert("An error occurred: " + error.message);
-                            })
-                            .finally(() => {
-                                changeButton.disabled = false;
-                                changeText.textContent = "Change Password";
-                                loading.classList.add("hidden");
-                                password1.value = ""
-                                password2.value = ""
-                            });
-
-                    });
-
-
-                // Account deletion confirmation
-                const confirmDelete = document.getElementById("confirm-delete");
-                const deleteAccountBtn = document.getElementById("delete-account-btn");
-                if (confirmDelete && deleteAccountBtn) {
-                    confirmDelete.addEventListener("change", function () {
-                        deleteAccountBtn.disabled = !this.checked;
-                    });
-                }
-
-                deleteAccountBtn.addEventListener("click", () => {
-                    const deleteAcccountText = document.getElementById("delete-acccount-text")
-                    const deleteAccountLoading = document.getElementById("delete-account-loading")
-
-                    deleteAcccountText.textContent = "Deleting Account...";
-                    deleteAccountBtn.disabled = true;
-                    deleteAccountLoading.classList.remove("hidden");
-
-
-                    fetch("/delete_account/", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": "{{ csrf_token }}",
-                        },
-                        body: {}
-                    })
-                        .then((response) => {
-                            if (!response.ok) {
-                                throw new Error("Network response was not ok");
-                            }
-                            return response.json();
-                        })
-                        .then((data) => {
-                            if (data.success) {
-                                alert(data.message);
-                                window.location.href = data.redirect; // Redirect to login
-                            } else {
-                                alert("Error: " + (data.error || "Unknown error occurred"));
-                            }
-                        })
-                        .catch((error) => {
-                            console.error("Error:", error);
-                            alert("An error occurred: " + error.message);
-                        })
-                        .finally(() => {
-                            deleteAccountBtn.disabled = false;
-                            deleteAcccountText.textContent = "Delete Account";
-                            deleteAccountLoading.classList.add("hidden");
-                        });
-
+                .catch((error) => {
+                  console.error("Error:", error);
+                  alert("An error occurred: " + error.message);
                 })
-            })
-            .catch(error => {
-                console.error("Error loading the external HTML file: ", error);
+                .finally(() => {
+                  this.disabled = false;
+                  this.innerHTML = originalText;
+                });
             });
-    }
+          }
 
-    function togglePassword(fieldId) {
-        const inputField = document.getElementById(fieldId);
-        const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+          const yearsOfExperience = "{{ years_of_experience }}";
+          const yearsOfExperienceInput = document.getElementById(
+            "years-of-experience"
+          );
 
-        if (inputField.type === "password") {
-            inputField.type = "text";
-            eyeIcon.innerHTML = `
+          yearsOfExperienceInput.value = yearsOfExperience;
+
+          // Save Years of Experience
+          const saveExperienceBtn = document.getElementById(
+            "save-experience-btn"
+          );
+          if (saveExperienceBtn) {
+            saveExperienceBtn.addEventListener("click", function () {
+              const yearsInput = document.getElementById("years-of-experience");
+              const years = yearsInput.value;
+
+              // Validation
+              if (!years || isNaN(years)) {
+                alert("Please enter a valid number of years");
+                return;
+              }
+
+              // Add loading state
+              const originalText = this.innerHTML;
+              this.innerHTML =
+                '<span class="loading loading-spinner"></span> Saving...';
+              this.disabled = true;
+
+              fetch("/update_experience/", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify({
+                  years_of_experience: years,
+                }),
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  if (data.success) {
+                    alert("Years of experience updated successfully!");
+                  } else {
+                    alert("Error: " + (data.error || "Unknown error occurred"));
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error:", error);
+                  alert("An error occurred: " + error.message);
+                })
+                .finally(() => {
+                  this.disabled = false;
+                  this.innerHTML = originalText;
+                });
+            });
+          }
+
+          const password1Button = document.getElementById("password1_button");
+          password1Button.addEventListener("click", () => {
+            togglePassword("id_password1");
+          });
+          const password2Button = document.getElementById("password2_button");
+          password2Button.addEventListener("click", () => {
+            togglePassword("id_password2");
+          });
+        } else if (Number(isCustomer) === 1) {
+          document.querySelectorAll(".menu-items li a").forEach((link) => {
+            link.addEventListener("click", function (e) {
+              e.preventDefault();
+              // Hide all sections
+              document
+                .querySelectorAll("#personal-info, #location, #account")
+                .forEach((section) => {
+                  section.classList.add("hidden");
+                });
+              // Show the selected section
+              const targetId = this.getAttribute("href").substring(1);
+              document.getElementById(targetId).classList.remove("hidden");
+
+              // Update active state in menu
+              document.querySelectorAll(".menu-items a").forEach((item) => {
+                item.classList.remove("bg-white");
+                item.classList.add("text-[#878088]");
+              });
+              this.classList.add("bg-white");
+              this.classList.remove("text-[#878088]");
+            });
+          });
+
+          const locationData = JSON.parse("{{location|safe|escapejs}}");
+
+          const _addressLine1 = document.getElementById("id_address_line1");
+          const _addressLine2 = document.getElementById("id_address_line2");
+          const _city = document.getElementById("id_city");
+          const _state = document.getElementById("id_state");
+          const _postalCode = document.getElementById("id_postal_code");
+          const _country = document.getElementById("id_country");
+
+          _addressLine1.value = locationData[0] ?? "";
+          _addressLine2.value = locationData[1] ?? "";
+          _city.value = locationData[2] ?? "";
+          _state.value = locationData[3] ?? "";
+          _postalCode.value = locationData[4] ?? "";
+          _country.value = locationData[5] ?? "";
+
+          const submitLocationBtn = document.getElementById(
+            "submit-location-btn"
+          );
+          const submitLocationText = document.getElementById(
+            "submit-location-text"
+          );
+          const locationLoading = document.getElementById("location-loading");
+
+          submitLocationBtn.addEventListener("click", () => {
+            const addressLine1 =
+              document.getElementById("id_address_line1").value;
+            const addressLine2 =
+              document.getElementById("id_address_line2").value;
+            const city = document.getElementById("id_city").value;
+            const state = document.getElementById("id_state").value;
+            const postalCode = document.getElementById("id_postal_code").value;
+            const country = document.getElementById("id_country").value;
+
+            submitLocationBtn.disabled = true;
+            submitLocationText.textContent = "Saving... ";
+            locationLoading.classList.remove("hidden");
+
+            fetch("/update_location/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+              body: JSON.stringify({
+                address_line1: addressLine1,
+                address_line2: addressLine2,
+                city,
+                state,
+                postal_code: postalCode,
+                country,
+              }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.success) {
+                  alert(data.message);
+                } else {
+                  alert("Error: " + (data.error || "Unknown error occurred"));
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("An error occurred: " + error.message);
+              })
+              .finally(() => {
+                submitLocationBtn.disabled = false;
+                submitLocationText.textContent = "Save Changes";
+                locationLoading.classList.add("hidden");
+              });
+          });
+
+          const password1Button = document.getElementById("password1_button");
+          password1Button.addEventListener("click", () => {
+            togglePassword("id_password1");
+          });
+          const password2Button = document.getElementById("password2_button");
+          password2Button.addEventListener("click", () => {
+            togglePassword("id_password2");
+          });
+        }
+
+        const phoneInput = document.getElementById("id_phone");
+        const iti = window.intlTelInput(phoneInput, {
+          utilsScript:
+            "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+          preferredCountries: [
+            "us",
+            "gb",
+            "fr",
+            "de",
+            "it",
+            "es",
+            "ae",
+            "sa",
+            "in",
+            "jp",
+          ],
+          separateDialCode: true,
+          initialCountry: "auto",
+          geoIpLookup: function (callback) {
+            fetch("https://ipapi.co/json/")
+              .then((res) => res.json())
+              .then((data) => callback(data.country_code))
+              .catch(() => callback("us"));
+          },
+        });
+
+        document
+          .getElementById("change-personal-info")
+          .addEventListener("submit", function (e) {
+            const fullPhone = iti.getNumber();
+            document.getElementById("full_phone").value = fullPhone;
+
+            const submitText = document.getElementById("submit-PI-text");
+            const loading = document.getElementById("PI-loading");
+            const submitButton = document.getElementById("submit-PI-btn");
+
+            submitText.textContent = "Saving...";
+            submitButton.disabled = true;
+            loading.classList.remove("hidden");
+          });
+
+        document
+          .getElementById("change-password-btn")
+          .addEventListener("click", function (e) {
+            const changeText = document.getElementById("change-password-text");
+            const loading = document.getElementById("change-password-loading");
+            const changeButton = document.getElementById("change-password-btn");
+            const password1 = document.getElementById("id_password1");
+            const password2 = document.getElementById("id_password2");
+
+            changeText.textContent = "Changing...";
+            changeButton.disabled = true;
+            loading.classList.remove("hidden");
+
+            fetch("/change_password/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+              body: JSON.stringify({
+                password1: password1.value,
+                password2: password2.value,
+              }),
+            })
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                return response.json();
+              })
+              .then((data) => {
+                if (data.success) {
+                  alert("Password changed successfully");
+                } else {
+                  alert("Error: " + (data.error || "Unknown error occurred"));
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("An error occurred: " + error.message);
+              })
+              .finally(() => {
+                changeButton.disabled = false;
+                changeText.textContent = "Change Password";
+                loading.classList.add("hidden");
+                password1.value = "";
+                password2.value = "";
+              });
+          });
+
+        // Account deletion confirmation
+        const confirmDelete = document.getElementById("confirm-delete");
+        const deleteAccountBtn = document.getElementById("delete-account-btn");
+        if (confirmDelete && deleteAccountBtn) {
+          confirmDelete.addEventListener("change", function () {
+            deleteAccountBtn.disabled = !this.checked;
+          });
+        }
+
+        deleteAccountBtn.addEventListener("click", () => {
+          const deleteAcccountText = document.getElementById(
+            "delete-acccount-text"
+          );
+          const deleteAccountLoading = document.getElementById(
+            "delete-account-loading"
+          );
+
+          deleteAcccountText.textContent = "Deleting Account...";
+          deleteAccountBtn.disabled = true;
+          deleteAccountLoading.classList.remove("hidden");
+
+          fetch("/delete_account/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: {},
+          })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.success) {
+                alert(data.message);
+                window.location.href = data.redirect; // Redirect to login
+              } else {
+                alert("Error: " + (data.error || "Unknown error occurred"));
+              }
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("An error occurred: " + error.message);
+            })
+            .finally(() => {
+              deleteAccountBtn.disabled = false;
+              deleteAcccountText.textContent = "Delete Account";
+              deleteAccountLoading.classList.add("hidden");
+            });
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading the external HTML file: ", error);
+      });
+  };
+
+  function togglePassword(fieldId) {
+    const inputField = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById(fieldId + "-eye-icon");
+
+    if (inputField.type === "password") {
+      inputField.type = "text";
+      eyeIcon.innerHTML = `
         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"></path>
         <line x1="1" y1="1" x2="23" y2="23"></line>
       `;
-        } else {
-            inputField.type = "password";
-            eyeIcon.innerHTML = `
+    } else {
+      inputField.type = "password";
+      eyeIcon.innerHTML = `
         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
         <circle cx="12" cy="12" r="3"></circle>
       `;
-        }
     }
-    function deleteImage() {
-        if (confirm('Are you sure you want to delete your profile image?')) {
-            // Send a request to the server to delete the profile image
-            fetch('/delete_profile_image/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({
-                    delete_image: true,
-                }),
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update the UI to remove the image
-                        alert('Profile image deleted successfully.');
-                        location.reload();  // Reload the page or update the UI accordingly
-                    } else {
-                        alert('Error: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while deleting the image.');
-                });
-        }
+  }
+  function deleteImage() {
+    if (confirm("Are you sure you want to delete your profile image?")) {
+      // Send a request to the server to delete the profile image
+      fetch("/delete_profile_image/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+          delete_image: true,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // Update the UI to remove the image
+            alert("Profile image deleted successfully.");
+            location.reload(); // Reload the page or update the UI accordingly
+          } else {
+            alert("Error: " + data.error);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("An error occurred while deleting the image.");
+        });
     }
+  }
 </script>
 {% endblock %}
