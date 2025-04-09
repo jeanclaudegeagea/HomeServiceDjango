@@ -82,7 +82,7 @@ urlpatterns = [
         add_review,
         name="add_review",
     ),
-    path("notifications/", notifications_view, name="notifications")
+    path("notifications/", notifications_view, name="notifications"),
 ]
 
 if settings.DEBUG:
